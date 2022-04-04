@@ -127,6 +127,9 @@ $ kubectl apply -f jenkins-sa.yaml
 #
 ### 4.  jenkins 설치
 values.yaml파일은 필요에 맞게끔 설정값을 변경한다.
+service account를 임의로 생성해주었기 때문에 , 아래 value파일에선
+service account 생성 설정값을 false로 주었다.
+
 ```
 # Default values for jenkins.
 # This is a YAML-formatted file.
