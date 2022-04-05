@@ -1,4 +1,4 @@
-# multi master 환경에서 etcd restore 하는 방법 - master node 3개인 경우
+# multi master 환경에서 etcd restore 하는 방법 - master node 3
 
 ### 모든 etcd.service stop
 ```
