@@ -126,10 +126,24 @@ $ kubectl apply -f jenkins-sa.yaml
 ```
 #
 ### 4.  jenkins 설치
-values.yaml파일은 필요에 맞게끔 설정값을 변경한다.
-service account를 임의로 생성해주었기 때문에 , 아래 value파일에선
-service account 생성 설정값을 false로 주었다.
 
+- 명령어로 설치하는 방법. 
+- values.yaml파일의 속성값을 변경하면서 명령어로도 설치가 가능하다.
+```
+helm upgrade --install jenkins . \
+--namespace=jenkins \
+--set controller.jenkinsUrl=https://jenkins.heun.leedh.xyz \
+--set persistence.existingClaim="jenkins-pvc" \ # pvc name
+--set persistence.accessMode="ReadWriteMany" \ # pv access mode
+--set serviceAccount.name=jenkins \ # service account 이름 들어감
+--set serviceAccount.create=false \ # service account 생성 false
+-f values.yaml
+```
+
+
+
+- value.yaml파일을 생성하는 방법
+- 필요에 맞게끔 설정값을 변경한다.
 ```
 # Default values for jenkins.
 # This is a YAML-formatted file.
