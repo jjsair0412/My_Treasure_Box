@@ -1,4 +1,8 @@
 # multi master 환경에서 etcd restore 하는 방법 - master node 3개
+**reference**
+https://juner417.github.io/blog/etcd-backup-and-restore/
+
+
 
 ## Backup 전 리소스 정보
 ```
