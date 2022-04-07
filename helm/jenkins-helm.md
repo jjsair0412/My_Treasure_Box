@@ -1989,8 +1989,13 @@ spec:
 ```
 
 
-. Jenkins UI 확인
-초기 Password Get
+
+- Jenkins UI 확인
+
+- 초기 Password 확인하는 명령어
+```
 $ kubectl exec --namespace jenkins -it svc/jenkins -c jenkins -- /bin/cat /run/secrets/chart-admin-password && echo
 xxxxxxxxxxxxxxx
+```
+
 Jenkins UI 확인
