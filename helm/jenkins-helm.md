@@ -1987,3 +1987,10 @@ spec:
               number: 8080 
     host: jenkins.apps.ks.leedh.xyz
 ```
+
+
+. Jenkins UI 확인
+초기 Password Get
+$ kubectl exec --namespace jenkins -it svc/jenkins -c jenkins -- /bin/cat /run/secrets/chart-admin-password && echo
+xxxxxxxxxxxxxxx
+Jenkins UI 확인
