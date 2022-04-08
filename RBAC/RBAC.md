@@ -101,34 +101,14 @@ rules:
 -   **지정한 api그룹에 어떤 권한을 부여할것인가**를 정의
 
 ### [](https://github.com/jjsair0412/kubernetes_info/blob/main/RBAC/RBAC.md#verb%EC%9D%98-%EC%A2%85%EB%A5%98)verb의 종류
-
-**kind**
-
-**description**
-
-**create**
-
-새로운 리소스 생성
-
-**get**
-
-개별 리소스 조회
-
-**list**
-
-여러건의 리소스 조희
-
-**update**
-
-기존 리소스 내용 전체 업데이트
-
-**delete**
-
-개별 리소스 삭제
-
-**deletecollection**
-
-여러 리소스 삭제
+| kind | description |
+|--|--|
+|**create**| 새로운 리소스 생성 |
+| **get** | 개별 리소스 조회 |
+|**list**|여러건의 리소스 조희|
+|**update**|기존 리소스 내용 전체 업데이트|
+|**delete**|개별 리소스 삭제|
+|**deletecollection**|여러 리소스 삭제|
 
 ## [](https://github.com/jjsair0412/kubernetes_info/blob/main/RBAC/RBAC.md#3-create-rolebinding)3. Create RoleBinding
 
