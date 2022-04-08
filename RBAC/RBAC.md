@@ -57,7 +57,7 @@ $ ﻿kubectl get csr
 $ kubectl get csr <User_Name>  -o jsonpath='{.status.certificate}'| base64 -d >  <crt.file.name>
 
 # use case
-$ kubectl get csr myuser -o jsonpath='{.status.certificate}'| base64 -d > myuser.cr
+$ kubectl get csr myuser -o jsonpath='{.status.certificate}'| base64 -d > myuser.crt
 ```
 
 
