@@ -22,15 +22,17 @@ $ openssl req -new  -key myuser.key -out myuser.csr -subj "/CN=myuser"
 cat <csr_File_Name>  | base64 | tr -d "\n"
 ```
 ```
-apiVersion: certificates.k8s.io/v1 
-kind: CertificateSigningRequest 
-metadata: 
-  name: myuser 
-spec: 
+apiVersion: certificates.k8s.io/v1
+kind: CertificateSigningRequest
+metadata:
+  name: infra-user # csr name
+spec:
   request: # 방금전 만들어줬던 인증서를 확인해서 인증서 내용을 넣어 주어야 함 
-  expirationSeconds:  86400 # one day . 유효기간을 의미. 
-  usages:  
-    - client auth
+  signerName: kubernetes.io/kube-apiserver-client
+  expirationSeconds:  86400 # one day . 유효기간을 의미.
+  usages:
+  - client auth
+
 ```
 **3. apply**
 ```
