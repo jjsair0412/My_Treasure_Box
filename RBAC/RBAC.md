@@ -22,7 +22,8 @@ $ openssl req -new  -key myuser.key -out myuser.csr -subj "/CN=myuser"
 cat <csr_File_Name>  | base64 | tr -d "\n"
 ```
 ```
-apiVersion: certificates.k8s.io/v1 kind: CertificateSigningRequest 
+apiVersion: certificates.k8s.io/v1 
+kind: CertificateSigningRequest 
 metadata: 
   name: myuser 
 spec: 
