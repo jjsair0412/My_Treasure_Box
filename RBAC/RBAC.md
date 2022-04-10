@@ -163,5 +163,5 @@ $ ﻿kubectl config set-credentials myuser --client-key=myuser.key --client-cert
 **4-4. context 변경**
 
 ```
-$ ﻿kubectl config current-context <context_name>
+$ ﻿kubectl config use-context <context_name>
 ```
