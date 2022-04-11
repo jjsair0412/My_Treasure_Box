@@ -10,11 +10,11 @@
 
 ```
 # key파일 생성 
-$ openssl genrsa -out asmanager.key 2048 
+$ openssl genrsa -out myuser.key 2048 
 
 
 # key파일을 기준으로 csr파일 생성
-$ openssl req -new -key asmanager.key -out asmanager.csr -subj "/CN= asmanager"  
+$ openssl req -new -key myuser.key -out myuser.csr -subj "/CN=myuser"  
 ```
 
 **1-2. kubernetes에 생성한 유저 등록**
@@ -22,14 +22,14 @@ $ openssl req -new -key asmanager.key -out asmanager.csr -subj "/CN= asmanager"
 -   request에 들어갈 인증서 정보 생성 명령어
 
 ```
-cat asmanager.csr  | base64 | tr -d "\n"
+cat myuser.csr  | base64 | tr -d "\n"
 ```
 
 ```
 apiVersion: certificates.k8s.io/v1
 kind: CertificateSigningRequest
 metadata:
-  name: asmanager # csr name
+  name: myuser # csr name
 spec:
   request: # 방금전 만들어줬던 인증서를 확인해서 인증서 내용을 넣어 주어야 한다.
   signerName: kubernetes.io/kube-apiserver-client
@@ -41,7 +41,7 @@ spec:
 **1-3. apply**
 
 ```
-$ kubectl apply -f asmanager.yaml
+$ kubectl apply -f myuser.yaml
 ```
 
 **1-4. 등록상태 확인**
@@ -53,7 +53,7 @@ $ ﻿kubectl get csr
 -   pending 상태 인 것을 볼 수 있음. 따로 승인을 해주어야 한다.
 
 ```
-$ kubectl certificate approve asmanager
+$ kubectl certificate approve myuser
 ```
 
 등록상태를 재 확인 하면 ,  **Approved,Issued**  상태로 변환 된 것을 볼 수 있다.
@@ -65,7 +65,7 @@ $ ﻿kubectl get csr
 **1-5. crt 파일 생성**
 
 ```
-$ kubectl get csr asmanager  -o jsonpath='{.status.certificate}'| base64 -d > asmanager.crt
+$ kubectl get csr myuser  -o jsonpath='{.status.certificate}'| base64 -d > myuser.crt
 ```
 
 ## [](https://github.com/jjsair0412/kubernetes_info/blob/main/RBAC/RBAC.md#2-create-role)2. Create Role
@@ -77,9 +77,9 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role 
 metadata: 
   namespace: default 
-  name: asmanager-role 
+  name: myuser-role 
 rules:  
-- apiGroups: ["*"] 
+- apiGroups: [""] 
   verbs: ["create","get","list","update"]
   resources: ["*"]
 
@@ -103,6 +103,7 @@ rules:
 |**update**|기존 리소스 내용 전체 업데이트|
 |**delete**|개별 리소스 삭제|
 |**deletecollection**|여러 리소스 삭제|
+|**patch**|리소스 수정|
 
 ## [](https://github.com/jjsair0412/kubernetes_info/blob/main/RBAC/RBAC.md#3-create-rolebinding)3. Create RoleBinding
 
@@ -112,15 +113,15 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   creationTimestamp: null
-  name: asmanager-rolebinder
+  name: myuser-rolebinder
   namespace: default # namespace별로 구분
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: asmanager-role # role 이름
+  name: myuser-role # role 이름
 subjects:
 - kind: User
-  name: asmanager # user 이름
+  name: myuser # user 이름
 ```
 
 ## [](https://github.com/jjsair0412/kubernetes_info/blob/main/RBAC/RBAC.md#4-config-file-%EB%93%B1%EB%A1%9D)4. Config file 등록
@@ -134,18 +135,18 @@ $ ﻿kubectl config view
 **4-2. 아래의 형식을 통해서 kubeconfig 파일에 user를 등록**
 
 ```
-$ ﻿kubectl config set-credentials asmanager --client-certificate=asmanager.crt --client-key=asmanager.key --embed-certs=true
+$ ﻿kubectl config set-credentials myuser --client-certificate=myuser.crt --client-key=myuser.key --embed-certs=true
 ```
 
 **4-3. context 추가**
 
 - 명령어 옵션으로 **namespace** 를 주면 , kubectl 명령어를 출력시킬 namespace를 고정시킬 수 있다.
 ```
-﻿$ kubectl config set-context asmanager --cluster=cluster.local --user=asmanager --namespace=jenkins 
+﻿$ kubectl config set-context myuser --cluster=cluster.local --user=myuser --namespace=jenkins 
 ```
 
 **4-4. context 변경**
 
 ```
-$ ﻿kubectl config use-context asmanager 
+$ ﻿kubectl config use-context myuser 
 ```
