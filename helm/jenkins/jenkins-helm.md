@@ -17,6 +17,12 @@ $ kubectl get namespaces
 $ helm repo add jenkinsci https://charts.jenkins.io
 $ helm repo update
 ```
+- jenkins helm chart 다운로드
+```
+$ helm pull jenkinsci/jenkins --version 3.8.5 --untar
+```
+
+
 #
 ### 2. create persistent volume 
 ```
@@ -130,14 +136,7 @@ $ kubectl apply -f jenkins-sa.yaml
 - 명령어로 설치하는 방법. 
 - values.yaml파일의 속성값을 변경하면서 명령어로도 설치가 가능하다.
 ```
-helm upgrade --install jenkins . \
---namespace=jenkins \
---set controller.jenkinsUrl=https://jenkins.heun.leedh.xyz \
---set persistence.existingClaim="jenkins-pvc" \ # pvc name
---set persistence.accessMode="ReadWriteMany" \ # pv access mode
---set serviceAccount.name=jenkins \ # service account 이름 들어감
---set serviceAccount.create=false \ # service account 생성 false
--f values.yaml
+helm upgrade --install jenkins . -n jenkins --set persistence.existingClaim="jenkins-pvc" --set serviceAccount.name=jenkins --set serviceAccount.create=false -f values.yaml
 ```
 
 
@@ -1985,7 +1984,7 @@ spec:
             name: jenkins 
             port:
               number: 8080 
-    host: jenkins.apps.ks.leedh.xyz
+    host: xxx.xxx.jinseong
 ```
 
 
