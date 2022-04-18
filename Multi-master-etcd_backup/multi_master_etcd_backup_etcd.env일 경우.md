@@ -169,6 +169,7 @@ ETCDCTL_API=3 etcdctl snapshot save <snapshot save할 .db파일 위치> \
 --endpoints=https://127.0.0.1:2379
 ```
 
+### 모든 node etcd stop
 ### master etcd를 제외한 node etcd stop
 
 ```
@@ -196,9 +197,8 @@ ETCDCTL_API=3 etcdctl snapshot restore <backup_file_path> --endpoints=https://12
 --key=<key_file_path> \
 --cacert=<ca_cert_file_path> \
 --name=etcd1 \
---initial-cluster="etcd1=https://<node1_ip>:2380,etcd2=https://<node2_ip>:2380,etcd3=https://<node3_ip>:2380" \ 
---initial-advertise-peer-urls="https://<node1_ip>:2380"
-
+--initial-advertise-peer-urls="https://<node1_ip>:2380" \
+--initial-cluster="etcd1=https://<node1_ip>:2380" 
 ```
 
 
@@ -216,7 +216,7 @@ ETCDCTL_API=3 etcdctl snapshot restore <backup_file_path> --endpoints=https://12
 ### 3. etcd restart
 
 ```
-$ systemctl restart etcd
+$ systemctl start etcd
 $ systemctl status etcd
 ```
 
