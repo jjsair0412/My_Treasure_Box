@@ -170,7 +170,7 @@ ETCDCTL_API=3 etcdctl snapshot save <snapshot save할 .db파일 위치> \
 ```
 
 ### 모든 node etcd stop
-### master etcd를 제외한 node etcd stop
+### master etcd를 포함한 node etcd stop
 
 ```
 $ systemctl stop etcd
