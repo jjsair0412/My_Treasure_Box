@@ -90,7 +90,40 @@ $ helm upgrade --install rancher-backup . -n cattle-resources-system \
 --set persistence.volumeName= \
 -f values.yaml
 ```
-## 5. Backup & restore
+## 5. Backup & Restore
+### 5.1 Backups Ui
+- rancher에서 등록한 클러스터 접속 후 , 좌측 매뉴바에서 Backups 클릭
+![backup][backup]
 
+[backup]:./images/backup.PNG
+### 5.2 create snapshot
+- 간단한 설정값들로 생성해 줄 수 있다.
+- crontab을 이용해서 snapshot 생성 주기를 지정해 줄 수 도 있다.
+-- Recurring Backups로 Schedule 옵션을 변경하면 된다.
+- Encryption 설정은 암호화 여부를 나타낸다. defulat는 unencrypted.
+- Storage Location에서 s3를 사용할건지 , pv에 명시한 저장소를 사용할 것인지 선택한다.
+![backup-click-create][backup-click-create]
 
+[backup-click-create]:./images/backup-click-create.PNG
+### 5.3 create snapshot - yaml
+- 위와 같은 설정들을 모두 yaml 형식으로 만들어줄 수 있다.
+-- [참고 문서](https://rancher.com/docs/rancher/v2.5/en/backups/examples/#backup)
+![backup-create-yaml][backup-create-yaml]
 
+[backup-create-yaml]:./images/backup-create-yaml.PNG
+### 5.4 Restore Ui
+- rancher에서 등록한 클러스터 접속 후 , 좌측 매뉴바에서 Restores 클릭
+![restore][restore]
+
+[restore]:./images/restore.PNG
+### 5.5 Restore
+- snapshot이 생성되어있는 target을 지정해서 restore를 진행할 수 있다.
+![restore-click-create][restore-click-create]
+
+[restore-click-create]:./images/restore-click-create.PNG
+### 5.6 Restore - yaml
+- 위의 설정을 모두 yaml 형식으로 만들어 줄 수 있다.
+-- [참고 문서](https://rancher.com/docs/rancher/v2.5/en/backups/examples/#backup)
+![restore-create-yaml][restore-create-yaml]
+
+[restore-create-yaml]:./images/restore-create-yaml.PNG
