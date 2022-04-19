@@ -127,3 +127,9 @@ $ helm upgrade --install rancher-backup . -n cattle-resources-system \
 ![restore-create-yaml][restore-create-yaml]
 
 [restore-create-yaml]:./images/restore-create-yaml.PNG
+
+## 6. log
+- 아래 명령어를 이용해 backup & restore 진행 상황을 감시할 수 있다.
+```
+kubectl logs -n cattle-resources-system -l app.kubernetes.io/name=rancher-backup -f
+```
