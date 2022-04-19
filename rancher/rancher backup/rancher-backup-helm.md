@@ -1,4 +1,5 @@
 # Rancher Backup - helm
+## rancher 2.6 기반
 ### 0. 관련 정보
 1. rancher backup은 기본으로 s3 버킷을 사용한다. s3버킷에 사용자가 생성한 모든 백업파일을 저장하게 된다.
 
