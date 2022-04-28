@@ -64,7 +64,7 @@ spec:
 $ chmod 777 {dir_name}
 ```
 ## 3. ArgoCD restore
-- backup yaml 파일을 apply 합니다.
+- backup yaml 파일을 argocd가 배포된 namespace 지정해준 후 apply 합니다.
 ```
-$ kubectl apply -f {backup_file_name}
+$ kubectl apply -f {backup_file_name} -n argocd
 ```
