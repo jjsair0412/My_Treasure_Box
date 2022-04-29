@@ -46,8 +46,6 @@ spec:
           serviceAccount: argocd-server
           serviceAccountName: argocd-server
           restartPolicy: OnFailure
-          serviceAccount: argocd-server
-          serviceAccountName: argocd-server
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
