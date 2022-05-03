@@ -39,7 +39,7 @@ galera:
 ```
 - mariaDB를 설치합니다.
 ```
-$ helm upgrade --install mariadb . -f values.yaml -n maria
+$ helm upgrade --install mariadb . -f values.yaml,user-values.yaml -n maria
 ```
 - root user 비밀번호 확인 명령어
 -- 해당 명령어를 통해서 나온 결과값으로 , values.yaml의 root user 비밀번호를 등록해야 할 경우가 있을 수 도 있습니다.
