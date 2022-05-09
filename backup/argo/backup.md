@@ -33,7 +33,7 @@ spec:
             args: ["/usr/local/bin/argocd-util -n argo export > /backup/argocd-backup-$(date +%F).yaml"]
             volumeMounts:
             - name: argo-backup-volume
-              mountPath: "/backup"
+              mountPath: "/backup/argocd-backup"
           - name: clean-backup-file
             image: busybox
             args:
@@ -42,7 +42,7 @@ spec:
             - find /backup -type f -mtime +1 -exec rm {} \;
             volumeMounts:
             - name: argo-backup-volume
-              mountPath: "/backup"
+              mountPath: "/backup/argocd-backup"
           serviceAccount: argocd-server
           serviceAccountName: argocd-server
           restartPolicy: OnFailure
