@@ -132,7 +132,7 @@ $ kubectl apply -f jenkins-sa.yaml
 ```
 helm upgrade --install jenkins . -n jenkins --set persistence.existingClaim="jenkins-pvc" --set serviceAccount.name=jenkins --set serviceAccount.create=false -f values.yaml
 ```
-## 발생 가능성 있는 문제
+## troubleshooting
 
 ### 1. 아래와 같은 에러메세지가 발생 할 경우
 
