@@ -19,6 +19,7 @@ spec:
   schedule: "0 2 * * *"
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 2 
+  concurrencyPolicy: Allow
   jobTemplate:
     spec:
       template:
