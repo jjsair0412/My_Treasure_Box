@@ -1,7 +1,9 @@
 # EKS info
 - EKS 정보 & 설치 방안
 ## EKS 상태도
-![eks 구성도.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/2b66de45-eb8a-4808-b5db-df32ba7583e6/eks_%EA%B5%AC%EC%84%B1%EB%8F%84.png)
+![EKS_info_1][EKS_info_1]
+
+[EKS_info_1]:./images/EKS_info_1.PNG
 
 _**EKS는 aws에서 쿠버네티스의 master node ( control plane )**_ 이다.
 사진처럼 외부에서 EKS를 조작하는 시스템 ( ubuntu , linux 등 .. ) 에서 kubectl 명령어를 작성하면 ,
@@ -73,21 +75,26 @@ $ kubectl version --short --client # 설치상태 확인
 ----------
 
 1.  AWS IAM 생성
+![IAM][IAM]
 
-![IAM.PNG](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/86433cac-0947-46cc-ac94-dace5e42eec1/IAM.png)
+[IAM]:./images/IAM.PNG
 
 위처럼 AWS IAM 서비스를 선택한다.
 
-![iam - 1.PNG](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f24600a3-eb53-49bd-8b5a-a82f4b80c034/iam_-_1.png)
+![IAM-2][IAM-2]
+
+[IAM-2]:./images/IAM-2.PNG
 
 사용자 탭을 누른 후 , 사용자 추가를 클릭한다.
 
-![iam -2.PNG](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/730541f2-e2e6-4944-982a-a70bdd8fc13a/iam_-2.png)
+![IAM-3][IAM-3]
 
+[IAM-3]:./images/IAM-3.PNG
 사용자 이름과 자격 증명 유형을 선택한다.
 
-![iam -3.PNG](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f29faf69-368e-4cd2-96b0-1493503820b2/iam_-3.png)
+![IAM-4][IAM-4]
 
+[IAM-4]:./images/IAM-4.PNG
 권한을 선택해주는데 , 상황에 따라 다르겠지만 실습용 으로는 AdministratorAccess 권한을 설정해줬다.
 
 이후 태그를 설정하고 , 사용자를 생성한다.
