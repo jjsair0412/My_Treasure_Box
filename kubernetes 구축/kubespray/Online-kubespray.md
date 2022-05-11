@@ -1,4 +1,4 @@
-# kubespray로 kubernetes 구축 - Online 환경 - 수정중
+# kubespray로 kubernetes 구축 - Online 환경
 - 해당 예제는 , ansible 명령어를 이용해 kubespray로 kubernetes를 구축하는 방법입니다.
 - 예제 환경은 외부 접근이 가능한 Online 입니다.
 - 클러스터는 총 3대 , master 1개 , worker 2개
