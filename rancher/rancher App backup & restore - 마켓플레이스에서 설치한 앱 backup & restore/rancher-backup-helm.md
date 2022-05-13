@@ -5,7 +5,7 @@
 ## rancher 2.6 기반
 
 - 해당 backup 방법은 , rancher 앱 . rancher market place에서 설치한 app만 backup / restore 하는 방법이다.
-
+- rancher 구성요소만 백업시킨다. 따로 배포된 Pod들을 백업시키기 위해선 etcd를 snapshot and restore해야 한다.
   
 
 ### 0. 관련 정보
