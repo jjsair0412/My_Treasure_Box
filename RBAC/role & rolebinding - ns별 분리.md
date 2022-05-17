@@ -150,3 +150,24 @@ $ ﻿kubectl config set-credentials myuser --client-certificate=myuser.crt --cli
 ```
 $ ﻿kubectl config use-context myuser 
 ```
+## 5. user-role 삭제 절차 (완전 삭제)
+**5-1. context 삭제**
+- config 파일에 등록한 context 정보를 삭제 합니다.
+```
+$ kubectl config delete-context myuser
+```
+**5-2. user 삭제**
+- config 파일에 등록한 user 정보를 삭제 합니다.
+```
+$ kubectl config delete-user myuser
+```
+**5-3. rolebinding 삭제**
+- rolebinding을 삭제 합니다.
+```
+$ kubectl delete rolebinding myuser-rolebinding
+```
+**5.4. role 삭제**
+- role을 삭제 합니다.
+```
+$ kubectl delete role myuser-clusterrole
+```
