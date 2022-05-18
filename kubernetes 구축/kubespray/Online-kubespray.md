@@ -258,7 +258,7 @@ $ ansible-playbook -i inventory/mycluster/inventory.ini ./cluster.yml --flush-ca
 --private-key=~/.ssh/id_rsa
 
 ```
-## 4. troubleshooting
+## 4. 발생 문제점
 ### 1. The conditional check ''127.0.0.1' | ipaddr' failed. The error was: The ipaddr filter requires python's netaddr be installed on the ansible controller
 - netaddr 설치
 ```
@@ -271,3 +271,6 @@ $ pip3 install netaddr
 ```
 $ ansible-playbook -i inventory/mycluster/inventory.ini ./cluster.yml --flush-cache -b -v   --private-key=~/.ssh/id_rsa --extra-vars maximal_ansible_version=2.13.0
 ```
+### 3. "No package matching 'aufs-tools' is available"
+- 상단에 사용할 컨테이너 런타임을 변경시켜주지 않아서 발생하는 문제이다.
+   다시 위로 올라가서 docker를 containerd로 변경 시켜 주자. etcd파일도 같이 수정시킨다.
