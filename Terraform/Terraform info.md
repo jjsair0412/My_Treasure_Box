@@ -1,3 +1,6 @@
+# Terraform
+- Terraform의 이론과 사용 방안을 정리한 문서입니다.
+
 ## 테라폼 전체 실습 예제
 
 https://github.com/jjsair0412/Terraform
