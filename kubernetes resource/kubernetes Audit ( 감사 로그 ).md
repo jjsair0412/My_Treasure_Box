@@ -183,3 +183,5 @@ rules:
 {"kind":"Event","apiVersion":"audit.k8s.io/v1","level":"Metadata","auditID":"4734dd72-a6e7-4c6b-920c-6283aa8c2e76","stage":"ResponseComplete","requestURIube-system/leases/kube-controller-manager?timeout=5s","verb":"get","user":{"username":"system:kube-controller-manager","groups":["system:authenticated"]}-controller-manager/v1.21.6 (linux/amd64) kubernetes/d921bc6/leader-election","objectRef":{"resource":"leases","namespace":"kube-system","name":"kube-cons.io","apiVersion":"v1"},"responseStatus":{"metadata":{},"code":200},"requestReceivedTimestamp":"2022-05-19T07:37:29.255574Z","stageTimestamp":"2022-05-1ation.k8s.io/decision":"allow","authorization.k8s.io/reason":"RBAC: allowed by ClusterRoleBinding \"system:kube-controller-manager\" of ClusterRole \"sysem:kube-controller-manager\""}}
 ...
 ```
+## 5. 참고 사항
+- policy 정책을 수정하거나 , log파일을 삭제했을 경우 kube-apiserver.yaml의 등록된 audit 정보를 제거하고 저장한 뒤 , 다시 등록 시켜야 합니다.
