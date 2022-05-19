@@ -115,8 +115,8 @@ git에 올리면 절대 안됀다.
 
 ```bash
 $ aws configure
-  AWS Access Key ID [None]: AKIASJ...E37V # 액세스 ID 입력
-  AWS Secret Access Key [None]: XLzhAqt...7g # secret key 입력
+  AWS Access Key ID [None]: AKI... # 액세스 ID 입력
+  AWS Secret Access Key [None]: XLz... # secret key 입력
   Default region name [None]: ap-northeast-2 # 인스턴스가 위치한 리전 이름 입력. 지금은 서울
   Default output format [None]: json # 그냥 엔터눌러도 되는데, 누르면 확인할 때 unkown 에러뜸. json 써주자
 
