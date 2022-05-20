@@ -5,6 +5,7 @@
 ## 2. prometheus 연동 확인
 ### 2.1 serviceMonitor 확인
 - redis에서 values.yaml파일을 변경하여 serviceMonitor를 자동으로 생성 되게끔 하였기 때문에 , serviceMonitor가 정상적으로 생성되었는지 확인합니다.
+- prometheus가 메트릭값을 수집하는 방법은 여러가지가 잇지만 , serviceMonitor를 생성하는것이 가장 간편합니다. servicemonitor pod가 떠있는 상태로 메트릭을 수집하게 됩니다.
 ```
 $ kubectl get servicemonitor -n monitoring
 ...
