@@ -110,34 +110,34 @@
 
 ![index_add_1][index_add_1]
 
-[index_add_1]:./images/index_add_1.PNG
+[index_add_1]:./images/index_add_1.JPG
 
 - 그 후 , Manage index 버튼을 클릭한 뒤 Add lifecycle policy를 선택합니다.
 
 ![index_add_2][index_add_2]
 
-[index_add_2]:./images/index_add_2.PNG
+[index_add_2]:./images/index_add_2.JPG
 
 - 만들어둔 lifecycle police를 선택한 뒤 , Add policy를 클릭합니다.
 
 ![index_add_3][index_add_3]
 
-[index_add_3]:./images/index_add_3.PNG
+[index_add_3]:./images/index_add_3.JPG
 
 - 해당 index를 클릭하여 정상적으로 index lifecycle이 등록된것을 확인할 수 있습니다.
 
 ![index_add_4][index_add_4]
 
-[index_add_4]:./images/index_add_4.PNG
+[index_add_4]:./images/index_add_4.JPG
 
 #### 3.2.2 index lifecycle 제거
 - index 정보에 Manage -> Remove lifecycle policy 를 클릭하여 등록했던 index를 제거할 수 있습니다.
 
 ![index_add_5][index_add_5]
 
-[index_add_5]:./images/index_add_5.PNG
+[index_add_5]:./images/index_add_5.JPG
 
 ![index_add_6][index_add_6]
 
-[index_add_6]:./images/index_add_6.PNG
+[index_add_6]:./images/index_add_6.JPG
 
