@@ -20,30 +20,22 @@
 
 ### 2.2 언제 event 객체를 생성할 지 지정할 수 있습니다.
 1.   **RequestReceived**
-
  -- audit 핸들러가 request를 받자마자
 2.   **ResponseStarted**
-
 --   response 헤더만 보내지고, reponse body는 아직 안보내졌을 때. long-running request의 경우에만 발생한다 (예: watch)
 3.  **ResponseComplete**
-
 --   response body까지 전부 보내진 후
 4. **Panic**
-
 --  panic이 발생 했을 때
 
 ### 2.3 어느 정도 수준의 정보를 기록할지도 지정할 수 있습니다.
 1. **None**
-
 -- 기록하지 않습니다.
 2. **Metadata**
-
 --  request metadata ( requesting user, timestamp, resource, verb, etc ) 들은 기록하지만 , request 또는 response body는 기록하지 않습니다.
 3. **Request**
-
 -- 이벤트 metadata 및 request body는 기록하지만 response body는 기록하지 않습니다. non-resource request에는 적용되지 않습니다.
 4. **RequestResponse**
-
 -- evnet metatdata , request body 및 response body는 기록합니다. non-resource request에는 적용되지 않습니다.
 
 ## 3. Audit 설정
