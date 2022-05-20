@@ -1,7 +1,7 @@
 # kubernetes Audit ( 감사 로그 )
 ## 1. Prerequisites
 - kubernetes의 감사로그 관련 설명과 구성 방법을 설명합니다.
-- 감사로그 관련 policy 정책 파일은 , 각 master node ( KubeCPDDev01 , KubeCPDDev02 , KubeCPDDev03 ) 의 /etc/kubernetes/audit-policy.yaml 에 위치해 있습니다.
+- 감사 로그 정책 파일 (policy.yaml) 은, bastion이 아닌 kube-apiserver.yaml이 위치한 master node에 위치해야 합니다. 따라서 master 노드 모두에게 로깅하고싶다면 , 모든 master node에 감사 로그 정책 파일 (policy.yaml) 이 위치해야 합니다.
 - [참고 문서](https://kubernetes.io/docs/tasks/debug-application-cluster/audit/)
 ## 2. Audit 정책 구성
 - k8s에서 요청 흐름은 kube-apiserver를 거치게 됩니다. 이때 HTTP API를 통해 요청이 전달되는데 , audit은 **kube-apiserver를 오가는 API를 로깅하는 것입니다.**
@@ -15,26 +15,35 @@
 5. verb는 무엇인지
 6. URI
 7. request body , response body 
+
 등 ..
 
 ### 2.2 언제 event 객체를 생성할 지 지정할 수 있습니다.
 1.   **RequestReceived**
+
  -- audit 핸들러가 request를 받자마자
 2.   **ResponseStarted**
+
 --   response 헤더만 보내지고, reponse body는 아직 안보내졌을 때. long-running request의 경우에만 발생한다 (예: watch)
 3.  **ResponseComplete**
+
 --   response body까지 전부 보내진 후
 4. **Panic**
+
 --  panic이 발생 했을 때
 
 ### 2.3 어느 정도 수준의 정보를 기록할지도 지정할 수 있습니다.
 1. **None**
+
 -- 기록하지 않습니다.
 2. **Metadata**
+
 --  request metadata ( requesting user, timestamp, resource, verb, etc ) 들은 기록하지만 , request 또는 response body는 기록하지 않습니다.
 3. **Request**
+
 -- 이벤트 metadata 및 request body는 기록하지만 response body는 기록하지 않습니다. non-resource request에는 적용되지 않습니다.
 4. **RequestResponse**
+
 -- evnet metatdata , request body 및 response body는 기록합니다. non-resource request에는 적용되지 않습니다.
 
 ## 3. Audit 설정
