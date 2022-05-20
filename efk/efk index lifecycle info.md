@@ -65,6 +65,7 @@
 [index_template_1]:./images/index_template_1.PNG
 
 - 그 후 , template의 이름과 pattern을 지정해줍니다.
+- 예시처럼 pattern을 구성한다면 , test- 가 붙은 모든 로그에 index lifecycle이 등록되게 됩니다.
 
 ![index_template_2][index_template_2]
 
