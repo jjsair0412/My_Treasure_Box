@@ -1,6 +1,7 @@
 # EFK Index Lifecycle 설정
 ## 1. Prerequisites
 - [참고 문서](https://www.elastic.co/guide/en/elasticsearch/reference/current/set-up-lifecycle-policy.html)
+- [hot warm 구성 참고 문서](https://www.elastic.co/kr/blog/implementing-hot-warm-cold-in-elasticsearch-with-index-lifecycle-management)
 - EFK의 index 자동 삭제 기능을 설정하는 방법과 , Lifecycle 설정 방법을 설명하는 문서입니다.
 - 해당 설정은 kibana ui로 진행합니다. 
 ## 2. Index Lifecycle 설정
