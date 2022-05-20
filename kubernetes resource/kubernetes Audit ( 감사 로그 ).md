@@ -2,7 +2,7 @@
 ## 1. Prerequisites
 - kubernetes의 감사로그 관련 설명과 구성 방법을 설명합니다.
 - 감사로그 관련 policy 정책 파일은 , 각 master node ( KubeCPDDev01 , KubeCPDDev02 , KubeCPDDev03 ) 의 /etc/kubernetes/audit-policy.yaml 에 위치해 있습니다.
-- [참고 문서]([https://kubernetes.io/docs/tasks/debug-application-cluster/audit/](https://kubernetes.io/docs/tasks/debug-application-cluster/audit/))
+- [참고 문서](https://kubernetes.io/docs/tasks/debug-application-cluster/audit/)
 ## 2. Audit 정책 구성
 - k8s에서 요청 흐름은 kube-apiserver를 거치게 됩니다. 이때 HTTP API를 통해 요청이 전달되는데 , audit은 **kube-apiserver를 오가는 API를 로깅하는 것입니다.**
 
