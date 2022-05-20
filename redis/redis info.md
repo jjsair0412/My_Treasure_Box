@@ -15,7 +15,7 @@
 
 ## Redis commands
 
-[Redis 명령어]()
+[Redis 명령어](https://github.com/jjsair0412/kubernetes_info/blob/main/redis/redis%20command.md#redis-command)
 
 ---
 
