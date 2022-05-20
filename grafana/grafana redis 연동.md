@@ -62,7 +62,7 @@ redis-cluster                                        35m
 
 ![das-1][das-1]
 
-[das-1]:./images/das-1.PNG
+[das-1]:./images/das-1.jpg
 
 - 이전 설치해두었던 json 값들 전체를 import via panel json 박스에 붙여 넣은 후 Load버튼을 클릭합니다.
 
