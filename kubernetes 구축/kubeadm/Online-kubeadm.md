@@ -225,3 +225,14 @@ master-node-ip-addr jinseong.xxx.xxx.net
 [](https://wookiist.dev/143)[https://wookiist.dev/143](https://wookiist.dev/143)
 
 [](https://scbyun.com/m/810)[https://scbyun.com/m/810](https://scbyun.com/m/810)
+
+## trouble
+### 1. Unimplemented desc = unknown service runtime.v1alpha2.RuntimeService"
+- 아래 명령어를 수행한다.
+```
+cat > /etc/containerd/config.toml <<EOF
+[plugins."io.containerd.grpc.v1.cri"]
+  systemd_cgroup = true
+EOF
+systemctl restart containerd
+```
