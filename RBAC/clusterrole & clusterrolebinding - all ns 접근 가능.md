@@ -1,3 +1,4 @@
+
 # RBAC
 
 ### [](https://github.com/jjsair0412/kubernetes_info/blob/main/RBAC/RBAC.md#reference)
@@ -158,4 +159,15 @@ $ ﻿kubectl config use-context myuser
 
 ```
 $ kubectl config current-context
+```
+## 5. kubeconfig에서 내가 필요한 user정보만 꺼내오는 방법
+```
+$ kubectl config get-contexts
+```
+
+```
+$ kubectl config view --context={context_name} --minify --flatten
+
+# 사용 예
+$ kubectl config view --context=myuser --minify --flatten
 ```

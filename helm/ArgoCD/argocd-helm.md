@@ -31,99 +31,48 @@ $ helm pull argo/argo-cd --untar
 $ cat affinity-values.yaml
 controller:
   affinity:
-   nodeAffinity:
-     requiredDuringSchedulingIgnoredDuringExecution:
-       nodeSelectorTerms:
-       - matchExpressions:
-         - key: 
-           operator: 
-           values:
-           - ""
+    ...
   nodeSelector:
-    role: 
+    ...
 
 
 dex:
   affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: 
-            operator: 
-            values:
-            - ""
+    ...
   nodeSelector:
-    role: 
-
+    ...
 
 repoServer:
   affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: 
-            operator: 
-            values:
-            - ""
+    ...
   nodeSelector:
-    role: 
+    ...
 
 server:
   affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: 
-            operator: 
-            values:
-            - ""
+    ...
   nodeSelector:
-    role: 
+    ...
 
 
 applicationSet:
   affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: 
-            operator: 
-            values:
-            - ""
+    ...
   nodeSelector:
-    role: 
+    ... 
 
 notifications:
   affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: 
-            operator: 
-            values:
-            - ""
+    ...
   nodeSelector:
-    role: 
-
+    ...
 
 
 redis:
   affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: 
-            operator: 
-            values:
-            - ""
+    ...
   nodeSelector:
-    role: 
+    ... 
 
 ```
 ### 2.3 Helm ArgoCD Chart 설치
