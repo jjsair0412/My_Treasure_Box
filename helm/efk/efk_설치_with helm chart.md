@@ -113,6 +113,7 @@ $ helm pull fluent/fluent-bit --untar
 
 
 ```
+config:
   inputs: |
     [INPUT]
         Name tail
