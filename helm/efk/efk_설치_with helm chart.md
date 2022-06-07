@@ -210,7 +210,7 @@ spec:
             port:
               number: 5601
 
-...
+---
 # Elastic Search Ingress
 apiVersion: networking.k8s.io/v1
 kind: Ingress
