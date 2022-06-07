@@ -113,6 +113,7 @@ $ helm pull fluent/fluent-bit --untar
 
 
 ```
+$ cat log-values.yaml
 config:
   inputs: |
     [INPUT]
