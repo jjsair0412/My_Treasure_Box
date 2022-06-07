@@ -104,17 +104,43 @@ $ helm repo update
 ```
 $ helm pull fluent/fluent-bit --untar
 ```
+- Fleuntbit values.yaml 수정합니다. 
+  Docker Runtime 환경이 아닌 Containerd를 사용함으로 아래 라인을 삭제 합니다.
+
+```
+daemonSetVolumes:
+  - name: varlog
+    hostPath:
+      path: /var/log
+  - name: varlibdockercontainers
+    hostPath: ## 삭제
+      path: /var/lib/docker/containers ## 삭제
+  - name: etcmachineid
+    hostPath:
+      path: /etc/machine-id
+      type: File
+
+daemonSetVolumeMounts:
+  - name: varlog
+    mountPath: /var/log
+  - name: varlibdockercontainers ## 삭제
+    mountPath: /var/lib/docker/containers ## 삭제
+    readOnly: true ## 삭제
+  - name: etcmachineid
+    mountPath: /etc/machine-id
+    readOnly: true
+
+```
+
 - Input / Output 설정을 변경합니다 . 
 아래 설정은 namespace 형태로 Elastic Index가 생성 되도록 설정 되어 있습니다.
 만약 Namespace가 추가가 될 경우 [INPUT/OUTPUT]을 추가하여 재설치 합니다.
+values파일 자체를 수정합니다.
 - {NAMESPACE_NAME} 에 namespace 이름을 넣어 줍니다.
-- 해당 옵션은 log-values.yaml 이라는 파일을 생성해서 따로 관리합니다.
 - [input / filters / output 관련 포스팅](https://haereeroo.tistory.com/20)
 
 
 ```
-$ cat log-values.yaml
-config:
   inputs: |
     [INPUT]
         Name tail
@@ -150,7 +176,6 @@ config:
 $ helm upgrade --install fluent-bit . -n efk \
 --set env[0].name=TZ \
 --set env[0].value=Asia/Seoul
--f values.yaml,log-values.yaml
 ```
 - pod 상태 확인
 ```
