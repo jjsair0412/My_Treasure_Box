@@ -6,16 +6,16 @@
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y \\
-    ca-certificates \\
-    curl \\
-    gnupg \\
+sudo apt-get install -y \
+    ca-certificates \
+    curl \
+    gnupg \
     lsb-release
 
 curl -fsSL <https://download.docker.com/linux/ubuntu/gpg> | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 
-echo \\
-  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] <https://download.docker.com/linux/ubuntu> \\
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] <https://download.docker.com/linux/ubuntu> \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 sudo apt-get update
@@ -225,3 +225,14 @@ master-node-ip-addr jinseong.xxx.xxx.net
 [](https://wookiist.dev/143)[https://wookiist.dev/143](https://wookiist.dev/143)
 
 [](https://scbyun.com/m/810)[https://scbyun.com/m/810](https://scbyun.com/m/810)
+
+## trouble
+### 1. Unimplemented desc = unknown service runtime.v1alpha2.RuntimeService"
+- 아래 명령어를 수행한다.
+```
+cat > /etc/containerd/config.toml <<EOF
+[plugins."io.containerd.grpc.v1.cri"]
+  systemd_cgroup = true
+EOF
+systemctl restart containerd
+```
