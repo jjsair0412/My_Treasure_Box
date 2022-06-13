@@ -8,6 +8,7 @@
   [Tarball Method 설치 방안 공식 문서](https://docs.rke2.io/install/airgap/#tarball-method)
 ## 2. Install Essential Element
 - RKE2를 설치하기 위해 , 필수 요소들을 먼저 가지고 옵니다.
+- 해당 작업은 rke2-server , rke2-agent 모든 vm에서 작업합니다.
 1. rke2-images
 2. rke2
 3. sha256sum
@@ -30,6 +31,7 @@ $ curl -sfL https://get.rke2.io --output install.sh
 ## 3. RKE2 install
 ### 3.1 RKE2를 설치합니다.
 - Rancher server를 설치할 모든 노드에 접속해서 , Swap을 비활성화 하고 , network 브릿지를 설정합니다.
+  첫번째 rke2-server node에서만 작업합니다.
 ```
 Rancher Server 설치 대상 모든 Node 환경에 접속하여 Swap 비활성화, Network 브릿시 설정
 $ sudo swapoff -a
@@ -66,11 +68,6 @@ $ INSTALL_RKE2_ARTIFACT_PATH=/root/rke2-artifacts sh install.sh
 mkdir -p /etc/rancher/rke2
 cat << EOF >>  /etc/rancher/rke2/config.yaml
 write-kubeconfig-mode: "0644"
-tls-san:
-  - "rancher.test.jinseong"
-  - "192.168.65.134"
-  - "192.168.65.135"
-  - "192.168.65.136"
 profile: "cis-1.5"
 selinux: true
 EOF
@@ -102,13 +99,8 @@ journalctl -u rke2-server -f
 $ mkdir -p /etc/rancher/rke2
 $ sudo cat << EOF >>  /etc/rancher/rke2/config.yaml
 write-kubeconfig-mode: "0644"
-server:  https://192.168.65.134:9345 # Control Plane FQDN이 필요 할 수 있음 - vi /etc/hosts에 domain이 들어가야할 수 도 있다는 의미 이다.
+server:  https://192.168.65.134:9345 # Control Plane FQDN이 필요 할 수 있음 
 token:  K106b9afcb136aa3a088e508882ad4fa1f94b9d814f36cd7c85b8a5c87643510d16::server:ca24fd2bebf3d41ec7c180cceb3b2768 # Token 값은 첫번 째 Node의 /var/lib/rancher/rke2/server/node-token 디렉토리 참조
-tls-san:
-  - "rancher.test.jinseong"
-  - "192.168.65.134"
-  - "192.168.65.135"
-  - "192.168.65.136"
 profile: "cis-1.5"
 selinux: true
 EOF
@@ -134,6 +126,7 @@ $ journalctl -u rke2-server -f
 
 ### 3.3 방화벽 allow
 - rke2 필요 방화벽을 열어줍니다.
+  테스트를 진행할때는 default ubuntu에서 진행하였기 때문에 , 방화벽 allow 작업은 생략해도 무관합니다.
   [방화벽 목록](https://docs.rke2.io/install/requirements/#networking)
 ```
 # For etcd nodes, run the following commands:
@@ -168,9 +161,56 @@ firewall-cmd --permanent --add-port=10254/tcp
 firewall-cmd --permanent --add-port=30000-32767/tcp
 firewall-cmd --permanent --add-port=30000-32767/udp
 ```
-## 4. 설치 완료 확인
+## 4. rke2 worker ( agent ) 설치 방안
+- rke2 agent 설치 방안입니다.
+### 4.1 파일 복사
+```
+$ cd /home/jjsair0412/Desktop/rke2
+
+# 다운로드한 파일을 artifacts 폴더를 생성하여 그곳으로 복사
+$ sudo mkdir /root/rke2-artifacts
+$ sudo cp rke2-images.linux-amd64.tar.zst /root/rke2-artifacts
+$ sudo cp rke2.linux-amd64.tar.gz /root/rke2-artifacts
+$ sudo cp sha256sum-amd64.txt /root/rke2-artifacts
+
+# INSTALL_RKE2_ARTIFACT_PATH에 방금 생성한 artifacts 폴더를 지정하여 install.sh를 실행
+$ sudo su
+$ INSTALL_RKE2_ARTIFACT_PATH=/root/rke2-artifacts sh install.sh
+```
+### 4.2 config파일 작성
+```
+$ mkdir -p /etc/rancher/rke2
+$ sudo cat << EOF >>  /etc/rancher/rke2/config.yaml
+write-kubeconfig-mode: "0644"
+server:  https://192.168.65.134:9345
+token:  K106b9afcb136aa3a088e508882ad4fa1f94b9d814f36cd7c85b8a5c87643510d16::server:ca24fd2bebf3d41ec7c180cceb3b2768 # Token 값은 첫번 째 Node의 /var/lib/rancher/rke2/server/node-token 디렉토리 참조
+profile: "cis-1.5"
+selinux: true
+EOF
+```
+### 4.3 ( option ) ip route 설정
+
+-   만약 offline환경에 network 설정이 아무것도 되어있지 않다면 , iproute 경로를 지정해주어야 합니다.
+```
+$ sudo ip route add default via 192.168.65.135
+```
+### 4.4 selinux 설정
+```
+$ sudo cp -f /usr/local/share/rke2/rke2-cis-sysctl.conf /etc/sysctl.d/60-rke2-cis.conf
+$ sysctl -p /etc/sysctl.d/60-rke2-cis.conf
+$ useradd -r -c "etcd user" -s /sbin/nologin -M etcd
+```
+### 4.5 rke2 agent up
+```
+# RKE2 agent UP
+$ systemctl enable rke2-agent.service
+$ systemctl start rke2-agent.service
+# 로그 확인
+$ journalctl -u rke2-agent-f
+```
+## 5. 설치 완료 확인
 -   추가적인 유틸은 `/var/lib/rancher/rke2/bin/` 아래에 설치되며, `kubectl`, `crictl`, `crt` 등이 존재합니다.
--   두 개의 CleanUp 스크립트가 `/usr/local/bin/rke2` 아래에 설치되며, 각각 `rke2-killall.sh`, `rke2-uninstall.sh` 이다
+-   두 개의 CleanUp 스크립트가 `/usr/local/bin/rke2` 아래에 설치되며, 각각 `rke2-killall.sh`, `rke2-uninstall.sh` 입니다
 -   kubeconfig 파일은 `/etc/rancher/rke2/rke2.yaml` 에 작성됩니다.
 -   다른 서버 또는 에이전트 노드를 등록하는 데 사용할 수 있는 토큰은 다음 위치에 생성됩니다. `/var/lib/rancher/rke2/server/node-token`
 
