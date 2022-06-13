@@ -226,6 +226,47 @@ $ journalctl -u rke2-agent-f
 # containerd 사용가능 이미지 확인
 ctr --address /run/k3s/containerd/containerd.sock images ls
 ```
+### 5.1 node  & Pod 상태 확인
+```
+$ kubectl get nodes -o wide
+NAME      STATUS   ROLES                       AGE     VERSION          INTERNAL-IP      EXTERNAL-IP   OS-IMAGE           KERNEL-VERSION      CONTAINER-RUNTIME
+master    Ready    control-plane,etcd,master   23m     v1.22.9+rke2r2   192.168.65.138   <none>        Ubuntu 22.04 LTS   5.15.0-37-generic   containerd://1.5.11-k3s2
+master2   Ready    control-plane,etcd,master   17m     v1.22.9+rke2r2   192.168.65.139   <none>        Ubuntu 22.04 LTS   5.15.0-37-generic   containerd://1.5.11-k3s2
+worker1   Ready    <none>                      2m40s   v1.22.9+rke2r2   192.168.65.141   <none>        Ubuntu 22.04 LTS   5.15.0-37-generic   containerd://1.5.11-k3s2
+
+
+$ kubectl get pods -o wide -n kube-system
+NAME                                                    READY   STATUS      RESTARTS      AGE     IP               NODE      NOMINATED NODE   READINESS GATES
+cloud-controller-manager-master                         1/1     Running     3 (23m ago)   23m     192.168.65.138   master    <none>           <none>
+cloud-controller-manager-master2                        1/1     Running     0             18m     192.168.65.139   master2   <none>           <none>
+etcd-master                                             1/1     Running     0             23m     192.168.65.138   master    <none>           <none>
+etcd-master2                                            1/1     Running     0             18m     192.168.65.139   master2   <none>           <none>
+helm-install-rke2-canal--1-zghzs                        0/1     Completed   0             23m     192.168.65.138   master    <none>           <none>
+helm-install-rke2-coredns--1-6fm4g                      0/1     Completed   0             23m     192.168.65.138   master    <none>           <none>
+helm-install-rke2-ingress-nginx--1-bxxk7                0/1     Completed   0             23m     10.42.0.3        master    <none>           <none>
+helm-install-rke2-metrics-server--1-twvxv               0/1     Completed   0             23m     10.42.0.2        master    <none>           <none>
+kube-apiserver-master                                   1/1     Running     0             23m     192.168.65.138   master    <none>           <none>
+kube-apiserver-master2                                  1/1     Running     0             18m     192.168.65.139   master2   <none>           <none>
+kube-controller-manager-master                          1/1     Running     0             23m     192.168.65.138   master    <none>           <none>
+kube-controller-manager-master2                         1/1     Running     0             17m     192.168.65.139   master2   <none>           <none>
+kube-proxy-master                                       1/1     Running     0             23m     192.168.65.138   master    <none>           <none>
+kube-proxy-master2                                      1/1     Running     0             17m     192.168.65.139   master2   <none>           <none>
+kube-proxy-worker1                                      1/1     Running     0             3m24s   192.168.65.141   worker1   <none>           <none>
+kube-scheduler-master                                   1/1     Running     0             23m     192.168.65.138   master    <none>           <none>
+kube-scheduler-master2                                  1/1     Running     0             18m     192.168.65.139   master2   <none>           <none>
+rke2-canal-gz94k                                        2/2     Running     0             3m24s   192.168.65.141   worker1   <none>           <none>
+rke2-canal-l6rbv                                        2/2     Running     0             18m     192.168.65.139   master2   <none>           <none>
+rke2-canal-r66sw                                        2/2     Running     0             23m     192.168.65.138   master    <none>           <none>
+rke2-coredns-rke2-coredns-687554ff58-c6v27              1/1     Running     0             18m     10.42.1.2        master2   <none>           <none>
+rke2-coredns-rke2-coredns-687554ff58-v66w7              1/1     Running     0             23m     10.42.0.5        master    <none>           <none>
+rke2-coredns-rke2-coredns-autoscaler-7566b44b85-kpp4d   1/1     Running     0             23m     10.42.0.4        master    <none>           <none>
+rke2-ingress-nginx-controller-2489g                     1/1     Running     0             17m     192.168.65.139   master2   <none>           <none>
+rke2-ingress-nginx-controller-4qdrm                     1/1     Running     0             3m4s    192.168.65.141   worker1   <none>           <none>
+rke2-ingress-nginx-controller-kqz65                     1/1     Running     0             23m     192.168.65.138   master    <none>           <none>
+rke2-metrics-server-8574659c85-x469v                    1/1     Running     0             23m     10.42.0.6        master    <none>           <none>
+```
+
+
 ## 추가 setting
 ```
 # Path에 추가
