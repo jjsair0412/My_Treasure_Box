@@ -63,11 +63,17 @@ $ sudo su
 $ INSTALL_RKE2_ARTIFACT_PATH=/root/rke2-artifacts sh install.sh
 ```
 - 첫 번째 Node에서 Config File을 생성하여 rancher server를 시작하고 확인합니다.
+  tls-san option은 선택 사항입니다.
 ```
 # Config 파일 작성
 mkdir -p /etc/rancher/rke2
 cat << EOF >>  /etc/rancher/rke2/config.yaml
 write-kubeconfig-mode: "0644"
+tls-san:
+  - "rancher.test.jinseong"
+  - "192.168.65.138"
+  - "192.168.65.139"
+  - "192.168.65.140"
 profile: "cis-1.5"
 selinux: true
 EOF
@@ -95,12 +101,18 @@ journalctl -u rke2-server -f
 ```
 ### 3.3 ( 추가 ) HA 구성 위한 2 ~ 3번째 rancher server node 작업
 #### 3.3.1 config파일 작성
+- tls-san option은 선택 사항입니다.
 ```
 $ mkdir -p /etc/rancher/rke2
 $ sudo cat << EOF >>  /etc/rancher/rke2/config.yaml
 write-kubeconfig-mode: "0644"
 server:  https://192.168.65.134:9345 # Control Plane FQDN이 필요 할 수 있음 
 token:  K106b9afcb136aa3a088e508882ad4fa1f94b9d814f36cd7c85b8a5c87643510d16::server:ca24fd2bebf3d41ec7c180cceb3b2768 # Token 값은 첫번 째 Node의 /var/lib/rancher/rke2/server/node-token 디렉토리 참조
+tls-san:
+  - "rancher.test.jinseong"
+  - "192.168.65.138"
+  - "192.168.65.139"
+  - "192.168.65.140"
 profile: "cis-1.5"
 selinux: true
 EOF
@@ -178,12 +190,18 @@ $ sudo su
 $ INSTALL_RKE2_ARTIFACT_PATH=/root/rke2-artifacts sh install.sh
 ```
 ### 4.2 config파일 작성
+-  tls-san option은 선택 사항입니다.
 ```
 $ mkdir -p /etc/rancher/rke2
 $ sudo cat << EOF >>  /etc/rancher/rke2/config.yaml
 write-kubeconfig-mode: "0644"
 server:  https://192.168.65.134:9345
 token:  K106b9afcb136aa3a088e508882ad4fa1f94b9d814f36cd7c85b8a5c87643510d16::server:ca24fd2bebf3d41ec7c180cceb3b2768 # Token 값은 첫번 째 Node의 /var/lib/rancher/rke2/server/node-token 디렉토리 참조
+tls-san:
+  - "rancher.test.jinseong"
+  - "192.168.65.138"
+  - "192.168.65.139"
+  - "192.168.65.140"
 profile: "cis-1.5"
 selinux: true
 EOF
@@ -281,8 +299,9 @@ export CONTAINERD_ADDRESS=/run/k3s/containerd/containerd.sock
 ## troubleshooting
 ### 1. rke2-server.service를 start 시켯을 때 , default route가 없다고 하는 에러
  - offline 설치 ( 이더넷 , nat 등 ) 을 전부다 해제했을 때 route가 없으면 발생하는 에러이다.
-   아래 
+   아래 명령어를 작성해서 해결.
 ```
 # rke2-server master 한대를 지정해서 default 경로를 지정해주면 된다.
+# 만약 LB가 존재한다면 LB ip주소를 넣어준다.
 $ sudo ip route add default via 192.168.65.134
 ```
