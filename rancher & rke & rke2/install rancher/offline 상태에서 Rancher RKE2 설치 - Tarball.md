@@ -15,6 +15,7 @@
 4. install script
 - 위 요소들을 가지고 옵니다. 테스트 환경에서는 인터넷을 열어두고 다운로드 받아 진행하지만 , 실제 환경에서는 private registry에 해당 요소들을 넣어놓고 , 필요할 때 꺼내다 쓰는 방식을 사용합니다.
 - 필수 요소 다운로드가 다 완료되면 , 외부 인터넷망을 끊어서 폐쇄망 환경으로 테스트를 진행합니다.
+- cni는 칼리코를 대부분 사용하기에 , rke2-images를 설치할 때 calico image로 가지고옵니다.
 ### 2.1 RKE2-images, RKE2 , sha256sum 다운로드
 [RKE2 git](https://github.com/rancher/rke2/releases) 
 -   rke2-images.linux-amd64.tar.zst
@@ -90,6 +91,9 @@ $ useradd -r -c "etcd user" -s /sbin/nologin -M etcd
 ### 3.2 Enable rke2
 - rke2를 활성화 시킵니다.
 ```
+# daemon 재실행
+systemctl daemon-reload
+
 # rke2-server service 활성화
 systemctl enable rke2-server.service
 
