@@ -76,7 +76,7 @@ tls-san:
   - "192.168.65.139"
   - "192.168.65.140"
 profile: "cis-1.5"
-selinux: true
+selinux: true # selinux 관련 에러 발생시 false로 변경
 EOF
 ```
 - CIS mode를 enable 합니다.
@@ -118,7 +118,7 @@ tls-san:
   - "192.168.65.139"
   - "192.168.65.140"
 profile: "cis-1.5"
-selinux: true
+selinux: true # selinux 관련 에러 발생시 false로 변경
 EOF
 ```
 #### 3.3.2 ( option ) ip route 설정
