@@ -105,7 +105,8 @@ journalctl -u rke2-server -f
 ```
 ### 3.3 ( 추가 ) HA 구성 위한 2 ~ 3번째 rancher server node 작업
 #### 3.3.1 config파일 작성
-- tls-san option은 선택 사항입니다.
+- tls-san option에 master node들의 ip를 작성합니다.
+-  selinux는 false로 두고 설치합니다. 에러가 발생할 확률이 있음
 ```
 $ mkdir -p /etc/rancher/rke2
 $ sudo cat << EOF >>  /etc/rancher/rke2/config.yaml
@@ -118,7 +119,7 @@ tls-san:
   - "192.168.65.139"
   - "192.168.65.140"
 profile: "cis-1.5"
-selinux: true # selinux 관련 에러 발생시 false로 변경
+selinux: false
 EOF
 ```
 #### 3.3.2 ( option ) ip route 설정
@@ -194,7 +195,8 @@ $ sudo su
 $ INSTALL_RKE2_ARTIFACT_PATH=/root/rke2-artifacts sh install.sh
 ```
 ### 4.2 config파일 작성
--  tls-san option은 선택 사항입니다.
+- tls-san option에 master node들의 ip를 작성합니다.
+-  selinux는 false로 두고 설치합니다. 에러가 발생할 확률이 있음
 ```
 $ mkdir -p /etc/rancher/rke2
 $ sudo cat << EOF >>  /etc/rancher/rke2/config.yaml
@@ -207,7 +209,7 @@ tls-san:
   - "192.168.65.139"
   - "192.168.65.140"
 profile: "cis-1.5"
-selinux: true
+selinux: false
 EOF
 ```
 ### 4.3 ( option ) ip route 설정
@@ -228,7 +230,7 @@ $ useradd -r -c "etcd user" -s /sbin/nologin -M etcd
 $ systemctl enable rke2-agent.service
 $ systemctl start rke2-agent.service
 # 로그 확인
-$ journalctl -u rke2-agent-f
+$ journalctl -u rke2-agent -f
 ```
 ## 5. 설치 완료 확인
 -   추가적인 유틸은 `/var/lib/rancher/rke2/bin/` 아래에 설치되며, `kubectl`, `crictl`, `crt` 등이 존재합니다.
