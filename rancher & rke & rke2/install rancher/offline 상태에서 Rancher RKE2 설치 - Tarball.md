@@ -292,15 +292,28 @@ rke2-metrics-server-8574659c85-x469v                    1/1     Running     0   
 
 
 ## 추가 setting
+- 아래 방법은 centos에 환경변수를 임시로 지정해주는 방법이라 , 로그인이 끊기거나 종료된다면 초기화 됩니다.
 ```
 # Path에 추가
-export PATH=$PATH:/var/lib/rancher/rke2/bin/
+$ export PATH=$PATH:/var/lib/rancher/rke2/bin/
 
 # Kubeconfig 설정
-export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
+$ export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
 
 # ctr config 설정
+$ export CONTAINERD_ADDRESS=/run/k3s/containerd/containerd.sock
+```
+
+- 환경변수 영구 설정 방법은 아래 명령어를 참조하면 됩니다.
+```
+# /etc/bashrc 파일 맨 마지막에 export 세가지 명령어를 추가해 줍니다.
+$ sudo vi /etc/bashrc
+...
+export PATH=$PATH:/var/lib/rancher/rke2/bin/
+export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
 export CONTAINERD_ADDRESS=/run/k3s/containerd/containerd.sock
+...
+
 ```
 ## troubleshooting
 ### 1. rke2-server.service를 start 시켯을 때 , default route가 없다고 하는 에러
