@@ -161,7 +161,7 @@ $ docker push 10.xxx.xxx.xxx:5000/test:1.0
 ```
 - docker push
 ```
-$ docker pull 10.xxx.xxx.xxx:5000/test:1.0
+$ docker push 10.xxx.xxx.xxx:5000/test:1.0
 ```
 ## Troubleshooting
 ### 1.  response from daemon: Get "https://xxx.xxx.xxx.xxx:5000/v2/": http: server gave HTTP response to HTTPS client 에러 발생 시
