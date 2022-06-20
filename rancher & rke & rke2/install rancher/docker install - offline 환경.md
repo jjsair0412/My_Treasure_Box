@@ -165,7 +165,7 @@ $ docker pull 10.xxx.xxx.xxx:5000/test:1.0
 ```
 ## Troubleshooting
 ### 1.  response from daemon: Get "https://xxx.xxx.xxx.xxx:5000/v2/": http: server gave HTTP response to HTTPS client 에러 발생 시
-- daemon.json을 추가하여 insecure-registries 설정
+- 만약 runtime을 docker로 사용하고 있다면 , daemon.json을 추가하여 insecure-registries 를 설정 합니다.
 ```
 $ cat /etc/docker/daemon.json
 {
