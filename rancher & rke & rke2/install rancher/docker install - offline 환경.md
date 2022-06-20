@@ -187,7 +187,14 @@ $ mv config.toml config.toml.old
 $ containerd config default > /etc/containerd/config.toml
 ```
 2. config파일 세팅 값 변경
-- 아래처럼 mirror 값을 변경합니다. private registry의 서버 주소로 변경하고 config파일을 추가한다.
+ *** 만약 환경이 일반 k8s라면 , 아래를 따라갑니다. rke 환경과 같은 특별한 환경이라면 , 해당 환경의 containerd config.toml 파일 위치를 확인하여 해당 파일을 아래의 형식에 맞추어 변경시켜주어야 합니다.
+예를들어 rke2 환경이라면 , containerd config.toml 의 위치는 , /var/lib/rancher/rke2/agent/etc/containerd 입니다. ***
+- 아래처럼 mirror 값을 변경합니다. private registry의 서버 주소로 변경하고 config파일을 추가해 줍니다.
+- priavet registry의 auth가 필요하다면 , config파일에 값을 추가해 줍니다. 관련 포스팅 참고
+[관련 이슈](http: server gave HTTP response to HTTPS client)
+[관련 포스팅](https://ikcoo.tistory.com/230)
+[관련 포스팅](https://mrzik.medium.com/how-to-configure-private-registry-for-kubernetes-cluster-running-with-containerd-cf74697fa382)
+[containerd github](https://github.com/containerd/containerd)
 ```
 ...
       [plugins."io.containerd.grpc.v1.cri".registry.auths]
