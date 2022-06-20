@@ -171,4 +171,7 @@ $ cat /etc/docker/daemon.json
 {
 "insecure-registries": ["xxx.xxx.xxx.xxx:5000"]
 }
+
+# docker 재시작
+$ systemctl restart docker
 ```
