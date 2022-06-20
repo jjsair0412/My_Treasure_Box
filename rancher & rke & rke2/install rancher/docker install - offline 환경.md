@@ -1,0 +1,174 @@
+# docker offline install 
+- 해당 문서는 docker를 offline 환경에서 설치하는 방법을 설명합니다.
+- docker private registry와 docker를 install 합니다.
+- 테스트는 rke2 tarball offline환경 | centos 에서 진행하였습니다.
+- rpm설치파일을 yumdownloader로 설치할 때에는 , 초기상태의 cnetos에서 진행해야 합니다. 
+ 의존성이 맺어진 모든 rpm을 설치하기 위해서 입니다. 한번 설치가 된 이후로부터  설치된 요소들은 받아오지 않기 때문에 주의해야 합니다.
+## 1. 설치 요소 다운로드 - centos
+### 1.1 외부 통신이 가능한 환경에서 진행
+- 외부 망이 연결되어있는 환경에서 centos Docker Dependency를 다운로드 합니다.
+```
+# 기존 Docker를 삭제합니다.
+$ sudo yum remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-engine
+
+
+# yum-utils 설치(Optional)
+$ sudo yum install -y yum-utils
+
+# Docker repo를 등록합니다.
+$ sudo yum-config-manager \
+    --add-repo \
+    https://download.docker.com/linux/centos/docker-ce.repo
+
+
+# Docker Centos RPM 파일 일괄 다운로드 & 압축
+$ mkdir ~/docker
+$ cd ~/docker
+$ sudo rpm -ivh --replacefiles --replacepkgs docker-ce
+$ sudo rpm -ivh --replacefiles --replacepkgs docker-ce-cli
+$ sudo rpm -ivh --replacefiles --replacepkgs containerd.io
+$ sudo rpm -ivh --replacefiles --replacepkgs docker-compose-plugin
+
+# rpm 목록 확인 - 20220620 기준
+$ ls -al
+total 106608
+drwxrwxr-x.  2 centos centos     4096 Jun 20 04:40 .
+drwx------. 20 centos centos     4096 Jun 17 07:41 ..
+-rw-rw-r--.  1 centos centos 34654484 Jun 20 04:40 containerd.io-1.6.6-3.1.el7.x86_64.rpm
+-rw-rw-r--.  1 centos centos    40816 Jun 20 04:40 container-selinux-2.119.2-1.911c772.el7_8.noarch.rpm
+-rw-rw-r--.  1 centos centos 23442736 Jun 20 04:40 docker-ce-20.10.17-3.el7.x86_64.rpm
+-rw-rw-r--.  1 centos centos 30839424 Jun 20 04:40 docker-ce-cli-20.10.17-3.el7.x86_64.rpm
+-rw-rw-r--.  1 centos centos  8640360 Jun 20 04:40 docker-ce-rootless-extras-20.10.17-3.el7.x86_64.rpm
+-rw-rw-r--.  1 centos centos  7367636 Jun 20 04:40 docker-compose-plugin-2.6.0-3.el7.x86_64.rpm
+-rw-rw-r--.  1 centos centos  3930044 Jun 20 04:40 docker-scan-plugin-0.17.0-3.el7.x86_64.rpm
+-rw-rw-r--.  1 centos centos    83764 Jun 20 04:40 fuse3-libs-3.6.1-4.el7.x86_64.rpm
+-rw-rw-r--.  1 centos centos    55796 Jun 20 04:40 fuse-overlayfs-0.7.2-6.el7_8.x86_64.rpm
+-rw-rw-r--.  1 centos centos    83452 Jun 20 04:40 slirp4netns-0.4.3-4.el7_8.x86_64.rpm
+
+
+$ tar cvzf ~/docker.tar.gz *
+```
+### 1.2 offline 환경에서 진행
+- Docker를 설치할 환경 (Offline) 에서 진행합니다.
+```
+# Docker RPM 설치
+$ mkdir docker
+$ tar xvf docker.tar.gz -C ~/docker
+$ cd docker
+# 받아온 전체 rpm들을 일괄 설치 합니다.
+$ sudo rpm -ivh --replacefiles --replacepkgs *.rpm
+
+# 일반 User 등록
+$ sudo usermod -aG docker $USER
+
+# Docker Service 등록 & 시작
+$ sudo systemctl enable docker.service
+$ sudo systemctl start docker.service
+
+# Docker 실행상태 확인
+$ systemctl status docker
+● docker.service - Docker Application Container Engine
+   Loaded: loaded (/usr/lib/systemd/system/docker.service; enabled; vendor preset: disabled)
+   Active: active (running) since Mon 2022-06-20 04:44:26 UTC; 7min ago
+     Docs: https://docs.docker.com
+ Main PID: 3499 (dockerd)
+    Tasks: 8
+   Memory: 28.4M
+   CGroup: /system.slice/docker.service
+           └─3499 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+
+Jun 20 04:44:24 ip-10-250-205-213.ap-northeast-1.compute.internal dockerd[3499]: time="2022-06-20T04:44:24.198811583Z" level=info msg="ccResolverWrapper: sending update to cc: {[{unix:///run/contain...odule=grpc
+Jun 20 04:44:24 ip-10-250-205-213.ap-northeast-1.compute.internal dockerd[3499]: time="2022-06-20T04:44:24.198823733Z" level=info msg="ClientConn switching balancer to \"pick_first\"" module=grpc
+Jun 20 04:44:26 ip-10-250-205-213.ap-northeast-1.compute.internal dockerd[3499]: time="2022-06-20T04:44:26.426944891Z" level=info msg="[graphdriver] using prior storage driver: overlay2"
+Jun 20 04:44:26 ip-10-250-205-213.ap-northeast-1.compute.internal dockerd[3499]: time="2022-06-20T04:44:26.436705339Z" level=info msg="Loading containers: start."
+Jun 20 04:44:26 ip-10-250-205-213.ap-northeast-1.compute.internal dockerd[3499]: time="2022-06-20T04:44:26.581773817Z" level=info msg="Default bridge (docker0) is assigned with an IP address 172.17....P address"
+Jun 20 04:44:26 ip-10-250-205-213.ap-northeast-1.compute.internal dockerd[3499]: time="2022-06-20T04:44:26.645906026Z" level=info msg="Loading containers: done."
+Jun 20 04:44:26 ip-10-250-205-213.ap-northeast-1.compute.internal dockerd[3499]: time="2022-06-20T04:44:26.663633019Z" level=info msg="Docker daemon" commit=a89b842 graphdriver(s)=overlay2 version=20.10.17
+Jun 20 04:44:26 ip-10-250-205-213.ap-northeast-1.compute.internal dockerd[3499]: time="2022-06-20T04:44:26.663776226Z" level=info msg="Daemon has completed initialization"
+Jun 20 04:44:26 ip-10-250-205-213.ap-northeast-1.compute.internal systemd[1]: Started Docker Application Container Engine.
+Jun 20 04:44:26 ip-10-250-205-213.ap-northeast-1.compute.internal dockerd[3499]: time="2022-06-20T04:44:26.692986063Z" level=info msg="API listen on /var/run/docker.sock"
+Hint: Some lines were ellipsized, use -l to show in ful
+
+```
+
+## 2. Image Registry 실행
+### 2.1. 외부 통신이 되는 환경에서 작업
+- 외부 통신이 되는 VM에서 Registry Image를 압축 파일로 다운로드
+```
+$ docker pull registry
+$ docker images
+$ docker save -o registry.tgz registry:latest
+```
+
+- registry.tgz 파일을 Offline Registry 설치 대상 VM으로 SCP로 이동 시킵니다.
+### 2.2 Offline Private Registry 실행 환경에서 작업
+- 받아온 tar파일을 load 명령어를 통해 다시 docker image로 복구합니다.
+```
+$ docker load -i registry.tgz
+$ docker images
+REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
+registry     latest    773dbf02e42e   3 weeks ago   24.1MB
+```
+docker를 통해 registry 실행
+### 2.3  Registry 실행
+```
+$ docker run -dit --name docker-registry --restart=always -p 5000:5000 -v /root/data:/var/lib/registry/docker/registry/v2 registry
+```
+
+### 2.4 정상 동작상태 확인
+```
+$ curl localhost:5000/v2/_catalog
+{"repositories":[]}
+
+$ sudo docker ps
+CONTAINER ID   IMAGE      COMMAND                  CREATED          STATUS          PORTS                                       NAMES
+f4c14ed76654   registry   "/entrypoint.sh /etc…"   12 minutes ago   Up 12 minutes   0.0.0.0:5000->5000/tcp, :::5000->5000/tcp   docker-registry
+```
+## 3. priavet Image Registry Pull & push 방법
+### 3.1 Online 환경에서 작업
+- Online 연결이 되어있는 환경에서 sample image를 받아온 후 , save 명령어를 통해 tar파일로 생성합니다.
+  그 후 , 생성한 tar파일을 scp명령어로 offline 환경으로 옮깁니다.
+```
+$ docker pull nginx
+$ docker save -o nginx.tar nginx:latest 
+```
+### 3.2 Offline 환경에서 작업
+- 받아온 sample을 load명령어로 다시 이미지화 시킵니다.
+```
+$ docker load -i nginx.tar
+# 확인
+$ docker images
+```
+-   sample 이미지의 태그를 추가 해줍니다.
+
+```
+# 이미 존재하는 이미지일 경우
+docker image tag nginx:latest 192.168.xx.xx:5000/test:1.0
+
+#새로 빌드하는 경우
+docker build --tag 192.168.xx.xx:5000/test:1.0 nginx
+```
+- docker pull
+```
+$ docker push 10.xxx.xxx.xxx:5000/test:1.0
+```
+- docker push
+```
+$ docker pull 10.xxx.xxx.xxx:5000/test:1.0
+```
+## Troubleshooting
+### 1.  response from daemon: Get "https://xxx.xxx.xxx.xxx:5000/v2/": http: server gave HTTP response to HTTPS client 에러 발생 시
+- daemon.json을 추가하여 insecure-registries 설정
+```
+$ cat /etc/docker/daemon.json
+{
+"insecure-registries": ["xxx.xxx.xxx.xxx:5000"]
+}
+```
