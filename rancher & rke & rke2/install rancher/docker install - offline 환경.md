@@ -175,3 +175,31 @@ $ cat /etc/docker/daemon.json
 # docker 재시작
 $ systemctl restart docker
 ```
+- 만약 container runtime을 containerd로 사용하고 있을 경우, 아래의 명령어를 순서대로 입력합니다.
+- 각 worker node에서 수행합니다.
+1. containerd 설정파일의 default를 아래 명령어를 통해 가지고옵니다.
+```
+# containerd 설정파일 위치로 이동 
+$ cd /etc/containerd
+# 기존 config파일 이름 변경
+$ mv config.toml config.toml.old
+
+$ containerd config default > /etc/containerd/config.toml
+```
+2. config파일 세팅 값 변경
+- 아래처럼 mirror 값을 변경합니다. private registry의 서버 주소로 변경하고 config파일을 추가한다.
+```
+...
+      [plugins."io.containerd.grpc.v1.cri".registry.auths]
+
+      [plugins."io.containerd.grpc.v1.cri".registry.configs]
+
+      [plugins."io.containerd.grpc.v1.cri".registry.headers]
+
+      [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+          endpoint = ["https://registry-1.docker.io"]
+        [plugin."io.containerd.grpc.v1.cri".registry.mirrors."10.xxx.xxx.xxx"]
+          endpoint = ["http://10.xxx.xxx.xxx:5000"]
+...
+```
