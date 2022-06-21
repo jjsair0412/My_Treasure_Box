@@ -120,8 +120,10 @@ registry     latest    773dbf02e42e   3 weeks ago   24.1MB
 ```
 docker를 통해 registry 실행
 ### 2.3  Registry 실행
+- REGISTRY_STORAGE_DELETE_ENABLED=true 옵션으로 registry에 올라가있는 이미지를 삭제할 수 있게끔 설정합니다. 
+- --restart 옵션을 통해 항상 priavte registry가 켜져잇게끔 설정합니다.
 ```
-$ docker run -dit --name docker-registry --restart=always -p 5000:5000 -v /root/data:/var/lib/registry/docker/registry/v2 registry
+$ docker run -dit --name docker-registry -e  REGISTRY_STORAGE_DELETE_ENABLED=true --restart=always -p 5000:5000 -v /root/data:/var/lib/registry/docker/registry/v2 registry 
 ```
 
 ### 2.4 정상 동작상태 확인
