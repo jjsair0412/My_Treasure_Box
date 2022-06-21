@@ -164,7 +164,7 @@ f4c14ed76654   registry   "/entrypoint.sh /etc…"   12 minutes ago   Up 12 minu
 ## 3. priavet Image Registry Pull & push 방법
 - 아래 설명해놓은 방법은 push하는 과정의 테스트입니다.
   실제 사용할 때에는 따로 정리해놓은 스크립트파일을 사용하면 됩니다.
-  [shell script](https://github.com/jjsair0412/kubernetes_info/blob/main/rancher%20%26%20rke%20%26%20rke2/install%20rancher/private%20registry%20push%20shell%20script.md)
+- [shell script](https://github.com/jjsair0412/kubernetes_info/blob/main/rancher%20%26%20rke%20%26%20rke2/install%20rancher/private%20registry%20push%20shell%20script.md)
 ### 3.1 Online 환경에서 작업
 - Online 연결이 되어있는 환경에서 sample image를 받아온 후 , save 명령어를 통해 tar파일로 생성합니다.
   그 후 , 생성한 tar파일을 scp명령어로 offline 환경으로 옮깁니다.
