@@ -1,4 +1,5 @@
-# docker offline install 
+
+# docker offline install - private registry 설치 및 연동 법 ( rke2 , kubeadm )
 - 해당 문서는 docker를 offline 환경에서 설치하는 방법을 설명합니다.
 - docker private registry와 docker를 install 합니다.
 - 테스트는 rke2 tarball offline환경 | centos 에서 진행하였습니다.
@@ -165,6 +166,7 @@ $ docker pull 10.xxx.xxx.xxx:5000/test:1.0
 ```
 ## Troubleshooting
 ### 1.  response from daemon: Get "https://xxx.xxx.xxx.xxx:5000/v2/": http: server gave HTTP response to HTTPS client 에러 발생 시
+#### 1.1 runtime이 docker일 경우 - 일반 k8s ( kubeadm )
 - 만약 runtime을 docker로 사용하고 있다면 , daemon.json을 추가하여 insecure-registries 를 설정 합니다.
 ```
 $ cat /etc/docker/daemon.json
@@ -175,23 +177,22 @@ $ cat /etc/docker/daemon.json
 # docker 재시작
 $ systemctl restart docker
 ```
+#### 1.2 runtime이 containerd일 경우 - 일반 k8s ( kubeadm )
 - 만약 container runtime을 containerd로 사용하고 있을 경우, 아래의 명령어를 순서대로 입력합니다.
 - 각 worker node에서 수행합니다.
-1. containerd 설정파일의 default를 아래 명령어를 통해 가지고옵니다.
 ```
 # containerd 설정파일 위치로 이동 
 $ cd /etc/containerd
 # 기존 config파일 이름 변경
 $ mv config.toml config.toml.old
 
+# containerd 설정파일의 default를 아래 명령어를 통해 가지고옵니다.
 $ containerd config default > /etc/containerd/config.toml
 ```
-2. config파일 세팅 값 변경
- *** 만약 환경이 일반 k8s라면 , 아래를 따라갑니다. rke 환경과 같은 특별한 환경이라면 , 해당 환경의 containerd config.toml 파일 위치를 확인하여 해당 파일을 아래의 형식에 맞추어 변경시켜주어야 합니다.
-예를들어 rke2 환경이라면 , containerd config.toml 의 위치는 , /var/lib/rancher/rke2/agent/etc/containerd 입니다. ***
+1.1.2 config파일 세팅 값 변경
+
 - 아래처럼 mirror 값을 변경합니다. private registry의 서버 주소로 변경하고 config파일을 추가해 줍니다.
 - priavet registry의 auth가 필요하다면 , config파일에 값을 추가해 줍니다. 관련 포스팅 참고
-[관련 이슈](http: server gave HTTP response to HTTPS client)
 [관련 포스팅](https://ikcoo.tistory.com/230)
 [관련 포스팅](https://mrzik.medium.com/how-to-configure-private-registry-for-kubernetes-cluster-running-with-containerd-cf74697fa382)
 [containerd github](https://github.com/containerd/containerd)
@@ -209,4 +210,34 @@ $ containerd config default > /etc/containerd/config.toml
         [plugin."io.containerd.grpc.v1.cri".registry.mirrors."10.xxx.xxx.xxx"]
           endpoint = ["http://10.xxx.xxx.xxx:5000"]
 ...
+```
+#### 1.3 rke2의 경우 - container runtime : containerd
+[공식 참조 문서](https://docs.rke2.io/install/containerd_registry_configuration/)
+- rke2인 경우 , rke2가 start하면서 /etc/rancher/rke2 폴더 안에 registries.yaml 파일이 존재하는지 확인합니다.
+ 존재하지 않는다면 기본 세팅값이 적용 ( 일반 도커 허브에서 pull ) 되어지고 , 존재한다면 해당 값으로 rke2의 containerd 세팅을 변경하게 됩니다.
+ - 파드가 올라가는 worker 노드에 registries.yaml파일을 생성시켜 줍니다. 
+```
+$ cat registries.yaml
+mirrors:
+  10.xxx.xxx.xxx:5000:
+    endpoint:
+      - "http://10.xxx.xxx.xxx:5000"
+```
+- 엔드포인트는 여러개가 위치할 수 있으며 , 위의 yaml과 같이 설정해준다면 , 10.xxx.xxx.xxx:5000 주소의 private registry에서 아래의 태그정보를가지고 이미지를 pull 하게 됩니다.
+```
+10.xxx.xxx.xxx/busybox:latest
+```
+- 엔드포인트가 여러개 위치한다면 , 최상위 엔드포인트부터 pull을 시도하며 , 처음 성공했던 엔드포인트에서 이미지를 pull하게 됩니다.
+- 만약 dns가 존재하는 harbor가 private registry로 사용되어지고 잇다면 , 아래와 같이 설정할 수 있을 것 입니다.
+```
+# harbor dns addr
+jinseong.harbor.com
+
+$ cat registries.yaml
+mirrors:
+  jinseong.harbor.tag: # tag 이름
+    endpoint:
+      - "http://jinseong.harbor.com"
+
+jinseong.harbor.tag/busybox:latest
 ```
