@@ -1,4 +1,5 @@
 
+
 # docker offline install - private registry 설치 및 연동 법 ( rke2 , kubeadm )
 - 해당 문서는 docker를 offline 환경에서 설치하는 방법을 설명합니다.
 - docker private registry와 docker를 install 합니다.
@@ -199,7 +200,7 @@ $ containerd config default > /etc/containerd/config.toml
 ```
 ...
       [plugins."io.containerd.grpc.v1.cri".registry.auths]
-
+        auth = "cmVnYWRtaW46QzBtcG4zdCE="  
       [plugins."io.containerd.grpc.v1.cri".registry.configs]
 
       [plugins."io.containerd.grpc.v1.cri".registry.headers]
@@ -211,6 +212,15 @@ $ containerd config default > /etc/containerd/config.toml
           endpoint = ["http://10.xxx.xxx.xxx:5000"]
 ...
 ```
+
+- [plugins."io.containerd.grpc.v1.cri".registry.auths]  내부의 auth 값은 , 아래의 경로에서 찾을 수 있습니다.
+```
+$ sudo cat /root/.docker/config.json
+```
+1.1.3 secret 생성
+- 아래의 공식문서 방법을 참조하여 secret을 생성하고 pod 및 deploy정보에 secret값을 넣어줍니다.
+  secret 생성방법은 두가지가 있는데 , 둘중 하나만 따라하면 됩니다.
+https://kubernetes.io/ko/docs/tasks/configure-pod-container/pull-image-private-registry/#registry-secret-existing-credentials
 #### 1.3 rke2의 경우 - container runtime : containerd
 [공식 참조 문서](https://docs.rke2.io/install/containerd_registry_configuration/)
 - rke2인 경우 , rke2가 start하면서 /etc/rancher/rke2 폴더 안에 registries.yaml 파일이 존재하는지 확인합니다.
