@@ -125,6 +125,32 @@ docker를 통해 registry 실행
 ```
 $ docker run -dit --name docker-registry -e  REGISTRY_STORAGE_DELETE_ENABLED=true --restart=always -p 5000:5000 -v /root/data:/var/lib/registry/docker/registry/v2 registry 
 ```
+### 2.4 private registry image 제거 방법
+- 해당 docker container에 exec하여 제거해 줍니다.
+1. private repository 조회
+```
+$ curl 10.xxx.xxx.xxx:5000/v2/_catalog
+```
+2. 해당 레지스트리로 exec 접속
+```
+$ docker exec -it docker-registry sh 
+```
+3. 레파지토리 삭제
+```
+$ cd /var/lib/registry/docker/registry/v2/repositories
+
+# 폴더내부 image 정보 제거
+$ rm -rf *
+```
+4. 가비지컬렉터 제거
+```
+$ docker exec -it docker-registry  bin/registry garbage-collect  /etc/docker/registry/config.yml
+```
+5. registry 재시작
+```
+$ docker stop docker-registry
+$ docker start docker-registry
+```
 
 ### 2.4 정상 동작상태 확인
 ```
