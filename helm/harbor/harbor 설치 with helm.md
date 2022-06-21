@@ -155,3 +155,72 @@ NAME                    CLASS    HOSTS                  ADDRESS         PORTS   
 harbor-ingress          <none>   harbor.xxx.xxxxx.xyz     10.233.23.197   80, 443   65s
 harbor-ingress-notary   <none>   notary.xxx.xxxxx.xyz   10.233.23.197   80, 443   65s
 ```
+## 4. 참고 - harbor 폐쇄망 설치 시 image private registry 설정 값
+- harbor image를 private registry에서 받아오는 경우 설정해야하는 yaml 값 
+- repositroy에 private registry 주소와 이미지 이름이 들어가게 되고 , tag를 지정해준다.
+[harbor values.yaml setting](https://github.com/goharbor/harbor-helm)
+```
+$ cat private-registry-values.yaml
+core:
+  image:
+    repository: 10.xxx.xxx.xxx:5000/goharbor/harbor-core
+    tag: v2.5.1
+
+portal:
+  image:
+    repository: 10.xxx.xxx.xxx:5000/goharbor/harbor-portal
+    tag: v2.5.1
+
+jobservice:
+  image:
+    repository: 10.xxx.xxx.xxx:5000/goharbor/harbor-jobservice
+    tag: v2.5.1
+	
+registry:
+  controller:
+    image:
+      repository: 10.xxx.xxx.xxx:5000/goharbor/harbor-registryctl 
+	  tag: v2.5.1
+  registry:
+    image:
+      repository: 10.xxx.xxx.xxx:5000/goharbor/registry-photon
+	  tag: v2.5.1
+
+
+chartmuseum:
+  image:
+    repository: 10.xxx.xxx.xxx:5000/goharbor/chartmuseum-photon
+    tag: v2.5.1
+
+trivy:
+  image:
+    repository: 10.xxx.xxx.xxx:5000/goharbor/trivy-adapter-photon
+	tag: v2.5.1
+
+notary:
+  server:
+    image:
+      repository: 10.xxx.xxx.xxx:5000/goharbor/notary-server-photon
+	  tag: v2.5.1
+  signer:
+    image:
+      repository: 10.xxx.xxx.xxx:5000/goharbor/notary-signer-photon
+	  tag: v2.5.1
+
+database:
+  internal:
+    image:
+      repository: 10.xxx.xxx.xxx:5000/goharbor/harbor-db
+	  tag: v2.5.1
+
+redis:
+  internal:
+    image:
+      repository: 10.xxx.xxx.xxx:5000/goharbor/redis-photon
+	  tag: v2.5.1
+
+exporter:
+  image:
+    repository: 10.xxx.xxx.xxx:5000/goharbor/harbor-exporter
+    tag: v2.5.1
+```
