@@ -34,7 +34,7 @@ $ cd /
 $ mkdir share
 
 # 권한 부여
-$ chmod 707 /share
+$ chmod 777 /share
 
 # 권한부여 상태 확인
 # ls -al | grep share
