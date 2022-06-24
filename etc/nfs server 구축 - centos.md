@@ -1,3 +1,4 @@
+
 # NFS 서버 설정 방안
 - 해당 문서는 centos7 os에서 nfs 서버를 설정하는 방법에 대해 설명합니다.
 ## 1. install package
@@ -66,7 +67,7 @@ $ exportfs -v
 - 만약 일반 클라이언트와 연동하고싶다면 , 아래 포스팅을 참조하면 됩니다.
 [일반 클라이언트와 연동방안](https://ansan-survivor.tistory.com/687)
 
-### 4.0 Default psp 설정
+### 4.1 Default psp 설정
 - nfs를 설치하기 위해선 전체 클러스터에 기본 설정되어있는 pod security policy에  nfs를 허용하도록. 수정해주어야 합니다.
 ```
 # psp 를 get하여 PodSecurityPolicy를 확인할 수 있다.
@@ -92,7 +93,7 @@ kind: PodSecurityPolicy
 [관련 podsecuritypolicy k8s 문서](https://kubernetes.io/ko/docs/concepts/policy/pod-security-policy/)
 
 
-#### 4.1 nfs-client provisioner 설치
+#### 4.2 nfs-client provisioner 설치
 - helm chart로 nfs-client provisioner를 설치합니다. [chart](https://artifacthub.io/packages/helm/kvaps/nfs-server-provisioner)
 ```
 $ helm upgrade --install --kubeconfig=$KUBE_CONFIG  nfs-subdir-external-provisioner . \
@@ -102,14 +103,14 @@ $ helm upgrade --install --kubeconfig=$KUBE_CONFIG  nfs-subdir-external-provisio
 -f values.yaml
 
 $ kubectl get all -n nfs
-NAME                                                   READY   STATUS              RESTARTS   AGE
-pod/nfs-subdir-external-provisioner-857fd786f4-pkl8f   0/1     ContainerCreating   0          4m58s
+NAME                                                  READY   STATUS    RESTARTS   AGE
+pod/nfs-subdir-external-provisioner-9bdcb4bb6-mgx68   1/1     Running   0          3m17s
 
 NAME                                              READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/nfs-subdir-external-provisioner   0/1     1            0           4m58s
+deployment.apps/nfs-subdir-external-provisioner   1/1     1            1           15m
 
 NAME                                                         DESIRED   CURRENT   READY   AGE
-replicaset.apps/nfs-subdir-external-provisioner-857fd786f4   1         1         0       4m58s
+replicaset.apps/nfs-subdir-external-provisioner-9bdcb4bb6    1         1         1       3m18s
 ```
 - 설치가 완료되면 , storageclass가 생성된 것을 확인할 수 있습니다.
 ```
@@ -120,4 +121,17 @@ nfs-client   cluster.local/nfs-subdir-external-provisioner   Delete          Imm
 - 생성된 sc를 default sc로 변경합니다.
 ```
 $ kubectl patch storageclass nfs-client -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+```
+### 5. troubleshooting
+- 아래 에러가 발생했을 경우 , values.yaml파일의 pod security 속성을 변경해서 helm install
+```
+Error: container has runAsNonRoot and image will run as root (pod: "nfs-subdir-external-provisioner-5ddc8f ~
+```
+- runAsUser의 1000번대는 일반 user도 사용할 수 있다는 의미 입니다. 1000, 1001, 1002 ~
+```
+$ cat values.yaml
+...
+securityContext:
+  runAsUser: 1000
+...
 ```
