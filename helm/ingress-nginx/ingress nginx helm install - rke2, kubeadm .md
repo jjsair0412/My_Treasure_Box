@@ -3,6 +3,10 @@
 - 해당 문서는 nginx ingress v4.1.4 버전을 기반으로 설치합니다.
 ## 1. Nginx ingress helm install
 ### 1.1 add chart repo 
+- nginx 관리용 ns 생성
+```
+$ kubectl create ns ingress-nginx
+```
 ```
 $ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 $ helm repo update
