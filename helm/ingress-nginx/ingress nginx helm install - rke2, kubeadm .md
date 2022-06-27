@@ -56,7 +56,7 @@ $ kubectl -n ingress-nginx create rolebinding ingress-psp-clusterrole-rolebindin
 # helm install. podsecuritypolicy의 enable속성을 true로 주고 helm intsll 진행
 $ helm upgrade --install ingress-nginx . --namespace ingress-nginx \
 --set controller.service.type=NodePort \
---set podSecurityPolicy.enabled= true \
+--set podSecurityPolicy.enabled=true \
 -f values.yaml,affinity-values.yaml
 ```
 
