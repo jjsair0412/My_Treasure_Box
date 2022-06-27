@@ -21,6 +21,11 @@ $ helm upgrade --install ingress-nginx . --namespace ingress-nginx \
 -f values.yaml,affinity-values.yaml
 ```
 - 만약 rke2 환경에서 설치할 경우 , 아래 순서를 따릅니다.
+- rke2 환경에서 위와 같이 기본 helm install을 진행하면 , pod가 생성되지 않고 아래와같은 에러가 발생합니다.
+```
+PodSecurityPolicy: unable to admit pod: [spec.containers[0].securityContext.capabilities.add: Invalid value: "NET_BIND_SERVICE": capability may not be added spec.containers[0].securityContext.allowPrivilegeEscalation: Invalid value: true: Allowing privilege escalation for containers is not allowed]
+```
+- rke2 환경 설치 방안
 ```
 # psp에 privileged를 use하는 role을 추가
 $ cat ingress-psp-clusterrole.yaml
