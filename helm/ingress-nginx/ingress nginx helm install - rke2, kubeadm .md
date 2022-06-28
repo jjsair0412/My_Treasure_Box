@@ -57,6 +57,6 @@ $ kubectl -n ingress-nginx create rolebinding ingress-psp-clusterrole-rolebindin
 $ helm upgrade --install ingress-nginx . --namespace ingress-nginx \
 --set controller.service.type=NodePort \
 --set podSecurityPolicy.enabled=true \
--f values.yaml,affinity-values.yaml
+-f values.yaml,private-registry-values.yaml
 ```
 

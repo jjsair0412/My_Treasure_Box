@@ -1,5 +1,6 @@
 
 
+
 # docker offline install - private registry 설치 및 연동 법 ( rke2 , kubeadm )
 - 해당 문서는 docker를 offline 환경에서 설치하는 방법을 설명합니다.
 - docker private registry와 docker를 install 합니다.
@@ -161,7 +162,30 @@ $ sudo docker ps
 CONTAINER ID   IMAGE      COMMAND                  CREATED          STATUS          PORTS                                       NAMES
 f4c14ed76654   registry   "/entrypoint.sh /etc…"   12 minutes ago   Up 12 minutes   0.0.0.0:5000->5000/tcp, :::5000->5000/tcp   docker-registry
 ```
-## 3. priavet Image Registry Pull & push 방법
+### 2.5 private registry rest api 종류
+#### 2.5.1 올라간 image 확인
+```
+$ curl -X GET <Repository URL>/v2/_catalog>
+
+# usecase
+$ curl 10.xxx.xxx.xxx:5000/v2/_catalog
+```
+#### 2.5.2 tag 확인
+```
+$ curl -X GET <Repository URL/v2/<repository 이름>/tags/list
+
+# usecase
+$ curl -X GET http://10.xxx.xxx.xxx:5000/v2/registry.k8s.io/ingress-nginx/controller/tags/list
+```
+#### 2.5.3 diget(hash) 확인
+- 해당 명령은 private registry 컨테이너가 작동중인 노드에서 curl명령을 수행해야 합니다.
+```
+$ curl -v --silent -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -X GET <Repository URL>/v2/<Repository 이름>/manifests/<Tag> 2>&1 | grep Docker-Content-Digest | awk '{print ($3)}'
+
+# usecase
+$ curl -v --silent -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -X GET http://10.xxx.xxx.xxx:5000/v2/registry.k8s.io/ingress-nginx/controller/manifests/v1.2.1 2>&1 | grep Docker-Content-Digest | awk '{print ($3)}'
+```
+## 3. priavte Image Registry Pull & push 방법
 - 아래 설명해놓은 방법은 push하는 과정의 테스트입니다.
   실제 사용할 때에는 따로 정리해놓은 스크립트파일을 사용하면 됩니다.
 - [shell script](https://github.com/jjsair0412/kubernetes_info/blob/main/rancher%20%26%20rke%20%26%20rke2/install%20rancher/private%20registry%20push%20shell%20script.md)
