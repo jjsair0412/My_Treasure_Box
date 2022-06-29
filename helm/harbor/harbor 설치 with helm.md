@@ -1,3 +1,4 @@
+
 # harbor 설치 - with helm chart
 ## 1. Prerequisites
 - harbor는 private registry , image를 저장하고 관리할 수 있는 솔루션 입니다.
@@ -89,6 +90,7 @@ persistence:
 ```
 ### 2.5 helm install 
 - helm으로 harbor를 설치합니다.
+- externalURL는 외부에서 harbor로 접근하는 url을 말하는 것이며 , 두 가지 ingress는 install을 진행했을 경우 생성되는 ingress의 domain을 변경 시켜주는 옵션입니다.
 ```
 $ helm upgrade --install harbor . -n harbor \
 --set expose.ingress.hosts.core=harbor.xxx.xxxxx.xyz \
@@ -155,7 +157,8 @@ NAME                    CLASS    HOSTS                  ADDRESS         PORTS   
 harbor-ingress          <none>   harbor.xxx.xxxxx.xyz     10.233.23.197   80, 443   65s
 harbor-ingress-notary   <none>   notary.xxx.xxxxx.xyz   10.233.23.197   80, 443   65s
 ```
-## 4. 참고 - harbor 폐쇄망 설치 시 image private registry 설정 값
+## 4. 참고 
+### 4.1 harbor 폐쇄망 설치 시 image private registry 설정 값
 - harbor image를 private registry에서 받아오는 경우 설정해야하는 yaml 값 
 - repositroy에 private registry 주소와 이미지 이름이 들어가게 되고 , tag를 지정해준다.
 [harbor values.yaml setting](https://github.com/goharbor/harbor-helm)
@@ -223,4 +226,54 @@ exporter:
   image:
     repository: 10.xxx.xxx.xxx:5000/goharbor/harbor-exporter
     tag: v2.5.1
+```
+### 4.2 harbor 폐쇄망 설치 후 docker login 설정 값
+- ssl 인증서가 있다면 , 아래 설정을 따르지 않고 docker daemon.json값만 변경 시켜주면 됩니다.
+- ssl 인증서가 없을 경우 , 아래 설정을 따릅니다.
+```
+$ cat values.yaml
+...
+ ingress:
+    hosts:
+      core: core.harbor.domain
+      notary: notary.harbor.domain
+    # set to the type of ingress controller if it has specific requirements.
+    # leave as `default` for most ingress controllers.
+    # set to `gce` if using the GCE ingress controller
+    # set to `ncp` if using the NCP (NSX-T Container Plugin) ingress controller
+    controller: default
+    ## Allow .Capabilities.KubeVersion.Version to be overridden while creating ingress
+    kubeVersionOverride: ""
+    className: ""
+    annotations:
+      # note different ingress controllers may require a different ssl-redirect annotation
+      # for Envoy, use ingress.kubernetes.io/force-ssl-redirect: "true" and remove the nginx lines below
+      ingress.kubernetes.io/ssl-redirect: "false" # true에서 false로 변경 . https로 리다이렉트 설정
+      ingress.kubernetes.io/proxy-body-size: "0"
+      nginx.ingress.kubernetes.io/ssl-redirect: "false" # true에서 false로 변경 . https로 리다이렉트 설정
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+      kubernetes.io/ingress.class: nginx
+...
+```
+- docker json 설정 변경
+  -  docker login 시 docker 명령어를 사용하기 때문에 , ssl인증서 에러가 발생할 수 있습니다. 따라서 /etc/docker 내부의 daemon.json을 생성 및 변경 시켜줍니다.
+```
+$ cat daemon.json
+{
+  "insecure-registries": ["harbor.xxx.xxx.xyz"]
+}
+
+# docker restart
+$ systemctl restart docker 
+```
+- 설정을 완료한 후 , docker login test 합니다.
+```
+$ docker login harbor.xxx.xxx.xyz
+Username: admin
+Password:
+WARNING! Your password will be stored unencrypted in /home/centos/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
 ```
