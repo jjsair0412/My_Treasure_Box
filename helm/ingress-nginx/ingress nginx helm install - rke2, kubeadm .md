@@ -1,3 +1,4 @@
+
 # ingress nginx helm install - rke2, kubeadm 등 ..
 - 해당 문서는 Nginx ingress를 helm chart로 설치하는 방법에 대해 설명합니다.
 - 해당 문서는 nginx ingress v4.1.4 버전을 기반으로 설치합니다.
@@ -59,4 +60,27 @@ $ helm upgrade --install ingress-nginx . --namespace ingress-nginx \
 --set podSecurityPolicy.enabled=true \
 -f values.yaml,private-registry-values.yaml
 ```
+## 2. private registry에서 image를 받아올 경우
+- 아래 values.yaml 파일 key를 변경 시켜주어야 합니다.
+```
+$ cat private-repository-values.yaml
+controller:
+  kind: DaemonSet
+  image:
+    image: registry.k8s.io/ingress-nginx/controller
+    tag: v1.2.1
+    registry: 10.xxx.xxx.xxx:5000
+    digest: sha256:e51323b0a071a8ae4e387a8411c9bccd0825faad994e834f3ca45864fb7e59a6
+  admissionWebhooks:
+    patch:
+      image:
+        digest: sha256:78351fc9d9b5f835e0809921c029208faeb7fbb6dc2d3b0d1db0a6584195cfed
+        image: registry.k8s.io/ingress-nginx/kube-webhook-certgen
+        registry: 10.xxx.xxx.xxx:5000
+        tag: v1.1.1
 
+
+
+imagePullSecrets:
+ - name: regcred
+```
