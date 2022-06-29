@@ -1,3 +1,4 @@
+
 # ArgoCD Install Helm
 ## [](#prerequisites)1. Prerequisites
 
@@ -74,6 +75,52 @@ redis:
   nodeSelector:
     ... 
 
+```
+- 폐쇄망 구성 및 private registry에서 image를 받아올 경우 , 아래 속성들을 변경시켜 준다.
+```
+$ cat private-values.yaml
+global:
+  image:
+    repository: 10.xxx.xxx:5000
+    tag: v2.4.0
+
+dex:
+  initImage:
+    repository: 10.xxx.xxx:5000/quay.io/argoproj/argocd
+    tag: v2.4.0
+  image:
+    repository: 10.xxx.xxx:5000/ghcr.io/dexidp/dex
+    tag: v2.30.2
+
+controller:
+  image:
+    repository: 10.xxx.xxx:5000/quay.io/argoproj/argocd
+    tag: v2.4.0
+
+applicationSet:
+  image:
+    repository: 10.xxx.xxx:5000/quay.io/argoproj/argocd
+    tag: v2.4.0
+
+repoServer:
+  image:
+    repository: 10.xxx.xxx:5000/quay.io/argoproj/argocd
+    tag: v2.4.0
+
+server:
+  image:
+    repository: 10.xxx.xxx:5000/quay.io/argoproj/argocd
+    tag: v2.4.0
+
+redis:
+  image:
+    repository: 10.xxx.xxx:5000/redis
+    tag: 7.0.0-alpine
+
+notifications:
+  image:
+    repository: 10.xxx.xxx:5000/quay.io/argoproj/argocd
+    tag: v2.4.0
 ```
 ### 2.3 Helm ArgoCD Chart 설치
 ```
