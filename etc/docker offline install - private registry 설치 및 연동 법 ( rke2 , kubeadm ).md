@@ -294,6 +294,7 @@ mirrors:
 ```
 - 엔드포인트가 여러개 위치한다면 , 최상위 엔드포인트부터 pull을 시도하며 , 처음 성공했던 엔드포인트에서 이미지를 pull하게 됩니다.
 - 만약 dns가 존재하는 harbor가 private registry로 사용되어지고 잇다면 , 아래와 같이 설정할 수 있을 것 입니다.
+- 여러 옵션들은 [공식 참조 문서](https://docs.rke2.io/install/containerd_registry_configuration/) 여기서 찾아볼 수 있습니다.
 ```
 # harbor dns addr
 jinseong.harbor.com
@@ -307,7 +308,7 @@ mirrors:
 configs:
   "jinseong.harbor.com":
     tls:
-      insecure_skip_verify: true
+      insecure_skip_verify: true # ssl 인증 무시하는 config 옵션
 
 jinseong.harbor.tag/busybox:latest
 ```
