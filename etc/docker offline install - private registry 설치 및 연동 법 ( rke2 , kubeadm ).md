@@ -233,9 +233,9 @@ $ cat /etc/docker/daemon.json
 # docker 재시작
 $ systemctl restart docker
 ```
-#### 1.2 runtime이 containerd일 경우 - 일반 k8s ( kubeadm )
-- 만약 container runtime을 containerd로 사용하고 있을 경우, 아래의 명령어를 순서대로 입력합니다.
-- 각 worker node에서 수행합니다.
+#### 1.2 runtime이 containerd일 경우 - rke2 포함
+- 만약 container runtime을 containerd로 사용하고 있을 경우, 1.3으로 가서 mirror 파일을 수정하거나 1.2의 내용대로 직접 containerd 설정값을 변경시켜 줍니다.
+- 둘중 하나면 변경시켜도 , 서로 동기화되기때문에 무관합니다.
 ```
 # containerd 설정파일 위치로 이동 
 $ cd /etc/containerd
@@ -276,7 +276,7 @@ $ sudo cat /root/.docker/config.json
 - 아래의 공식문서 방법을 참조하여 secret을 생성하고 pod 및 deploy정보에 secret값을 넣어줍니다.
   secret 생성방법은 두가지가 있는데 , 둘중 하나만 따라하면 됩니다.
 https://kubernetes.io/ko/docs/tasks/configure-pod-container/pull-image-private-registry/#registry-secret-existing-credentials
-#### 1.3 rke2의 경우 - container runtime : containerd
+#### 1.2 runtime이 containerd일 경우 - rke2 포함
 [공식 참조 문서](https://docs.rke2.io/install/containerd_registry_configuration/)
 - rke2인 경우 , rke2가 start하면서 /etc/rancher/rke2 폴더 안에 registries.yaml 파일이 존재하는지 확인합니다.
  존재하지 않는다면 기본 세팅값이 적용 ( 일반 도커 허브에서 pull ) 되어지고 , 존재한다면 해당 값으로 rke2의 containerd 세팅을 변경하게 됩니다.
@@ -284,7 +284,7 @@ https://kubernetes.io/ko/docs/tasks/configure-pod-container/pull-image-private-r
 ```
 $ cat registries.yaml
 mirrors:
-  10.xxx.xxx.xxx:5000:
+  docker.io:
     endpoint:
       - "http://10.xxx.xxx.xxx:5000"
 ```
@@ -300,9 +300,14 @@ jinseong.harbor.com
 
 $ cat registries.yaml
 mirrors:
-  jinseong.harbor.tag: # tag 이름
+  docker.io:
     endpoint:
-      - "http://jinseong.harbor.com"
+      - "http://10.xxx.xxx.xxx:5000"
+      - "https://jinseong.harbor.com"
+configs:
+  "jinseong.harbor.com":
+    tls:
+      insecure_skip_verify: true
 
 jinseong.harbor.tag/busybox:latest
 ```
