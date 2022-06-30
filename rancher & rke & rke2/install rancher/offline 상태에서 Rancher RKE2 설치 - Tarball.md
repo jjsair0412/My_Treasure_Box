@@ -1,6 +1,5 @@
 
-
-# RKE2 offlinet 환경 설치 방안 ( Tarball Method ) - RKE2 Air-Gap
+# RKE2 Offline 환경 설치 방안 ( Tarball Method ) - RKE2 Air-Gap
 
 ## 1. Requirements
 - RKE2를 네트워크가 없는 온프레미스 환경에서 설치하는 방안을 설명합니다.
@@ -324,3 +323,6 @@ export CONTAINERD_ADDRESS=/run/k3s/containerd/containerd.sock
 # 만약 LB가 존재한다면 LB ip주소를 넣어준다.
 $ sudo ip route add default via 192.168.65.134
 ```
+### 2. rke2 환경에서 private registry 사용시 방안
+#### 2.1 containerd 설정 변경
+- [rke2 containerd 설정](https://github.com/jjsair0412/kubernetes_info/blob/main/etc/docker%20offline%20install%20-%20private%20registry%20%EC%84%A4%EC%B9%98%20%EB%B0%8F%20%EC%97%B0%EB%8F%99%20%EB%B2%95%20(%20rke2%20%2C%20kubeadm%20).md#12-runtime%EC%9D%B4-containerd%EC%9D%BC-%EA%B2%BD%EC%9A%B0---rke2-%ED%8F%AC%ED%95%A8) 좌측 링크를 타고가서 , 1.2 또는 1.3 방안을 따릅니다.
