@@ -10,7 +10,7 @@
 - 출처 : [Blue-Green 배포란 ?](https://www.redhat.com/ko/topics/devops/what-is-blue-green-deployment)
 - Blue Green 배포 방식은 service가 두 개 필요합니다.
 -- 아래 테스트에서는 bluegreen-service-preview 와 bluegreen-service-active svc 두 가지를 사용합니다.
-- Blue Green 배포의 실제 test 코드는 Gitlab joind-helmchart-old의 dev branch를 사용하였습니다.
+
 
 ## 1. argocd rollout 설치
 - argocd rollout을 활용해서 blue/green 배포와 카나리아 배포를 수행할 수 있습니다.
