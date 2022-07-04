@@ -43,13 +43,13 @@ sudo mv ./kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
 - 설치 결과 확인
 ```
 $ kubectl argo rollouts version
-kubectl-argo-rollouts: v1.2.0+08cf10e
-BuildDate: 2022-03-22T00:25:11Z
-GitCommit: 08cf10e554fe99c24c8a37ad07fadd9318e4c8a1
-GitTreeState: clean
-GoVersion: go1.17.6
-Compiler: gc
-Platform: linux/amd64
+kubectl-argo-rollouts: v1.2.0+08cf1~
+BuildDate: ~
+GitCommit: ~
+GitTreeState: ~
+GoVersion: ~
+Compiler: ~
+Platform: ~
 ```
 ## 2. Blue Green test 수행
 ### 2.1 test 전 상태 확인
