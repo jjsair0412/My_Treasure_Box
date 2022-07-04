@@ -1,4 +1,5 @@
 
+
 # RKE2 Offline 환경 설치 방안 ( Tarball Method ) - RKE2 Air-Gap
 
 ## 1. Requirements
@@ -29,6 +30,15 @@
 $ curl -sfL https://get.rke2.io --output install.sh
 ```
 ## 3. RKE2 install
+### 3.0 config파일 작성 시 주의사항 ( 모든 노드 동일 )
+- [config 파일 옵션](https://docs.rke2.io/install/install_options/server_config/)
+- profile의 cis설정을 진행하면 , rke2는 해당 옵션값의 cis 벤치마크설정이 들어간 podSecurityPolicy를 자동으로 생성합니다.
+따라서 , root권한이 필요한 파드가 생성되면 아래의 에러가 발생합니다.
+```
+container has runAsNonRoot and image will run as root (pod: "rke2-coredns-rke2-coredns-547d5499cb-crp7j_kube-system(747e37be-d4c2-433a-8a26-84da86c2ef07)", container: coredns)
+```
+- cis 설정이 필요하지 않다면 , profile 옵션을 넣어주지 않도록 합니다. 
+  [ podsecurity 관련 rke2 공식문서 정보 ](https://docs.rke2.io/security/policies/)
 ### 3.1 RKE2를 설치합니다.
 - Rancher server를 설치할 모든 노드에 접속해서 , Swap을 비활성화 하고 , network 브릿지를 설정합니다.
   첫번째 rke2-server node에서만 작업합니다.
@@ -74,7 +84,7 @@ tls-san:
   - "192.168.65.138"
   - "192.168.65.139"
   - "192.168.65.140"
-profile: "cis-1.5"
+profile: "cis-1.5" # 필요하지않다면 생략
 selinux: true # selinux 관련 에러 발생시 false로 변경
 EOF
 ```
@@ -117,7 +127,7 @@ tls-san:
   - "192.168.65.138"
   - "192.168.65.139"
   - "192.168.65.140"
-profile: "cis-1.5"
+profile: "cis-1.5" # 필요하지않다면 생략
 selinux: false
 EOF
 ```
@@ -207,7 +217,7 @@ tls-san:
   - "192.168.65.138"
   - "192.168.65.139"
   - "192.168.65.140"
-profile: "cis-1.5"
+profile: "cis-1.5" # 필요하지않다면 생략
 selinux: false
 EOF
 ```
