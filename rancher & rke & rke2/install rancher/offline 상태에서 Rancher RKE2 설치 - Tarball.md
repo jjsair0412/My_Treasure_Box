@@ -1,5 +1,6 @@
 
 
+
 # RKE2 Offline 환경 설치 방안 ( Tarball Method ) - RKE2 Air-Gap
 
 ## 1. Requirements
@@ -38,6 +39,8 @@ $ curl -sfL https://get.rke2.io --output install.sh
 container has runAsNonRoot and image will run as root (pod: "rke2-coredns-rke2-coredns-547d5499cb-crp7j_kube-system(747e37be-d4c2-433a-8a26-84da86c2ef07)", container: coredns)
 ```
 - cis 설정이 필요하지 않다면 , profile 옵션을 넣어주지 않도록 합니다. 
+- 그러나 해당 설정을 off하는것은 , rke2의 장점인 강력한 보안 기능을 생략해버리는것이기 때문에 신중하게 결정해야 한다.
+- cis 벤치마크를 설정하면서 pod에 root권한을 주게끔 하는 해결방안은 아래에 작성할 예정 ( 수행중) 
   [ podsecurity 관련 rke2 공식문서 정보 ](https://docs.rke2.io/security/policies/)
 ### 3.1 RKE2를 설치합니다.
 - Rancher server를 설치할 모든 노드에 접속해서 , Swap을 비활성화 하고 , network 브릿지를 설정합니다.
