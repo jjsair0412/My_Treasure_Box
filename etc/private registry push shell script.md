@@ -22,13 +22,9 @@ dir="$1"
 for f in $dir/*.tar; do
   image_name=$(cat $f | docker load | awk '{print $3}')
 
-  lower_image_name=${image_name,,}
-
-  echo "lower image name = ${lower_image_name}"
-
-  docker tag $lower_image_name $reg/$lower_image_name
-  docker push $reg/$lower_image_name
-  docker rmi $lower_image_name
+  docker tag $image_name $reg/$image_name
+  docker push $reg/$image_name
+  docker rmi $image_name
 done
 
 
@@ -49,14 +45,9 @@ namespace="harbor" # harbor namespace
 for f in $dir/*.tar; do
   image_name=$(cat $f | docker load | awk '{print $3}')
 
-
-  lower_image_name=${image_name,,}
-
-  echo "lower image name = ${lower_image_name}"
-
-  docker tag $lower_image_name $reg/$proj/$lower_image_name
-  docker push $reg/$proj/$lower_image_name
-  docker rmi $lower_image_name
+  docker tag $image_name $reg/$proj/$image_name
+  docker push $reg/$proj/$image_name
+  docker rmi $image_name
 done
 
 
