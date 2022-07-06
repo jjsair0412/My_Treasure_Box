@@ -236,6 +236,7 @@ $ systemctl restart docker
 ```
 #### 1.2 runtime이 containerd일 경우 - rke2 포함
 - 만약 container runtime을 containerd로 사용하고 있을 경우, 1.3으로 가서 mirror 파일을 수정하거나 1.2의 내용대로 직접 containerd 설정값을 변경시켜 줍니다.
+- rke2인경우 아래 mirror 설정값을 따라가게 됩니다. 노드에서 도커로 접근할 땐 , etc/docker의 daemon.json, pod에서 도커로 접근할땐 mirror 설정값을 따라갑니다.
 - 둘중 하나면 변경시켜도 , 서로 동기화되기때문에 무관합니다.
 ```
 # containerd 설정파일 위치로 이동 
