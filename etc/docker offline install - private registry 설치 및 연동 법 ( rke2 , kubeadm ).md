@@ -1,6 +1,7 @@
 
 
 
+
 # docker offline install - private registry 설치 및 연동 법 ( rke2 , kubeadm )
 - 해당 문서는 docker를 offline 환경에서 설치하는 방법을 설명합니다.
 - docker private registry와 docker를 install 합니다.
@@ -287,6 +288,10 @@ mirrors:
   docker.io:
     endpoint:
       - "http://10.xxx.xxx.xxx:5000"
+  10.xxx.xxx.xxx:5000:
+    endpoint:
+      - "http://10.xxx.xxx.xxx:5000"
+
 ```
 - 엔드포인트는 여러개가 위치할 수 있으며 , 위의 yaml과 같이 설정해준다면 , 10.xxx.xxx.xxx:5000 주소의 private registry에서 아래의 태그정보를가지고 이미지를 pull 하게 됩니다.
 ```
@@ -305,6 +310,9 @@ mirrors:
     endpoint:
       - "http://10.xxx.xxx.xxx:5000"
       - "https://jinseong.harbor.com"
+  10.xxx.xxx.xxx:5000:
+    endpoint:
+      - "http://10.xxx.xxx.xxx:5000"
 configs:
   "jinseong.harbor.com":
     tls:
