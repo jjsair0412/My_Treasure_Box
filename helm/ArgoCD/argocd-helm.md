@@ -122,6 +122,25 @@ notifications:
     repository: 10.xxx.xxx:5000/quay.io/argoproj/argocd
     tag: v2.4.0
 ```
+```
+global:
+  image:
+    repository: harbor.jinseong.leedh.xyz/argo/quay.io/argoproj/argocd
+    tag: v2.4.0
+
+dex:
+  image:
+    repository: harbor.jinseong.leedh.xyz/argo/ghcr.io/dexidp/dex
+    tag: v2.30.2
+
+
+redis:
+  image:
+    repository: harbor.jinseong.leedh.xyz/argo/redis
+    tag: 7.0.0-alpine
+
+```
+
 ### 2.3 Helm ArgoCD Chart 설치
 ```
 $ helm upgrade --install argocd . \
