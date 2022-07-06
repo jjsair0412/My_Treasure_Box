@@ -67,6 +67,55 @@ redis:
         - ReadWriteMany
       storageClass: ceph-filesystem
 ```
+- 폐쇄망 환경에서 gitlab을 구성할 때 , 아래설정값들을 모두 변경시켜주어야 합니다.
+```
+# required option
+global:
+  hosts:
+    domain: gitlab.xxx.xxx.xyz
+	externalIP: http://gitlab.xxx.xxx.xxx
+
+minio:
+  image: harbor.xxx.xxx.xyz/gitlab/minio/minio
+  imageTag: RELEASE.2017-12-28T01-21-00Z
+
+gitlab-runner:
+  image: harbor.xxx.xxx.xyz/gitlab/gitlab/gitlab-runner
+
+global:
+  busybox:
+    image:
+	  repository: harbor.xxx.xxx.xyz/gitlab/registry.gitlab.com/gitlab-org/cloud-native/mirror/images/busybox
+	  tag: latest
+
+gitlab:
+  gitaly:
+    image: 
+	  repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitaly
+      tag: v15.1.0
+  gitlab-shell:  
+    image
+	  repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-shell
+	  tag: v14.7.4
+  migrations:
+    image:
+	  repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ee
+	  tag: v15.1.0
+  sidekiq:
+    image:
+	  repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq-ee
+	  tag: v15.1.0
+  toolbox:
+    image:
+	  repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ee
+	  tag: v15.1.0
+  webservice:
+    image:
+	  repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-webservice-ee
+	  tag: v15.1.0
+    workhorse: 
+	  image: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-workhorse-ee
+```
 
 ### 2.5 helm install
 - gitlab-gitaly의 storageClass와 accessMode는 values파일에서 관리하지 않고 , set 옵션을 이용해 모드를 변경해줍니다.
@@ -123,8 +172,7 @@ spec:
 
 
 
-
-## 3. 파드 생태 확인
+## 3. 파드 상태 확인
 ### 3.1 gitlab 상태 확인
 ```
 kubectl get all -n gitlab
