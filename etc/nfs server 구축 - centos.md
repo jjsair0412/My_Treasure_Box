@@ -68,6 +68,8 @@ $ exportfs -v
 [일반 클라이언트와 연동방안](https://ansan-survivor.tistory.com/687)
 
 ### 4.1 Default psp 설정
+- rke2를 사용해 쿠버네티스 클러스터를 구축했을 경우 , cis 1.6 버전의 벤치마크가 psp로 등록되어 있습니다.
+따라서 해당 경우에는 psp에 nfs를 허용하도록 값을 수정해주어야 합니다.
 - nfs를 설치하기 위해선 전체 클러스터에 기본 설정되어있는 pod security policy에  nfs를 허용하도록. 수정해주어야 합니다.
 ```
 # psp 를 get하여 PodSecurityPolicy를 확인할 수 있다.

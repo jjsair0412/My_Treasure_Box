@@ -316,7 +316,7 @@ $ export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
 $ export CONTAINERD_ADDRESS=/run/k3s/containerd/containerd.sock
 ```
 
-- 환경변수 영구 설정 방법은 아래 명령어를 참조하면 됩니다.
+-   **centos인 경우** 환경변수 영구 설정 방법은 아래 명령어를 참조하면 됩니다.
 ```
 # /etc/bashrc 파일 맨 마지막에 export 세가지 명령어를 추가해 줍니다.
 $ sudo vi /etc/bashrc
@@ -325,8 +325,22 @@ export PATH=$PATH:/var/lib/rancher/rke2/bin/
 export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
 export CONTAINERD_ADDRESS=/run/k3s/containerd/containerd.sock
 ...
-
 ```
+
+-   **ubuntu인 경우** 환경변수 영구 설정 방법은 아래 명령어를 참조하면 됩니다.
+```
+# /etc/bash.bashrc 파일 맨 마지막에 export 세가지 명령어를 추가해 줍니다.
+$ sudo vi /etc/bash.bashrc
+...
+export PATH=$PATH:/var/lib/rancher/rke2/bin/
+export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
+export CONTAINERD_ADDRESS=/run/k3s/containerd/containerd.sock
+...
+
+# 수정 내용 적용
+$ source /etc/bash.bashrc
+```
+
 ## troubleshooting
 ### 1. rke2-server.service를 start 시켯을 때 , default route가 없다고 하는 에러
  - offline 설치 ( 이더넷 , nat 등 ) 을 전부다 해제했을 때 route가 없으면 발생하는 에러이다.
