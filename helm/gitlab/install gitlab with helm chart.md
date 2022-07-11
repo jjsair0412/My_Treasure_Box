@@ -72,17 +72,6 @@ redis:
 ```
 # gitlab은 ingress가 자동생성됩니다. domain과 https & http 옵션을 global 구성에서 선택합니다.
 global: 
-  communityImages:
-    migrations:
-      repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ce
-    sidekiq:
-      repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq-ce
-    toolbox:
-      repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ce
-    webservice:
-      repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-webservice-ce
-      workhorse:
-        repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-workhorse-ce
   edition: ce # gitlab 버전 ( 무료 & 유료 선택 . 유료는 ee. 이미지가 다름 )
   hosts:
     domain: xxx.xxx.xyz # ingress host domain 주소 
@@ -115,20 +104,18 @@ global:
       repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/cloud-native/mirror/images/busybox
       tag: latest
       pullPolicy: IfNotPresent
-
-
   global:
     communityImages:
       migrations:
-        repository: harbor.jinseong.leedh.xyz/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ce
+        repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ce
       sidekiq:
-        repository: harbor.jinseong.leedh.xyz/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq-ce
+        repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq-ce
       toolbox:
-        repository: harbor.jinseong.leedh.xyz/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ce
+        repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ce
       webservice:
-        repository: harbor.jinseong.leedh.xyz/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-webservice-ce
+        repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-webservice-ce
       workhorse:
-        repository: harbor.jinseong.leedh.xyz/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-workhorse-ce
+        repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-workhorse-ce
 
 
 cert-manager:
