@@ -67,54 +67,223 @@ redis:
         - ReadWriteMany
       storageClass: ceph-filesystem
 ```
-- 폐쇄망 환경에서 gitlab을 구성할 때 , 아래설정값들을 모두 변경시켜주어야 합니다.
+- private registry에서 이미지를 꺼내오는 경우 ( 폐쇄망 등 ... ) 아래 values파일의 속성값들을 모두 변경시켜주어야 합니다.
+- 필요한 image리스트또한 작성되어있습니다.
 ```
-# required option
-global:
+# gitlab은 ingress가 자동생성됩니다. domain과 https & http 옵션을 global 구성에서 선택합니다.
+global: 
+  communityImages:
+    migrations:
+      repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ce
+    sidekiq:
+      repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq-ce
+    toolbox:
+      repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ce
+    webservice:
+      repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-webservice-ce
+      workhorse:
+        repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-workhorse-ce
+  edition: ce # gitlab 버전 ( 무료 & 유료 선택 . 유료는 ee. 이미지가 다름 )
   hosts:
-    domain: gitlab.xxx.xxx.xyz
-	externalIP: http://gitlab.xxx.xxx.xxx
-
-minio:
-  image: harbor.xxx.xxx.xyz/gitlab/minio/minio
-  imageTag: RELEASE.2017-12-28T01-21-00Z
-
-gitlab-runner:
-  image: harbor.xxx.xxx.xyz/gitlab/gitlab/gitlab-runner
-
-global:
+    domain: xxx.xxx.xyz # ingress host domain 주소 
+    gitlab:
+      name: gitlab.xxx.xxx.xyz 
+      https: true
+    registry:
+      name: registry.xxx.xxx.xxx # registry host domain 주소
+      https: true
+    minio: 
+      name: minio.xxx.xxx.xxx # minio domain 주소
+      https: true
+  ingress:
+    configureCertmanager: false
+    class: "nginx"
+    tls:
+      enable: false
+  certificates:
+    image:
+      repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/alpine-certificates
+      tag: 20191127-r2@sha256:56d3c0dbd1d425f24b21f38cb8d68864ca2dd1a3acc28b65d0be2c2197819a6a
+      pullPolicy: IfNotPresent
+  kubectl:
+    image:
+      repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/kubectl
+      tag: 1.18.20@sha256:aebdfcf7bde7b80ad5eef7a472d1128542c977dc99b50c3e471fc98afbb9f52c
+      pullPolicy: IfNotPresent
   busybox:
     image:
-	  repository: harbor.xxx.xxx.xyz/gitlab/registry.gitlab.com/gitlab-org/cloud-native/mirror/images/busybox
-	  tag: latest
+      repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/cloud-native/mirror/images/busybox
+      tag: latest
+      pullPolicy: IfNotPresent
 
+
+  global:
+    communityImages:
+      migrations:
+        repository: harbor.jinseong.leedh.xyz/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ce
+      sidekiq:
+        repository: harbor.jinseong.leedh.xyz/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq-ce
+      toolbox:
+        repository: harbor.jinseong.leedh.xyz/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ce
+      webservice:
+        repository: harbor.jinseong.leedh.xyz/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-webservice-ce
+      workhorse:
+        repository: harbor.jinseong.leedh.xyz/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-workhorse-ce
+
+
+cert-manager:
+  image:
+    repository: quay.io/jetstack/cert-manager-controller
+  webhook:
+    image:
+      repository: quay.io/jetstack/cert-manager-webhook
+
+# gitlab 차트 내부 gitlab에서 , ce와 ee 이미지 두가지로 나뉩니다. 
+# ee는 엔터프라이즈 버전 ( 유료 ) gitlab을 사용햇을 경우 필요한 이미지이고 , 아래 예제의 ce 이미지는 무료 버전의 이미지입니다. ( image name example : gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq-ce )
+# global 옵션에서 엔터프라이즈 버전과 무료버전을 선택할 수 있습니다. global.edition: ce 
+# 해당 예시는 무료 버전인 ce 이미지를 사용합니다.
 gitlab:
-  gitaly:
-    image: 
-	  repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitaly
+  prometheus:
+    server:
+      image:
+        repository: harbor.xxx.xxx.xxx/gitlab/quay.io/prometheus/prometheus
+        tag: v2.31.1
+        pullPolicy: IfNotPresent
+  kas:
+    image:
+      repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-kas
       tag: v15.1.0
-  gitlab-shell:  
-    image
-	  repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-shell
-	  tag: v14.7.4
+      pullPolicy: IfNotPresent
+  gitlab-shell:
+    image:
+      repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-shell
+      pullPolicy: IfNotPresent
+      tag: v14.7.4
+  gitaly:
+    image:
+      repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitaly
+      tag: v15.1.0
+      pullPolicy: IfNotPresent
+    init:
+      image:
+        repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/alpine-certificates
+        tag: 20191127-r2
+  gitlab-exporter:
+    image:
+      repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-exporter
+      tag: 11.16.0
+      pullPolicy: IfNotPresent
   migrations:
     image:
-	  repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ee
-	  tag: v15.1.0
+      repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ce
+      tag: v15.0.3
+      pullPolicy: IfNotPresent
+    init:
+      image:
+        repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/alpine-certificates
+        tag: 20191127-r2
   sidekiq:
+    init:
+      image:
+        repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq-ce
+        tag: v15.0.3
     image:
-	  repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq-ee
-	  tag: v15.1.0
-  toolbox:
-    image:
-	  repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ee
-	  tag: v15.1.0
+      repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq-ce
+      tag: v15.0.3
   webservice:
+    init:
+      dependencies:
+        image:
+          repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-webservice-ce
+          tag: v15.0.3
     image:
-	  repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-webservice-ee
-	  tag: v15.1.0
-    workhorse: 
-	  image: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-workhorse-ee
+      repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-webservice-ce
+      tag: v15.0.3
+    workhorse:
+      image: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-workhorse-ce
+
+gitlab-runner:
+  gitlabUrl: http://gitlab.xxx.xxx.xxx # gitlab domain 주소
+  image: harbor.xxx.xxx.xxx/gitlab/gitlab/gitlab-runner:alpine-v15.0.0
+
+grafana:
+  image:
+    repository: grafana/grafana
+    tag: 7.5.5
+
+minio:
+  image: harbor.xxx.xxx.xxx/gitlab/minio/minio
+  imageTag: RELEASE.2017-12-28T01-21-00Z
+  minioMc:
+    image: harbor.xxx.xxx.xxx/gitlab/minio/mc
+    tag: RELEASE.2018-07-13T00-53-22Z
+
+postgresql:
+  image:
+    registry: harbor.xxx.xxx.xxx
+    repository: gitlab/bitnami/postgresql
+    tag: 12.11.0-debian-11-r13
+  metrics:
+    image:
+      registry: harbor.xxx.xxx.xxx
+      repository: gitlab/bitnami/postgres-exporter
+      tag: 0.8.0-debian-10-r99
+      pullPolicy: IfNotPresent
+
+redis:
+  image:
+    registry: harbor.xxx.xxx.xxx
+    repository: gitlab/bitnami/redis
+    tag: 6.0.9-debian-10-r0
+  metrics:
+    image:
+      registry: harbor.xxx.xxx.xxx
+      repository: gitlab/bitnami/redis-exporter
+      tag: 1.12.1-debian-10-r11
+      pullPolicy: IfNotPresent
+
+registry:
+  image:
+    repository: harbor.xxx.xxx.xxx/gitlab/registry.gitlab.com/gitlab-org/build/cng/gitlab-container-registry
+    tag: v3.48.0-gitlab
+
+prometheus:
+  server:
+    image:
+      repository: harbor.xxx.xxx.xxx/gitlab/quay.io/prometheus/prometheus
+      tag: v2.31.1
+      pullPolicy: IfNotPresent
+  configmapReload:
+    prometheus:
+      image:
+        repository: harbor.xxx.xxx.xxx/gitlab/jimmidyson/configmap-reload
+        tag: v0.5.0
+        pullPolicy: IfNotPresent
+
+
+
+upgradeCheck:
+  enabled: true
+  image:
+    repository:
+    tag:
+    pullPolicy: IfNotPresent
+
+shared-secrets:
+  selfsign:
+    image:
+      pullPolicy: IfNotPresent
+      repository:
+      tag:
+
+# gitlab은 tls인증서가 필요합니다. 해당 예시에서는 custom-tls라는 secret을 ca 파일을 통해 미리 만들어주었기 때문에
+# certmanager를 설치하지 않습니다.
+certmanager:
+  install: false
+
+# nginx-ingress가 이미 있기때문에 false
+nginx-ingress: 
+  enabled: false
 ```
 
 ### 2.5 helm install
@@ -122,24 +291,14 @@ gitlab:
 - gitlab에서 cicd 작업을 하기 위해 gitlab-runner를 설치해 줍니다.
 [gitlab set 옵션 목록](https://docs.gitlab.com/charts/installation/command-line-options.html#rbac-settings)
 ```
-helm upgrade --install gitlab gitlab/gitlab \
---namespace=gitlab \
---set gitlab-runner.install=true \
+helm upgrade --install gitlab . --namespace gitlab  \
+--set gitlab-runner.install=true \ # gitlab-runner 설치
 --set certmanager.install=false \
---set nginx-ingress.enabled=false \
 --set global.ingress.configureCertmanager=false \
---set global.ingress.tls.secretName=custom-ca \
---set gitlab.gitlab-runner.certsSecretName="gitlab-runner-certs" \
---set gitlab-runner.certsSecretName="gitlab-runner-certs" \
---set gitlab-runner.runners.cache.cacheShared=true \
---set gitlab-runner.runners.cache.secretName=gitlab-minio-secret \
---set gitlab-runner.runners.cache.s3CachePath=runner-cache \
---set gitlab.gitlab-runner.certsSecretName="gitlab-runner-cert" \
---set gitlab.gitaly.persistence.storageClass=ceph-filesystem \
---set gitlab.gitaly.persistence.accessMode="ReadWriteMany" \
---set global.certificates.customCAs[0].secret=custom-ca \
---set prometheus.server.persistentVolume.storageClass=ceph-filesystem \
--f values.yaml,persistent-volume.yaml
+--set nginx-ingress.enabled=false \
+--set global.ingress.tls.secretName=custom-tls \
+--set global.certificates.customCAs[0].secret=custom-tls \
+-f values.yaml,setting-values.yaml
 ```
 ### 2.6 gitlab ingress 생성
 ```
@@ -212,4 +371,37 @@ env:
 securityContext:
   fsGroup: 0
   runAsUser: 0
+```
+### 4.1.1 rke2 환경일 경우
+- rke2 환경에서 아래와 같은 에러가 발생한다면 , /etc/rancher/rke2/registries.yaml 설정의 mirror와 , gitlab의 인증정보들을 넣어준 후 rke2를 재 시작 해주어야 합니다.
+```
+# cat registries.yaml
+mirrors:
+  docker.io:
+    endpoint:
+      - "http://10.xxx.xxx.xxx:5000"
+  10.xxx.xxx.xxx:5000:
+    endpoint:
+      - "http://10.xxx.xxx.xxx:5000"
+  harbor.xxx.xxx.xxx:
+    endpoint:
+      - "http://harbor.xxx.xxx.xxx"
+  gitlab.xxx.xxx.xxx: # gitlab 정보 mirrors에 추가
+    endpoint:
+      - "http://gitlab.xxx.xxx.xxx"
+
+
+configs:
+  "harbor.xxx.xxx.xxx":
+    auth:
+      username: admin
+      password: Harbor12345
+    tls:
+      insecure_skip_verify: true
+  "gitlab.xxx.xxx.xxx": # 추가된 mirror에대한 config 추가 ( 인증 정보 및 .. ) 
+    auth:
+      username: root # gitlab login 정보
+      password: pgAxVAi... # gitlab password
+    tls:
+      insecure_skip_verify: true # https 무시 ( ssl 인증서 없을경우 추가 )
 ```
