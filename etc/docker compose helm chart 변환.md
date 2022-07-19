@@ -100,7 +100,7 @@ service/app          ClusterIP   10.43.64.36   <none>        8080/TCP   24s
 service/kubernetes   ClusterIP   10.43.0.1     <none>        443/TCP    90s
 
 NAME                  READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/app   0/1     1            1           29s
+deployment.apps/app   1/1     1            1           29s
 deployment.apps/db    1/1     1            1           13s
 
 NAME                             DESIRED   CURRENT   READY   AGE
