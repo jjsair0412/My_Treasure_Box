@@ -88,6 +88,26 @@ $ tree
 │       └── db-deployment.yaml
 └── docker-compose.yaml
 ```
+- helm install 이후 결과와 비교하기 위해 , yaml파일들을 apply 시켜 결과값을 확인합니다.
+```
+$ kubectl get all -n default
+NAME                       READY   STATUS    RESTARTS   AGE
+pod/app-76899b67d4-khbqr   1/1     Running   0          29s
+pod/db-869bc4d48d-hbzh2    1/1     Running   0          13s
+
+NAME                 TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)    AGE
+service/app          ClusterIP   10.43.64.36   <none>        8080/TCP   24s
+service/kubernetes   ClusterIP   10.43.0.1     <none>        443/TCP    90s
+
+NAME                  READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/app   0/1     1            1           29s
+deployment.apps/db    1/1     1            1           13s
+
+NAME                             DESIRED   CURRENT   READY   AGE
+replicaset.apps/app-76899b67d4   1         1         1       29s
+replicaset.apps/db-869bc4d48d    1         1         1       13s
+
+```
 ## 2. k8s yaml -> helm chart
 - Helmify를 통해 k8s yaml파일을 helm chart로 구성합니다.
 - kompose의 -c옵션은 , values.yaml파일이 구성되지 않아 yaml의 속성들을 중앙에서 관리하기가 불가능합니다.
@@ -164,6 +184,7 @@ pvc:
 ```
 $ helm install myapp .
 
+# kubectl apply -f 한 결과와 동일한 결과가 출력되는것을 확인할 수 있습니다.
 $ kubectl get all
 NAME                                     READY   STATUS    RESTARTS   AGE
 pod/myapp-mychart-app-654758f7c6-g2bcs   1/1     Running   0          29s
