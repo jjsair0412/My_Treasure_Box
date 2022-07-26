@@ -108,6 +108,33 @@ configs:
 [plugins.cri.registry.configs."harbor.xxx.xxx.xxx".tls]
   insecure_skip_verify = true
 ```
+***폐쇄망 구성이 아닐경우 config.toml.tmpl 설정값***
+```
+[plugins.opt]
+  path = "/var/lib/rancher/rke2/agent/containerd"
+
+[plugins.cri]
+  stream_server_address = "127.0.0.1"
+  stream_server_port = "10010"
+  enable_selinux = false
+  sandbox_image = "index.docker.io/rancher/pause:3.6"
+
+[plugins.cri.containerd]
+  default_runtime_name = "nvidia"
+  snapshotter = "overlayfs"
+  disable_snapshot_annotations = true
+
+
+[plugins.cri.containerd.runtimes.nvidia.options]
+  BinaryName = "/usr/bin/nvidia-container-runtime"
+
+[plugins.cri.containerd.runtimes.nvidia]
+  privileged_without_host_devices = false
+  runtime_engine = ""
+  runtime_root = ""
+  runtime_type = "io.containerd.runc.v2"
+```
+
 ***rke2-server & rke2-agent restart***
 ```
 $ sudo systemctl restart rke2-server
