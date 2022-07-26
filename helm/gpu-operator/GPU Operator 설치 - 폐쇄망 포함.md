@@ -14,6 +14,19 @@ $ lspci | grep -i nvidia
 1. containerd config.toml 설정 변경
 2. nfd 설치
 3. gpu-operator 설치
+## 3. nouveau 해제
+- nouveau 활성화 확인
+```
+$ lsmod | grep nouveau
+```
+- 해제 명령어는 centos , ubuntu 둘 다 동일하다.
+```
+$ vi /etc/modprobe.d/blacklist.conf
+
+마지막 줄에 추가
+blacklist nouveau
+blacklistlbm-nouveau
+```
 ## 3. containerd 설정 변경
 - rke2에서는 runtime을 docker가 아닌 containerd를 사용합니다.
 - rke2에서 containerd의 설정 값을 변경하기 위해서는 아래 위치의 config.toml 파일 설정값을 변경해주어야 합니다.
