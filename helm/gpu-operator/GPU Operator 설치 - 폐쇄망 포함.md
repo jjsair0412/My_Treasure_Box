@@ -83,29 +83,29 @@ configs:
 
 [plugins.cri.registry.mirrors]
 
-[plugins.cri.registry.mirrors."10.250.203.120:5000"]
-  endpoint = ["http://10.250.203.120:5000"]
+[plugins.cri.registry.mirrors."10.xxx.xxx.xx:5000"]
+  endpoint = ["http://10.xxx.xxx.xxx:5000"]
 
 [plugins.cri.registry.mirrors."docker.io"]
-  endpoint = ["http://10.250.203.120:5000"]
+  endpoint = ["http://10.xxx.xxx.xxx:5000"]
 
-[plugins.cri.registry.mirrors."gitlab.hyundai.gantry.ai"]
-  endpoint = ["http://gitlab.hyundai.gantry.ai"]
+[plugins.cri.registry.mirrors."gitlab.xxx.xxx.xxx"]
+  endpoint = ["http://gitlab.xxx.xxx.xxx"]
   
-[plugins.cri.registry.mirrors."harbor.hyundai.gantry.ai"]
-  endpoint = ["http://harbor.hyundai.gantry.ai"]
+[plugins.cri.registry.mirrors."harbor.xxx.xxx.xxx"]
+  endpoint = ["http://harbor.xxx.xxx.xxx"]
 
-[plugins.cri.registry.configs."gitlab.hyundai.gantry.ai".auth]
+[plugins.cri.registry.configs."gitlab.xxx.xxx.xxx".auth]
   username = "root"
-  password = "pgAxVAiuLBUvSx2qcuC9Boub4BWu0LHsGpfpEhSnuuZ05g5ERciewdkajPPLUmmZ"
+  password = "pgAxVAiuLBUvSx2qcuC9Boub4BWu..."
 
-[plugins.cri.registry.configs."gitlab.hyundai.gantry.ai".tls]
+[plugins.cri.registry.configs."gitlab.xxx.xxx.xxx".tls]
   cert_file = "/home/ubuntu/project-pack/keys/custom.crt"
-[plugins.cri.registry.configs."harbor.hyundai.gantry.ai".auth]
+[plugins.cri.registry.configs."harbor.xxx.xxx.xxx".auth]
   username = "admin"
   password = "Harbor12345"
 
-[plugins.cri.registry.configs."harbor.hyundai.gantry.ai".tls]
+[plugins.cri.registry.configs."harbor.xxx.xxx.xxx".tls]
   insecure_skip_verify = true
 ```
 ***rke2-server & rke2-agent restart***
