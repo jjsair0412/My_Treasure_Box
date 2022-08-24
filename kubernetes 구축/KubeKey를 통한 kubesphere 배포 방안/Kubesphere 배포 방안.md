@@ -145,8 +145,24 @@ pwd : P@88w0rd
 ```
 ## 5. 추가 설정
 - app store를 사용하거나 cicd를 사용하기 위해선 default가 false로 설치되기 때문에 , true로 변경해야 합니다.
+- 클러스터 구성시 config-sample.yaml파일 하단에 해당 설정들이 위치합니다.
+- enabled 하면서 kubesphere을 설치할 수 있습니다.
 - 아래 공식문서를 참고하면 됩니다.
 https://kubesphere.io/docs/v3.3/pluggable-components/app-store/#enable-the-app-store-after-installation
 ### 5.1 app store enabled
+- kubectl 명령어는 아래 patch 명령어를 사용하면 됩니다.
+```
+$ 
+```
 
 ### 5.2 cicd enabled 
+- kubectl 명령어는 아래 patch 명령어를 사용하면 됩니다.
+```
+$ 
+```
+
+### 5.3 serviceMash enalbed
+- kubectl 명령어는 아래 patch 명령어를 사용하면 됩니다.
+```
+$ 
+```
