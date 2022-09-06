@@ -309,15 +309,20 @@ $ cat registries.yaml
 mirrors:
   docker.io:
     endpoint:
-      - "http://10.xxx.xxx.xxx:5000"
-      - "https://jinseong.harbor.com"
+      - "http://10.xxx.xxx.xxx:5000" # 최상위 endpoint부터 pull 수행 
   10.xxx.xxx.xxx:5000:
     endpoint:
       - "http://10.xxx.xxx.xxx:5000"
+  harbor.jinseong.xxx.com:
+    endpoint:
+      - "http://harbor.jinseong.xxx.com"
+    
 configs:
   "jinseong.harbor.com":
+    auth:
+      username: admin
+      password: admin
     tls:
       insecure_skip_verify: true # ssl 인증 무시하는 config 옵션
 
-jinseong.harbor.tag/busybox:latest
 ```
