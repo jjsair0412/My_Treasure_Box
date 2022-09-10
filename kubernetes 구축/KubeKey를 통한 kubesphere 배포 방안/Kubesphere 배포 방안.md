@@ -2,7 +2,8 @@
 # Kubesphere 배포 방안
 ## 1. Prerequisites
 - 해당 문서는 kubekey 를 기반으로하는 Kubesphere을 배포하는 방법에 대해 기술합니다.
-- 에어겝 설치 방안은 추후에 추가할 예정입니다.
+- 에어겝 설치 방안은 아래 링크에 위치합니다.
+  [kubesphere air gap install](https://github.com/jjsair0412/kubernetes_info/blob/main/kubernetes%20%EA%B5%AC%EC%B6%95/KubeKey%EB%A5%BC%20%ED%86%B5%ED%95%9C%20kubesphere%20%EB%B0%B0%ED%8F%AC%20%EB%B0%A9%EC%95%88/Kubesphere%20%EB%B0%B0%ED%8F%AC%20%EB%B0%A9%EC%95%88%20-%20air%20gap.md)
 - 전체 설치 방안은 아래의 공식 문서를 참조하였습니다. 
   [설치 방안 공식 문서](https://kubesphere.io/docs/v3.3/installing-on-linux/introduction/multioverview/)
 ## 2.  System Requirements
