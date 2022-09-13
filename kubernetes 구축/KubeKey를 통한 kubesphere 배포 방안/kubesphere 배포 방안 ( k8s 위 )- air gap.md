@@ -140,3 +140,15 @@ kubectl apply -f cluster-configuration.yaml
 ```
 kubectl logs -n kubesphere-system $(kubectl get pod -n kubesphere-system -l 'app in (ks-install, ks-installer)' -o jsonpath='{.items[0].metadata.name}') -f
 ```
+
+## 6. troubleshooting
+- image-list pull 작업 중 , 아래와 같은 에러가 발생할 수 있습니다.
+```
+...
+invalid reference format
+...
+```
+- 아래 명령어를 입력하여 해결합니다.
+```
+sed -i 's/\r$//' images-list.txt
+```
