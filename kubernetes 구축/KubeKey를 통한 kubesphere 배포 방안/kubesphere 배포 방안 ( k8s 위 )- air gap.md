@@ -114,7 +114,23 @@ spec:
 ```
 sed -i "s#^\s*image: kubesphere.*/ks-installer:.*#        image: harbor.xxx.co.kr/kubesphere-imagelist/kubesphere/ks-installer:v3.3.0#" kubesphere-installer.yaml
 ```
-### 5.3 install kubesphere
+### 5.3 default storageClass 구성
+- kubesphere를 설치하기 위해선 storageClass가 구성되어 있어야 합니다.
+- 해당 문서는 테스트 목적이기에 , hostPath로 storageClass를 구성한 뒤 , 해당 sc를 default storageClass로 변경하여 사용합니다.
+```
+$ cat sc.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-storage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+
+
+# default storageClass 등록
+kubectl patch storageclass local-storage -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+```
+### 5.4 install kubesphere
 - kubectl 명령어를 사용해 아래 순서대로 설치 합니다.
 ```
 kubectl apply -f kubesphere-installer.yaml 
