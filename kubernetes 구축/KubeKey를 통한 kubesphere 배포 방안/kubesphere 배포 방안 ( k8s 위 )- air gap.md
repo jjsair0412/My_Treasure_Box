@@ -120,3 +120,7 @@ sed -i "s#^\s*image: kubesphere.*/ks-installer:.*#        image: harbor.xxx.co.k
 kubectl apply -f kubesphere-installer.yaml 
 kubectl apply -f cluster-configuration.yaml
 ```
+- 다음 명령어로 로그를 확인합니다.
+```
+kubectl logs -n kubesphere-system $(kubectl get pod -n kubesphere-system -l 'app in (ks-install, ks-installer)' -o jsonpath='{.items[0].metadata.name}') -f
+```
