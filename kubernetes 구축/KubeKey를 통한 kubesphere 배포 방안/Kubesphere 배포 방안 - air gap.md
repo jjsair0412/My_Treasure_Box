@@ -238,3 +238,130 @@ spec:
 ```
 ./kk artifact export -m manifest-sample.yaml -o kubesphere.tar.gz
 ```
+### 3.4 config.yaml 파일 생성
+#### 3.4.1 registry 설치 및 구성
+- 아래 명령어를 통해 kubernetes 1.22.10 version의 kubesphere config.yaml 파일을 꺼냅니다.
+```
+./kk create config --with-kubesphere v3.3.0 --with-kubernetes v1.22.10 -f config-sample.yaml
+```
+- config.yaml 파일을 수정합니다.
+	- registry 정보에 private registry 정보가 들어갑니다.
+	- 만약 private registry가 없다면 , ./kk init 명령어를 통해 private registry를 구성합니다.
+		- init으로 registry를 구성하려면 , 아래와 같이 registry가 설치될 hosts 정보와 , registry 이름이 명시되어야 합니다.
+```
+...
+  hosts:
+  - {name: node1, address: 192.168.6.6, internalAddress: 192.168.6.6, password: Qcloud@123}
+  roleGroups:
+    etcd:
+    - node1
+    control-plane:
+    - node1
+    worker:
+    - node1
+    ## Specify the node role as registry. Only one node can be set as registry.
+    registry:
+    - node1 # node1번에 registry 설치
+...
+  registry:
+    ## `docker registry` is used to create local registry by default.  
+    ## `harbor` can be also set for type.
+    # type: "harbor"  
+    privateRegistry: dockerhub.kubekey.local
+    auths:
+      "dockerhub.kubekey.local":
+        username: admin
+        password: Harbor12345
+...
+```
+- init 명령어를 통해 명시한 node에 registry를 설치합니다.
+	- registry의 type을 작성하지 않는다면 , docker registry가 설치되고 , harbor로 type을 작성하면 작성해준 domain 주소를 가진 harbor가 docker-compose를 통해 배포됩니다.
+```
+./kk init registry -f config-sample.yaml -a kubesphere.tar.gz
+```
+- private registry가 존재한다면 아래와 같이 작성합니다.
+```
+...
+  registry:
+    type: harbor
+    privateRegistry: "harbor.xxx.co.kr"
+    auths:
+      "harbor.xxx.co.kr":
+        username: xxx
+        password: xxx
+    namespaceOverride: "kubesphereio"
+    registryMirrors: []
+...
+```
+#### 3.4.2 registry 구성
+- private registry가 harbor일 경우 project를 생성해야 합니다.
+  아래 명령어를 통해 project 생성 스크립트를 가지고 옵니다.
+  모든 project는 public 권한을 가져야 합니다.
+```
+curl -O https://raw.githubusercontent.com/kubesphere/ks-installer/master/scripts/create_project_harbor.sh
+```
+- create project 스크립트는 아래와 같습니다.
+```
+...
+url="https://harbor.xxx.co.kr" # private registry domain
+user="xxx" # registry id
+passwd="xxx" # registry pwd
+
+harbor_projects=(library # 생성되는 모든 프로젝트 list
+    kubesphere
+    calico
+    coredns
+    openebs
+    csiplugin
+    minio
+    mirrorgooglecontainers
+    osixia
+    prom
+    thanosio
+    jimmidyson
+    grafana
+    elastic
+    istio
+    jaegertracing
+    jenkins
+    weaveworks
+    openpitrix
+    joosthofman
+    nginxdemos
+    fluent
+    kubeedge
+)
+
+for project in "${harbor_projects[@]}"; do
+    echo "creating $project"
+    curl -u "${user}:${passwd}" -X POST -H "Content-Type: application/json" "${url}/api/v2.0/projects" -d "{ \"project_name\": \"${project}\", \"public\": true}"
+done
+```
+- 아래 명령어를 통해 스크립트에 x 권한을 주어 실행 파일로 변경 후 , 스크립트를 실행합니다.
+```
+chmod +x create_project_harbor.sh
+
+./create_project_harbor.sh
+```
+- harbor에 접속하여 아래 project 명단을 모두 일일히 생성해 주는 방법또한 가능합니다.
+
+#### 3.4.2 push image to private registry
+- 만들어둔 private registry로 아래 명령어를 통해 image tar 파일을 push 합니다.
+```
+./kk artifact image push -f config-sample.yaml -a kubekey-artifact.tar.gz
+```
+- 해당 과정에서 아래와 같은 에러가 발생합니다.
+[참조 공식문서](https://github.com/kubesphere/kubekey/blob/master/docs/zh/manifest_and_artifact.md)
+```
+08:22:12 UTC [CopyImagesToRegistryModule] Copy images to a private registry from an artifact OCI Path
+08:22:12 UTC message: [LocalHost]
+invalid ref name: 
+08:22:12 UTC failed: [LocalHost]
+error: Pipeline[ArtifactImagesPushPipeline] execute failed: Module[CopyImagesToRegistryModule] exec failed: 
+failed: [LocalHost] [CopyImagesToRegistry] exec failed after 1 retires: invalid ref name: 
+```
+- image tar를 push하지 않고 아래 명령어를 통해 그대로 cluster를 생성하더라도 동일 에러가 발생합니다.
+```
+./kk create cluster -f config-sample1.yaml -a kubesphere.tar.gz --with-packages
+```
+- 의심되는 사항은 , docker pull 정책을 피하기 위하여 harbor project를 proxy로 구성하여 우회하는 방법을 택하였기에 , image 이름들을 모두 변경시켜주엇기 떄문에 에러가 발생하는 것 같습니다.
