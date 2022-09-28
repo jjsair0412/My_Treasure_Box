@@ -10,6 +10,14 @@
 $ lspci | grep -i nvidia
 00:1e.0 3D controller: NVIDIA Corporation TU104GL [Tesla T4] (rev a1)
 ```
+- 먼저 , 커널에 포함된 기본 그래픽 드라이버가 비 활성화 되어 있는지 확인합니다.
+  만약 활성화 되어 있다면 , gpu-operator를 설치 할 때 , driver install option을 false로 두고 설치 해야합니다.
+  
+```
+$ lsmod | grep nouveau
+  아무것도 뜨지 않으면 비활성화 된 상태.
+```
+
 ## 2. 설치 과정
 - gpu operator는 두 단계로 설치합니다.
 1. install node-feature-discovery 
