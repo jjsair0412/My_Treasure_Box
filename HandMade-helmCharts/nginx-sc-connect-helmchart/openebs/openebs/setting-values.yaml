@@ -1,0 +1,10 @@
+
+localprovisioner:
+  basePath: "/var/openebs/local"
+  deviceClass:
+    enabled: true
+    reclaimPolicy: Retain  
+  hostpathClass:
+    enabled: true
+    reclaimPolicy: Retain
+    isDefaultClass: true
