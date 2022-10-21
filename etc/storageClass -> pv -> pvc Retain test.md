@@ -22,6 +22,8 @@ reclaimPolicy: Retain
 ```
 ### 3. pv 생성
 -  pv또한 persistentVolumeReclaimPolicy 옵션을 Retain으로 두어 파드가 삭제되도 제거되지 않도록 구성합니다.
+- localPath pv는 affinity가 필수값입니다. mount시킬 폴더 경로가 위치한 노드에만 pv가 생성되어야하기 때문입니다. 
+  mount 폴더가 위치한 노드의 kubernetes.io/hostname label을 확인하여 넣어줍니다.
 ```yaml
 apiVersion: v1
 kind: PersistentVolume
@@ -36,7 +38,7 @@ spec:
   storageClassName: local-storage
   local:
     path: /home/centos/pv-test/pv
-  nodeAffinity:
+  nodeAffinity: # localPath pv는 affinity가 필수값
     required:
       nodeSelectorTerms:
       - matchExpressions:
@@ -58,11 +60,11 @@ spec:
       storage: 20Mi
   accessModes: 
     - ReadWriteMany
-  storageClassName: "local-storage" # Empty string must be explicitly set otherwise default StorageClass will be set
+  storageClassName: "local-storage" 
 ```
 ### 5. pod 생성
 - pvc를 마운트하는 파드를 생성합니다.
-```
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -84,7 +86,7 @@ spec:
 ## test 수행
 ### 1. 파일 생성
 - 파드에 exec하여 /mnt 폴더에 파일을 하나 생성합니다.
-```
+```bash
 $ kubectl exec test-local-vol -it bash
 
 root@test-local-vol:/# cd /mnt/
@@ -101,12 +103,12 @@ hello
 ```
 ### 2. 파드 제거
 - 파드를 delete 합니다.
-```
+```bash
 $ kubectl delete pods --all
 pod "test-local-vol" deleted
 ```
 - 로컬에 마운트시킨 경로로 이동하여 파일이 있는지 확인합니다.
-```
+```bash
 cd /home/centos/pv-test/pv
 
 $ ls
@@ -114,13 +116,13 @@ hi2.tst
 ```
 ### 3. 파드 재 배포 및 결과 확인
 - 파드를 재 배포 합니다.
-```
+```bash
 $ kubectl apply -f pod.yaml
 
 $ kubectl get pods
 ```
 - 파드내부 /mnt 폴더로 이동하여 hi2.txt파일이 존재하는지 확인합니다.
-```
+```bash
 $ kubectl exec test-local-vol -it bash
 
 $ root@test-local-vol:/# cd /mnt/
