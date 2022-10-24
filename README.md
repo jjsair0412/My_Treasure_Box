@@ -1,7 +1,6 @@
 # kubernetes_info
-
-
-## kubectl command known error
+## known errors
+### kubeconfig file's location is not set in right direction.
 This site is governed by the CNCF Code of Conduct. Check out our quick tutorial video on how to effectively subscribe to topics.
 The connection to the server localhost:8080 was refused - did you specify the right host or port?
 
