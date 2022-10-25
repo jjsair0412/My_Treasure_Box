@@ -1,0 +1,66 @@
+{{- $dot := .  -}}
+{{-  $loopCount := (.Values.loopCount) | int -}}
+{{- range $count, $v := until $loopCount }} # $count val is increase until $loopCount.
+--- # division new deployment. required option
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "loop-chart.fullname" $dot }}-{{ $count }}
+  labels:
+    {{- include "loop-chart.labels" $dot | nindent 4 }}-{{ $count }}
+spec:
+  {{- if not $dot.Values.autoscaling.enabled }}
+  replicas: {{ $dot.Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "loop-chart.selectorLabels" $dot | nindent 6 }}-{{ $count }}
+  template:
+    metadata:
+      {{- with $dot.Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "loop-chart.selectorLabels" $dot | nindent 8 }}-{{ $count }}
+    spec:
+      {{- with $dot.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml $dot | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "loop-chart.serviceAccountName" $dot }}
+      securityContext:
+        {{- toYaml $dot.Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ $dot.Chart.Name }}-{{ $count }}
+          securityContext:
+            {{- toYaml $dot.Values.securityContext | nindent 12 }}
+          image: "{{ $dot.Values.image.repository }}:{{ $dot.Values.image.tag | default $dot.Chart.AppVersion }}"
+          imagePullPolicy: {{ $dot.Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml $dot.Values.resources | nindent 12 }}
+      {{- with $dot.Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $dot.Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $dot.Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
