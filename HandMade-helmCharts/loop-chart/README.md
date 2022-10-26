@@ -31,6 +31,7 @@ replicaset.apps/test-loop-chart-2-6666bf7cfd   1         1         1       4s
 range옵션을 이용하여 구현하였습니다.
 #### 2.1 응용시 주의 사항
 **range option 내부 변수 사용 시 주의 사항**
+
 helm chart에서 range option 내부에는 global values에 접근하는 방법이 상이합니다.
 기존에 방식은 아래와 같이 ' . ' dot을 사용합니다. 
 
@@ -61,6 +62,7 @@ name: {{ $dot.Chart.Name }}-{{ $count }}
 {{- end }}
 ```
 **deployment 분리 방안**
+
 deployment.yaml 자체를 반복시키기 때문에 , 반복되는 deploy를 구분해야 합니다.
 구분 방법은 --- 을 yaml 코드 최 상단에 추가하여 구분합니다.
 
