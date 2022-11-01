@@ -78,7 +78,7 @@ $ ./kk create config --with-kubesphere v3.3.0
 ```
 - HA 노드의 구성 파일을 편집합니다.
   구성 파일의 각 노드 DNS 이름은 위에 명시했던 것 처럼 /etc/resolv.conf에서 해석 될 수 있어야 합니다.
-```
+```yaml
 $ cat config-sample.yaml
 apiVersion: kubekey.kubesphere.io/v1alpha2
 kind: Cluster
@@ -150,6 +150,71 @@ pwd : P@88w0rd
 - enabled 하면서 kubesphere을 설치할 수 있습니다.
 - 아래 공식문서를 참고하면 됩니다.
 https://kubesphere.io/docs/v3.3/pluggable-components/app-store/#enable-the-app-store-after-installation
+
+### 5.0 addons 사용 방안
+- kubesphere와 kubekey를 설치하면서 , helm chart 및 yaml파일을 같이 배포시킬 수 있습니다.
+- 아래의 예시는 openebs를 같이 설치하는 예제입니다.
+- yaml파일을 배포하는 방안은 , 아래 공식문서 주소에서 예시를 보고 따라하면 됩니다.
+
+[addone 사용 방안](https://github.com/kubesphere/kubekey/blob/master/docs/addons.md)
+```yaml
+apiVersion: kubekey.kubesphere.io/v1alpha2
+kind: Cluster
+metadata:
+  name: sample
+spec:
+  hosts:
+  - {name: master, address: 172.xxx.xxx.xx1, internalAddress: 172.xxx.xxx.xx1, privateKeyPath: "~/.ssh/jin.pem"} 
+  - {name: worker1, address: 172.xxx.xxx.xx2, internalAddress: 172.xxx.xxx.xx2, privateKeyPath: "~/.ssh/jin.pem"} 
+  - {name: worker2, address: 172.xxx.xxx.xx3, internalAddress: 172.xxx.xxx.xx3, privateKeyPath: "~/.ssh/jin.pem"} 
+  roleGroups:
+    etcd:
+    - master
+    control-plane: 
+    - master
+    worker:
+    - worker1
+    - worker2
+  controlPlaneEndpoint:
+    ## Internal loadbalancer for apiservers 
+    # internalLoadbalancer: haproxy
+
+    domain: lb.kubesphere.local
+    address: ""
+    port: 6443
+  kubernetes:
+    version: v1.23.7
+    clusterName: cluster.local
+    autoRenewCerts: true
+    containerManager: docker
+  etcd:
+    type: kubekey
+  network:
+    plugin: calico
+    kubePodsCIDR: 10.233.64.0/18
+    kubeServiceCIDR: 10.233.0.0/18
+    ## multus support. https://github.com/k8snetworkplumbingwg/multus-cni
+    multusCNI:
+      enabled: false
+  registry:
+    privateRegistry: "harbor.xxx.xxx/kubesphere_image"
+    namespaceOverride: ""
+    registryMirrors: []
+    insecureRegistries: []
+    auths:
+      "harbor.xxx.xxx/kubesphere_image":
+        username: "admin"
+        password: "Harbor12345"
+  addons:
+  - name: openebs # helm name
+    namespace: openebs # 배포대상 namespace 명시 ( 없다면 생성됨 )
+    sources:
+      chart:
+        name: openebs # relase name
+        repo: https://openebs.github.io/charts # repo 이름
+        valuesFile: /home/centos/openebs/openebs-values.yaml ( setting-values.yaml 파일 설정 가능 )
+```
+
 ### 5.1 app store enabled
 - kubectl 명령어는 아래 patch 명령어를 사용하면 됩니다.
 ```
