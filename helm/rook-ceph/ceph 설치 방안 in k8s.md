@@ -5,15 +5,35 @@ ceph 설치방안은 두가지 방법이 있습니다.
 1. ceph sample file을 통한 설치
 2. ceph helm install
 
-helm chart로 설치하는것 보다 , sample file을 create하는 방법으로 설치하는 편이 관리 및 디스크 마운트에 있어 더 유리하기 때문에 본 문서는 1번의 방법을 사용합니다.
+helm chart로 설치하는것 보다 , sample file을 create하는 방법으로 설치하는 편이 디스트 메모리를 덜 사용하기에 해당 문서는 sample을 배포하는 형태로 ceph를 배포합니다.
 
 만약 airgap 환경에서 설치해야 한다면, 이미지 레지스트리 경로를 변경해야 하기 때문에 helm chart로 설치하는편이 편합니다.
+또한 ceph의 object gateway와 같은 기능들도 helm으로 설치한다면 다 열리기에 , 사용면에 있어 더 편합니다.
 
 helm repo 주소는 다음과 같으며 , 설치 process는 아래 문서와 동일하게 ceph operator 부터 배포한 뒤 ceph-cluster를 배포합니다.
 ```
 helm repo add rook-release https://charts.rook.io/release
 ```
+
+아래처럼 setting-values.yaml값을 변경한 뒤 helm upgrade를 진행합니다.
+
+```
+cephClusterSpec:
+  storage:
+    nodes:
+      - name: "jjs-01" # vm host name
+        devices: # specific devices to use for storage can be specified for each node
+          - name: "vdb" # vm volume name ( lsblk 명령어 출력 결과 마운트된 볼륨 이름 )
+      - name: "jjs-02"
+        devices: # specific devices to use for storage can be specified for each node
+          - name: "vdb"
+      - name: "jjs-03"
+        devices: # specific devices to use for storage can be specified for each node
+          - name: "vdb"
+```
 [공식 문서](https://rook.io/docs/rook/v1.9/helm-operator.html)
+
+
 
 ### 1.2 introducing rook
 Rook turns distributed storage systems into self-managing, self-scaling, self-healing storage services. It automates the tasks of a storage administrator: deployment, bootstrapping, configuration, provisioning, scaling, upgrading, migration, disaster recovery, monitoring, and resource management.  
