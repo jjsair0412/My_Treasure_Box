@@ -8,7 +8,7 @@ dashboard는 존재 하지만 , grafana데시보드에 출력되는 promethues �
 dashboard에서 파일을 관리 ( upload , download , share 등 .. ) 할 수 없기 때문에 , minio와 같이 연동하여 사용하는편이
 사용에 있어 편리합니다.
 
-## deploy k8s ceph vs deploy cephadm 
+## deploy k8s ceph ( rook-ceph ) vs deploy cephadm 
 ceph는 kubernetes의 pod형태로 배포하여 볼륨을 mount시켜 storageclass로 사용할 수 있으며 ,
 cephadm으로 베어메탈 환경에서 설치한 이후 kubernetes의 storageclass와 연동하여 사용할 수 도 있습니다.
 
