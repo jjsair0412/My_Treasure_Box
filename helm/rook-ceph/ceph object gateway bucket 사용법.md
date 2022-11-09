@@ -1,7 +1,9 @@
 # ceph object gateway bucket 사용법
 
 ceph의 ojbect gateway의 buckect의 구조와 사용법에 대해 기술한 문서입니다.
+또한 만들어진 bucket을 s3cmd로 관리하는 방안에 대해서도 기술합니다.
 
+[관련 문서 s3cmd 설정방안](https://kb.selectel.com/docs/cloud-services/cloud-storage/tools/s3cmd/#s3cmd)
 [관련 문서](https://rook.io/docs/rook/v1.10/Storage-Configuration/Object-Storage-RGW/object-storage/)
 
 ## 이론

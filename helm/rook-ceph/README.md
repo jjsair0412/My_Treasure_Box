@@ -18,3 +18,13 @@ cephadm으로 베어메탈 환경에서 설치한 이후 kubernetes의 storagecl
 
 하지만 가볍게 사용하기 위해선 , cephadm으로 베어메탈에 ceph를 설치한 이후 사용하는편이 메모리 관리에 있어 유리합니다.
 그러나 해당 방법은 , object gateway등의 기능을 일일히 open시켜야하는것이 단점입니다.
+
+## management ceph storage files
+s3cmd 명령어를 object gateway로 보내서 bucket내부 파일들을 관리할 수 있습니다.
+
+여기서 관리란 , upload , delete , download , 폴더 생성 등을 이야기 합니다.
+
+ceph object gateway bucket 사용법 문서를 참조하여 object gateway를 사용하고 , 
+s3cmd와 object gateway의 user를 연결시켜주면 s3cmd명령어로 관리할 수 있습니다.
+
+ceph object gateway bucket 사용법 문서에 해당 방법은 기술해 두었습니다.
