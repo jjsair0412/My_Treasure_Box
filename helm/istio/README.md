@@ -17,4 +17,5 @@ istio gateway 흐름
 - Gateway -> VirtualService -> pod
 
 따라서 ingress와 동일하게 gateway를 custom하여 설정할 수 있으며 , 아래 공식 문서를 참조합니다.
+
 [istio gateway 설정](https://istio.io/latest/docs/reference/config/networking/gateway/)
