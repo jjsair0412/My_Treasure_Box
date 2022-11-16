@@ -1,4 +1,12 @@
 # kubernetes_info
+## storageClass local provisioner information
+Local volumes do not currently support dynamic provisioning, however a StorageClass should still be created to delay volume binding until Pod scheduling.
+
+동적 프로비저닝이 필요할 때에는 , storageclass를 local로 생성하는것 보다 nfs 등을 사용해서 storageclass를 사용하는 편이 편합니다.
+local은 pv 동적 프로비저닝이 되지 않습니다.
+
+[관련 문서](https://kubernetes.io/docs/concepts/storage/storage-classes/#local)
+
 ## known issues
 ### 1. kubeconfig file's location is not set in right direction.
 The connection to the server localhost:8080 was refused - did you specify the right host or port?
