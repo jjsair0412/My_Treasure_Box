@@ -195,6 +195,13 @@ http://3.xxx.xxx.xxx:31331/productpage
 
 [istio-2]:./images/istio-2.PNG
 
+
+bookinfo 아키텍쳐는 다음과 같습니다.
+
+![istio-4][istio-4]
+
+[istio-4]:./images/istio-4.PNG
+
 kiali dashboard에서 bookinfo 메트릭이 확인되는지 체크합니다.
 좌측 메뉴바에 Graph 를 클릭하여 bookinfo namespace를 클릭합니다.
 
