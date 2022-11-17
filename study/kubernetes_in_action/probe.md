@@ -132,6 +132,26 @@ readinessProbe를 항상 사용하여 pod가 준비됐을 때만 service endpoin
 k8s에서는 파드가 삭제되면 service의 endpoint에서 즉시 제거되기 때문에 ,
 파드가 종료될 때 내부 컨테이너 application의 종료 코드가 필요하지 않다.
 
+#### 2.5 파드가 준비되지 않아도 service endpoint에 등록시키는 방법
+컨테이너가 readinessProbe를 실패하면 container의 endpoint에 등록되지 않는다.
+
+근데 이걸 뒤집어서 준비되지 않더라도 service의 endpoint로 강제 등록 시킬 수 있는 필드가 있다.
+아래처럼 service yaml 파일에 publishNotReadyAddresses: true 로 주면 된다.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample-service
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: sample
+  publishNotReadyAddresses: true
+```
+
 ### 3. import !!! livenessProbe vs readinessProbe
 livenessProbe는 검사가 실패하면 컨테이너를 종료시키고 다시 실행한다.
 그러나 readinessProbe는 컨테이너를 종료하고 다시 실행하지 않는다.
