@@ -6,7 +6,7 @@
 2. 이중화된 haproxy가 k8s master node로 LB 
 - master node 3중화 필요. 다음 아키텍쳐 구성에서 해결 예정
 3. k8s cluster로 접근
-- k8s cluster는 rke2로 구성
+- k8s cluster는 rke2로 구성함
 4. k8s cluster는 backend의 ceph storage를 사용중
 
 ## 구성도
