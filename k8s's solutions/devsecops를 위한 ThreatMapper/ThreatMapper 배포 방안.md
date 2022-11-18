@@ -226,19 +226,22 @@ ui에 접근하여 확인합니다.
 login 페이지 확인 후 , Register로 회원가입 진행한 뒤 로그인 합니다.
 
 - login 페이지 확인
-![deepfence1][deepfence1]
 
-[deepfence1]:./images/deepfence1.PNG
+![deepfence-1][deepfence-1]
+
+[deepfence-1]:./images/deepfence-1.PNG
 
 - 회원가입
-![deepfence2][deepfence2]
 
-[deepfence2]:./images/deepfence2.PNG
+![deepfence-2][deepfence-2]
+
+[deepfence2]:./images/deepfence-2.PNG
 
 - 가입한 ID로 로그인 한 뒤 main page 확인
-![deepfence3][deepfence3]
 
-[deepfence3]:./images/deepfence3.PNG
+![deepfence-3][deepfence-3]
+
+[deepfence3]:./images/deepfence-3.PNG
 
 
 ### 2.4 deploy deepfence-agent 
