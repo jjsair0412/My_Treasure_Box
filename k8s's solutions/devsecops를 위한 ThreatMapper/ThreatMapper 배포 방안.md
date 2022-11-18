@@ -235,13 +235,13 @@ login 페이지 확인 후 , Register로 회원가입 진행한 뒤 로그인 �
 
 ![deepfence-2][deepfence-2]
 
-[deepfence2]:./images/deepfence-2.PNG
+[deepfence-2]:./images/deepfence-2.PNG
 
 - 가입한 ID로 로그인 한 뒤 main page 확인
 
 ![deepfence-3][deepfence-3]
 
-[deepfence3]:./images/deepfence-3.PNG
+[deepfence-3]:./images/deepfence-3.PNG
 
 
 ### 2.4 deploy deepfence-agent 
