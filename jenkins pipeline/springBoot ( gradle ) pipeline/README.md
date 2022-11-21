@@ -5,7 +5,11 @@
 2. jdk 17
 3. spring boot
 
-### 1.1 pipeline process
+## 1.1 required jenkins plugin
+1. docker pipeline
+2. kubernetes
+
+### 1.2 pipeline process
 1. git clone
 2. gradle clean build
 3. docker build
