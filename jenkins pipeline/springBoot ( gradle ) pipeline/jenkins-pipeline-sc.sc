@@ -59,8 +59,7 @@ podTemplate(label: 'test',
             container('docker'){
                 sh '''
                 docker image tag test:latest jjsair0412/test:latest
-                
-                docker images | grep signin
+                docker images | grep test
                 '''
             }
         }
@@ -81,7 +80,7 @@ podTemplate(label: 'test',
             container('docker'){
                 sh '''
                 docker rmi jjsair0412/test
-                
+                docker rmi test
                 docker images
                 '''
                 
