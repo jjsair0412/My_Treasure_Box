@@ -1,3 +1,11 @@
+import java.text.SimpleDateFormat
+
+// 빌드 날짜 생성
+def dateFormat = new SimpleDateFormat("yyyyMMdd")
+def date = new Date()
+day = dateFormat.format(date)
+
+
 podTemplate(label: 'test',
 	containers: [
         containerTemplate(name: 'gradle', image: 'gradle', ttyEnabled: true, command: 'cat'),
@@ -7,10 +15,11 @@ podTemplate(label: 'test',
         hostPathVolume(mountPath: '/usr/bin/docker', hostPath: '/usr/bin/docker'),
         hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
     ]) {
-
-
+    
     node('test') {
+        
         stage('git clone'){
+            println(day) // 빌드 날짜 출력 , 차후 이미지 태그로 사용 예정
             container('gradle'){
                 sh '''
                 git --version
@@ -47,29 +56,20 @@ podTemplate(label: 'test',
                 cd sample-code/sign_in_api
                 ls
                 
-                docker build -t test:latest .
+                docker build -t jjsair0412/test:$BUILD_NUMBER .
                 
                 docker images | grep test
                 '''
             }
         }
         
-        
-        stage('docker tag'){
-            container('docker'){
-                sh '''
-                docker image tag test:latest jjsair0412/test:latest
-                docker images | grep test
-                '''
-            }
-        }
         
         stage('docker push'){
             container('docker'){
                 
                 withDockerRegistry([ credentialsId: "$docker_login_information", url: ""]) {
                     sh '''
-                    docker push jjsair0412/test:latest
+                    docker push jjsair0412/test:$BUILD_NUMBER
                     '''
                 }
                 
@@ -79,8 +79,7 @@ podTemplate(label: 'test',
         stage('docker clean'){
             container('docker'){
                 sh '''
-                docker rmi jjsair0412/test
-                docker rmi test
+                docker rmi $(docker images | grep jjsair0412/test |  awk 'NR > 1 {print $3}') --force
                 docker images
                 '''
                 
