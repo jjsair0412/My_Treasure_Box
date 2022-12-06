@@ -12,7 +12,7 @@ emptyDir type의 볼륨은 파드와 라이프사이클을 공유합니다.
 아래 예제 파드는 html-generator 컨테이너가 index.html파일을 주기적으로 생성하여 /var/htdocs안에 파일을 생성합니다.
 
 생성된 파일을 web-server 컨테이너가 다시 마운트하여 80번 포트로 서비스하는 파드 입니다.
-```bash
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -130,7 +130,7 @@ persistetnVolumeClaimPolicy 정책을 Retain이 아닌 Recycle이나 Delete를 �
 PersistentVolume에서 accessMode를 지정할 수 있는데 , 여러개를 지정할 수 있습니다.
 
 ex) pv.yaml
-```bash
+```yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
