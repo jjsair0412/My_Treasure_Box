@@ -1,25 +1,41 @@
 # Kubernetes with kubeadm
 - kubeadm을 활용하여 kubernetes를 설치한다.
+## 기본 패키지 설치 및 방화벽 해제
+```bash
+sudo apt-get update
+sudo apt-get install -y openssh-server curl vim tree net-tools
+
+sudo systemctl stop firewalld 
+sudo systemctl disable firewalld
+
+```
 ## Docker install
 - 도커는 master node ( control plane ) , worker node 모두 가지고 있어야 한다.
 - 아래 명령어 작성하여 도커 다운로드
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y \
+sudo apt-get install \
     ca-certificates \
     curl \
     gnupg \
     lsb-release
 
-curl -fsSL <https://download.docker.com/linux/ubuntu/gpg> | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 
+# Docker의 official GPG Key값 추가
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+# docker repository 추가 ( GPG Key 저장 )
 echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] <https://download.docker.com/linux/ubuntu> \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
+# 추가된 repository 등록
 sudo apt-get update
-sudo apt-get install docker-ce docker-ce-cli containerd.io
+
+# 도커 설치
+sudo apt-get install docker-ce docker-ce-cli containerd.io 
 
 # 도커 시작
 sudo systemctl enable docker
@@ -47,10 +63,8 @@ sudo docker version
 아래 명령어들로 **control-plane 구성하기 직전까지 설치**
 
 ```bash
-# root로 세팅하는게 편하다. sudo명령어 안써도되니까
-
 #swap 끄기
-swapoff -a && sed -i '/swap/s/^/#/'/etc/fstab
+swapoff -a && sed -i '/swap/s/^/#/' /etc/fstab
 
 cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
 br_netfilter
@@ -69,23 +83,35 @@ systemctl disable firewalld
 # 여기까지 설치전 환경설정
 
 # kubeadm, kubelet, kubectl 설치
-# 여기도 root계정으로 하면 , sudo명령어 필요없으니까 편하다.
+
+# Update the apt package index and install packages needed to use the Kubernetes apt repository:
 sudo apt-get update
 sudo apt-get install -y apt-transport-https ca-certificates curl
-sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg <https://packages.cloud.google.com/apt/doc/apt-key.gpg>
-echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] <https://apt.kubernetes.io/> kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+# Download the Google Cloud public signing key:
+sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+# Add the Kubernetes apt repository:
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+# kubeadm , kubelet , kubectl 설치
 sudo apt-get update
 sudo apt-get install -y kubelet kubeadm kubectl
+
+# 특정 버전 설치 ( 1.21.0 설치 방안 )
+sudo apt-get install -y kubelet=1.21.0-00 kubeadm=1.21.0-00 kubectl=1.21.0-00
+
+# version pin
 sudo apt-mark hold kubelet kubeadm kubectl
 
-systemctl start kubelet
-systemctl enable kubelet
+sudo systemctl start kubelet
+sudo systemctl enable kubelet
 ```
 
 ## json 파일 생성
 
 ```bash
-udo mkdir /etc/docker
+sudo mkdir /etc/docker
 
 cat <<EOF | sudo tee /etc/docker/daemon.json
 {
@@ -98,8 +124,8 @@ cat <<EOF | sudo tee /etc/docker/daemon.json
 }
 EOF
  
-sudo systemctl enable docker
 sudo systemctl daemon-reload
+sudo systemctl enable docker
 sudo systemctl restart docker
 
 ```
@@ -114,6 +140,7 @@ sudo systemctl restart docker
 **master node ( control plane ) 에서만 해당 명령어 실행**
 
 ```bash
+$ sudo su
 $ kubeadm init
 ```
 
