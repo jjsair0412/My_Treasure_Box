@@ -167,10 +167,27 @@ $ kubectl get nodes
 아래 명령어도 master node ( control plane ) 에서만 실행해야 함.
 
 cni 설치
--- cni는 weave-net, calico 등 많지만 , 해당 예제에서는 weave net으로 구성한다.
+-- cni는 weave-net, calico 등 많지만 , 해당 예제에서는 calico 로 설치함. ( weavenet 명령어또한 위치함 )
 
 ```bash
+# calico 설치 
+$ kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+
+# weavenet 설치
 $ kubectl apply -f "<https://cloud.weave.works/k8s/net?k8s-version=$>(kubectl version | base64 | tr -d '\\n')"
+
+# 설치 결과 확인 
+kubectl get pods -n kube-system   
+
+# 모든 노드가 Ready 상태여야 함
+kubectl get nodes -o wide 
+```
+
+## test용 single node일 경우
+master node에 걸린 taint를 제거해주어야 파드가 스케쥴링 된다.
+
+```bash
+kubectl taint nodes <node_name> node-role.kubernetes.io/master:NoSchedule-
 ```
 
 ## master node 와 worker node join
