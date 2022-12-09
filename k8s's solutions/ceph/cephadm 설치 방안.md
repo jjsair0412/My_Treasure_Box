@@ -2,7 +2,7 @@
 ## 1. precondition
 해당 문서는 ceph를 베어메탈 환경에서 cephadm으로 설치하는 방안에 대해 기술합니다.
 ## 2. install ceph
-cephadm을 download합니다.
+cephadm을 공식 git에서 download합니다.
 ```
 #cephadm download
 curl --silent --remote-name --location https://github.com/ceph/ceph/raw/quincy/src/cephadm/cephadm
@@ -27,18 +27,18 @@ centos인 경우 ( centos7에서 테스트 완료 )
 rpm --import 'https://download.ceph.com/keys/release.asc'
 ```
 
-vm이 가지고 있는 내부 ip 기입
+mon으로 사용할 vm ( 노드 ) 의 ip를 입력합니다.
 ```
 cephadm bootstrap --mon-ip 10.xx.xx.xxx --allow-fqdn-hostname
 sudo cephadm install ceph-common
 ```
 
-install 완료시 제공되는 정보들
+install 완료시 제공되는 정보들인 접근 URL 정보와 user 이름 , password를 기억해 둡니다.
 ```
 URL: https://hostname:8443/
 	    User: admin
 	Password: tfvi8fb8uh
-
+```
 ceph tools가 설치되어 있는 cluster container 접속 command 제공
 ```
 You can access the Ceph CLI with:
@@ -48,5 +48,7 @@ You can access the Ceph CLI with:
 
 disk ceph에 mount되지 않고 남아있는 여유 disk를 osd에 mount
 ```
-```
 ceph orch apply osd --all-available-devices
+```
+
+
