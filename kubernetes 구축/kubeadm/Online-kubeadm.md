@@ -265,10 +265,21 @@ master-node-ip-addr jinseong.xxx.xxx.net
 ----------
 
 ## kubeadm reset
+Docker Reset
+```bash
+$ docker rm -f `docker ps -aq`
+$ docker volume rm `docker volume ls -q`
+$ sudo umount /var/lib/docker/volumes
+$ sudo rm -rf /var/lib/docker/
+$ sudo systemctl restart docker
+```
 
-[](https://wookiist.dev/143)[https://wookiist.dev/143](https://wookiist.dev/143)
-
-[](https://scbyun.com/m/810)[https://scbyun.com/m/810](https://scbyun.com/m/810)
+Kubeadm Reset
+```bash
+$ sudo kubeadm reset
+$ sudo systemctl restart kubelet
+$ sudo reboot
+```
 
 ## trouble
 ### 1. Unimplemented desc = unknown service runtime.v1alpha2.RuntimeService"
