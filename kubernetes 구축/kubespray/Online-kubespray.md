@@ -148,6 +148,17 @@ $ ansible-playbook -i inventory/mycluster/inventory.ini ./cluster.yml --flush-ca
 --private-key=~/.ssh/id_rsa
 ```
 
+## 4. user 명령어 허옹
+kubespray로 k8s를 설치한다면 kubectl 권한이 sudo 에만 부여되어 있습니다.
+
+user 계정에서 아래 명령어를 작성하여 user에게 kubectl권한을 부여합니다.
+```
+kubectl 명령어 허용 작업
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
 ## 4. 발생 문제점
 
 ### 1. The conditional check ''127.0.0.1' | ipaddr' failed. The error was: The ipaddr filter requires python's netaddr be installed on the ansible controller
