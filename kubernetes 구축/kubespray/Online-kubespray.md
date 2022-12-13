@@ -143,6 +143,7 @@ etcd_deployment_type: docker > etcd_deployment_type: host로 변경 저장
 $ cd /home/centos/kubespray/kubespray-2.17.1
 
 # ansible 명령어로 kubespray 실행
+# pem key 파일 경로를 private-key 세팅값에 추가 합니다.
 $ ansible-playbook -i inventory/mycluster/inventory.ini ./cluster.yml --flush-cache -b -v \
 --private-key=~/.ssh/id_rsa
 ```
