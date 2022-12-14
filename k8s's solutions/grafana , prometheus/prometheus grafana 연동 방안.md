@@ -111,7 +111,7 @@ curl -L -X GET -H 'Accept: application/json' -H 'Authorization: Bearer eyJrIjoiV
 [
     {
         "id": 1,
-        "uid": "nGWH6D54z",
+        "uid": "nGWH6D54z", # uid copy하여 저장
         "orgId": 1,
         "name": "Prometheus",
         "type": "prometheus",
