@@ -10,13 +10,15 @@
 ### 1. prometheus와 grafana 연동
 먼저 설치한 prometheus를 grafana에 연동합니다.
 
-#### 1.1 grafana admin 계정으로 접속합니다.
+#### 1.1 grafana 접근
+grafana admin 계정으로 접속합니다.
 
 ![gra1][gra1]
 
 [gra1]:./images/gra1.png
 
-#### 1.2 좌측 하단의 톱니바퀴 버튼에 , Data sources를 클릭하여 접속합니다.
+#### 1.2 datasource 접근
+좌측 하단의 톱니바퀴 버튼에 , Data sources를 클릭하여 접속합니다.
 
 ![gra2][gra2]
 
@@ -63,6 +65,71 @@ Default datasource로 등록할것인지 확인합니다.
 [gra8]:./images/gra8.png
 
 #### 1.6 datasource uid 확인
+dashboard를 import하기전에 추가한 datasource의 uid를 확인해야 합니다.
+
+확인 방법은 grafana의 RestAPI로 Get 요청을 보내어 확인 합니다.
+
+```http
+GET /api/datasources HTTP/1.1
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer eyJrIjoiT0tTcG1pUlY2RnVKZTFVaDFsNFZXdE9ZWmNrMkZYbk
+```
+
+Get 요청을 보내기 위해 Bearer 토큰값을 만들어야 합니다.
+
+좌측 하단 톱니바퀴 버튼의 API keys를 클릭하여 토큰값을 생성하는 페이지로 이동합니다.
+
+![key1][key1]
+
+[key1]:./images/key1.png
+
+Key name을 Bearer로 설정한 뒤 , Role과 API Key 유효 기간을 지정합니다.
+
+![key2][key2]
+
+[key2]:./images/key2.png
+
+생성된 Bearer key를 Copy하여 저장해 둡니다.
+
+![key3][key3]
+
+[key3]:./images/key3.png
+
+postman 또는 curl 명령을 통해 restcall 합니다.
+```bash
+# ex
+curl -L -X GET -H 'Accept: application/json' -H 'Authorization: Bearer {token}' 'http://grafa_url/api/datasources'
+
+# usecase
+curl -L -X GET -H 'Accept: application/json' -H 'Authorization: Bearer eyJrIjoiV1RUbTluMVV6R25QVnJjOHpWdWw4c1k1bkltV0syRGYiLCJuIjoiQmVhcmVyIiwiaWQiOjF9' 'http://gra.jjs.com/api/datasources'
+```
+
+결과에는 call 대상인 grafana에 등록된 모든 datasources 정보가 출력되며 , 필요한 datasources의 uid값을 Copy하여 저장해 둡니다.
+```json
+# output
+[
+    {
+        "id": 1,
+        "uid": "nGWH6D54z",
+        "orgId": 1,
+        "name": "Prometheus",
+        "type": "prometheus",
+        "typeName": "Prometheus",
+        "typeLogoUrl": "public/app/plugins/datasource/prometheus/img/prometheus_logo.svg",
+        "access": "proxy",
+        "url": "http://pro.jjs.com:30325/",
+        "user": "",
+        "database": "",
+        "basicAuth": false,
+        "isDefault": true,
+        "jsonData": {
+            "httpMethod": "POST"
+        },
+        "readOnly": false
+    }
+]
+```
 
 ### 2. dashboard 설정
 grafana dashboard에 multi cluster dashboard를 import 합니다.
@@ -78,7 +145,7 @@ grafana dashboard에 multi cluster dashboard를 import 합니다.
 [gra9]:./images/gra9.png
 
 #### 2.2 dashboard json값 수정
-사용할 json 파일 내용의 datasource uid를 전부 다 변경해 주어야 합니다.
+사용할 json 파일 내용의 datasource uid를 이전에 저장해두었던 대상 datasource의 uid로 전부 다 변경시켜 주어야 합니다.
 ```
 ...
         "datasource": {
