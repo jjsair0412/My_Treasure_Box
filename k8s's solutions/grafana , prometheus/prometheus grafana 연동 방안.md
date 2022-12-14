@@ -135,7 +135,7 @@ curl -L -X GET -H 'Accept: application/json' -H 'Authorization: Bearer eyJrIjoiV
 grafana dashboard에 multi cluster dashboard를 import 합니다.
 
 #### 2.1 dashboard import 페이지 이동
-좌측 정 사각형 네개 모형을 클릭하거나 하단의 import를 클릭합니다.
+좌측 정 사각형 네개 모형을 클릭하거나 마우스 커서를 가져다 대서 import를 클릭합니다.
 
 사진과 같이 클릭하였을 경우 new -> import를 클릭합니다.
 이동 페이지는 동일합니다.
