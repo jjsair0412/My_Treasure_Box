@@ -105,4 +105,6 @@ grafana dashboard에 multi cluster dashboard를 import 합니다.
 dashboard의 이름을 특정한 뒤 , import 버튼을 클릭합니다.
 이때 동일 dashboard json값을 import 한다면 , uid값이 겹치기에 에러가 발생하기 때문에 uid값을 변경해 주어야 합니다.
 
+만약 데이터를 받아오지 못한다면 , 페널별로 sql문을 수정하여 값을 맞춰줍니다.
+
 import 결과 확인하여 우측 최 상단의 save 버튼으로 dashboard를 저장합니다.
