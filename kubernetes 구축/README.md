@@ -8,8 +8,9 @@ Kubernetes를 구축할 때 , 고 가용성 을 고려하여 구축한 Architect
 [구성도]:./images/구성도.PNG
 
 ## 1. 구성
-MASTER : 3
-WORKER : 8
+MASTER : 3대
+
+WORKER : 8대
 
 
 개발용 solution들은 ingress gateway를 이용하여 접근합니다.
