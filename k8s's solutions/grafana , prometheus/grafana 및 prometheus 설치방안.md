@@ -12,6 +12,11 @@ pv를 동적 프로비저닝 하기 위해 nfs를 설치하였습니다.
 | grafana | 9.3.1 |
 | nfs | 3.0.0 |
 
+또한 설치 시 앞단 DNS 서버가 없었기 때문에 만약 아래처럼 prometheus ingress를 생성하고 grafana와 연동한다면 datasource를 찾지 못합니다.
+따라서 도메인을 리졸빙하지 못하는 환경에서 ingress로 연동하기 위해선 , grafana를 설치할 때 Kubernetes hostaliases 설정을 추가하여 pod의 /etc/hosts에 prometheus ingress 설정을 추가해야 합니다.
+
+[hostAliases 설정 방안](https://kubernetes.io/docs/tasks/network/customize-hosts-file-for-pods/#adding-additional-entries-with-hostaliases)
+
 ## 2. 설치
 ### 2.1 prometheus 설치
 prometheus는 helm chart로 설치합니다.
@@ -180,9 +185,26 @@ helm pull grafana/grafana --untar
 kubectl create ns gra
 ```
 
+#### hostAliases 설정
+처음 설명했던것과 같이 ingress를 통해 연동할것이기에 , grafana dashboard 설치 시 hostAliases를 설정합니다.
+grafana의 values.yaml에 hostAliases설정 값이 있습니다.
+
+```
+$ cat setting-values.yaml
+hostAliases:
+- ip: "10.1.1.3" # ip주소
+  hostnames:
+  - "foo.local" # ip주소와 매핑되는 Domain 정보
+  - "bar.local"
+- ip: "10.1.1.2" # ip주소
+  hostnames:
+  - "pro.jjs.com" # 설치한 prometheus 도메인 정보
+  - "jjsair.local"
+```
+
 #### helm install
 ```
-helm upgrade --install grafana . -n gra -f values.yaml
+helm upgrade --install grafana . -n gra -f values.yaml,setting-values.yaml
 ```
 
 #### 접근 정보 확인
