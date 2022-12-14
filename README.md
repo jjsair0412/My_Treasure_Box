@@ -1,5 +1,5 @@
 # kubernetes_info
-![header](https://capsule-render.vercel.app/api?type=waving&color=auto&height=300&section=header&text=Welcome%to%K8S%INFOMATION!!&fontSize=30&animation=fadeIn&fontAlignY=38)
+![header](https://capsule-render.vercel.app/api?type=waving&color=auto&height=300&section=header&text=Welcome20%to%K8S%INFOMATION!!&fontSize=30&animation=fadeIn&fontAlignY=38)
 
 ## INDEX
 - [AWS - AWS 관련](https://github.com/jjsair0412/kubernetes_info/tree/main/AWS)
