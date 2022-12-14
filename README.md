@@ -1,6 +1,6 @@
 # kubernetes_info
 ## INDEX
-- [AWS - AWS 관련]()
+- [AWS - AWS 관련](#AWS)
     - [AWS basic information - AWS 개념 정리]()
     - [My AWS architecture - 만들어본 AWS 아키텍처 및 테라폼 코드 ( 코드 작성 예정 )]()
         - [haproxy - rke2 - ceph composition]()
@@ -14,6 +14,9 @@
 - [Docker]()
     - [docker compose - docker compose 개념 정리 및 사용방안 정의]()
     - [docker info - docker 개념정리 및 사용방안 정의]()
+- [EFK - EFK stack info]()
+    - [efk index lifecycle info - efk stack 사용 방안 및 lifecycle 정의]()
+
 
 ## storageClass local provisioner information
 Local volumes do not currently support dynamic provisioning, however a StorageClass should still be created to delay volume binding until Pod scheduling.
