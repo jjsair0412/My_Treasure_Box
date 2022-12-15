@@ -20,6 +20,7 @@ etcd를 외부로 뺏기 때문에 , 고 가용성을 확보할 수는 있지만
 - [kubeadm으로 고가용성 클러스터 생성](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/#before-you-begin)
 - [kubeadm으로 고가용성 etcd 클러스터 설정](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/)
 - [Kubernetes 및 etcd 고가용성 클러스터 구축하기 - ysyukr님의 블로그](https://ysyu.kr/2019/10/how-to-ha-cluster-kubernetes-with-etcd/)
+- [How to install kubernetes with external Etcd manually? - netgo](https://createnetech.tistory.com/35)
 
 ### apt update
 작업 전 update 진행합니다.
