@@ -84,6 +84,8 @@
         - [install redis helm](https://github.com/jjsair0412/kubernetes_info/blob/main/k8s's%20solutions/redis/install%20redis%20helm.md)
     - [helm info - helm 사용 방안](https://github.com/jjsair0412/kubernetes_info/blob/main/k8s's%20solutions/helm%20info.md)
 - [kubernetes 구축 - k8s ha구성 아키텍처 및 가이드](https://github.com/jjsair0412/kubernetes_info/tree/main/kubernetes%20%EA%B5%AC%EC%B6%95)
+    - [ha 구축]()
+        - [kubeadm external etcd cluster - 작성중]()
     - [kubeadm](https://github.com/jjsair0412/kubernetes_info/tree/main/kubernetes%20%EA%B5%AC%EC%B6%95/kubeadm)
     - [kubesphere , kubekey - kown issue](https://github.com/jjsair0412/kubernetes_info/tree/main/kubernetes%20%EA%B5%AC%EC%B6%95/kubesphere%20%2C%20kubekey)
         - [KubeKey를 통한 kubesphere 배포 방안](https://github.com/jjsair0412/kubernetes_info/tree/main/kubernetes%20%EA%B5%AC%EC%B6%95/kubesphere%20%2C%20kubekey/KubeKey%EB%A5%BC%20%ED%86%B5%ED%95%9C%20kubesphere%20%EB%B0%B0%ED%8F%AC%20%EB%B0%A9%EC%95%88)
