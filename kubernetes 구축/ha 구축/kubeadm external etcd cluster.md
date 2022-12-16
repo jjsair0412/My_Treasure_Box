@@ -606,6 +606,7 @@ $HOME
 ```
 
 만약 ETCD HOST3번이 있다면 , 결과는 아래와 같아야 합니다.
+
 ***HOST2번 ETCD ( 10.0.0.4 )***
 ```bash
 $HOME
@@ -626,6 +627,7 @@ $HOME
 
 #### 5.6 static pod manifest 생성
 인증서와 구성이 준비되었기 때문에 , 파드 매니페스트를 생성해야 합니다.
+
 각 ETCD HOST에서 kubeadm 명령어로 etcd를 위한 static manifest 를 생성합니다 !
 
 ***모든 ETCD NODE에서 수행 합니다***
@@ -637,8 +639,8 @@ root@HOST2 $ kubeadm init phase etcd local --config=$HOME/kubeadmcfg.yaml
 
 실 수행한 명령어는 다음과 같습니다.
 ```bash
-root@10.0.0.3 $ kubeadm init phase etcd local --config=/tmp/10.0.0.3/kubeadmcfg.yaml
-root@10.0.0.4 $ kubeadm init phase etcd local --config=$HOME/kubeadmcfg.yaml
+root@10.0.0.3 $ kubeadm init phase etcd local --config=/tmp/10.0.0.3/kubeadmcfg.yaml # 1번 ETCD HOST
+root@10.0.0.4 $ kubeadm init phase etcd local --config=$HOME/kubeadmcfg.yaml # 2번 ETCD HOST
 ```
 
 결과는 다음이 출력됩니다.
