@@ -341,11 +341,12 @@ $ swapoff -a
 $ systemctl daemon-reload
 
 $ systemctl restart kubelet
-
+```
 
 kubelet이 드디어 active상태인것을 확인 하고 넘어갑니다 .
-active가 아니라면 journalctl -xe나 status를 보고 troubleshooting 진행합니다. 
+active 상태가 아니라면 journalctl -xe나 status를 보고 troubleshooting 진행합니다. 
 ```
+$ journalctl -xe
 $ systemctl status kubelet
 ```
 
