@@ -465,6 +465,8 @@ CA가 이미 있는 경우 CA crt와 key파일을 /etc/kubernetes/pki/etcd/ca.cr
 etcd ${HOST0} 에서 인증서를 생성하고 , 다른 etcd host들의 cert 파일들을 생성한뒤
 scp로 다른 호스트 ( ${HOST1} ${HOST2} )로 복사하는 과정입니다.
 
+***HOST0번에서 진행합니다.***
+
 ```bash
 $ sudo kubeadm init phase certs etcd-ca
 ```
@@ -537,6 +539,9 @@ sudo scp -i kisti.pem -r /tmp/10.0.0.4/* ubuntu@10.0.0.4:/home/ubuntu
 ```
 
 #### 5.5 인증서 복사
+
+***Key를 생성한 HOST0번에서 진행합니다. 생성이후 각 ETCD의 key를 맞는 HOST들에게 옮긴다음부턴 ssh로 접근하여 pki폴더로 키들을 이동합니다.***
+
 인증서가 생성되었기 때문에 , 해당 호스트로 이동하여 복사합니다.
 
 ```bash
