@@ -4,7 +4,7 @@
 
 그러나 etcd를 master node에 내장하지 않고 , 외부 etcd cluster와 연결하여 kubernetes cluster를 구축합니다.
 
-etcd를 외부로 뺏기 때문에 , 고 가용성을 확보할 수는 있지만 , 그만큼 인프라 리소스가 더 필요하다는 단점이 잇습니다.
+etcd를 외부로 뺏기 때문에 , 고 가용성을 확보할 수는 있지만 , 그만큼 인프라 리소스가 더 필요하다는 단점이 있습니다.
 
 최소 3개의 마스터노드와 , 클러스터링된 3개의 etcd node가 필요하지만 해당 문서는 test의 목적으로 한개의 master와 한개의 etcd node로 구성합니다.
 
@@ -15,6 +15,15 @@ etcd를 외부로 뺏기 때문에 , 고 가용성을 확보할 수는 있지만
 - etcd : 2 vcore , 4GB , 2EA
 - master : 4 vCore , 8GB 1EA
 - container runtime : conatinerd
+
+해당 환경에선 마스터노드를 바라보고있는 LB가 존재하지 않습니다.
+따라서 controlPlanEndPoint를 마스터노드로 두고 , DNS 정보를 hosts파일에 등록하지 않았습니다.
+
+그러나 만약 존재한다면 , 맨 마지막 설정과정인 [첫번째 master node 생성 - kubeadm-config.yaml 파일 생성](#62-첫번째-master-node-생성---kubeadm-configyaml-파일-생성)
+에서 ```controlPlaneEndpoint: "LOAD_BALANCER_DNS:LOAD_BALANCER_PORT"``` 를 master를 바라볼 LB 정보에 맞게 등록해야 하며 ,
+LB DNS부분에 ip가 들어간다면 모든 노드에서 해당 IP로 통신이 된다는 가정 하에 , etc/hosts파일에 등록하지 않아도 됩니다. (DNS SERVER에 등록 안해도 됨)
+
+그러나 Domain으로 접근해야 하고 DNS 리졸빙할 DNS SERVER가 없다면 , 처음 설정과정인 [1.1 hosts 파일 설정](#11-hosts-파일-설정) 에 Domain정보를 등록해야 합니다.
 
 ### 참고 문서
 - [kubeadm으로 고가용성 클러스터 생성](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/#before-you-begin)
@@ -681,7 +690,7 @@ $ cp /home/ubuntu/apiserver-etcd-client.crt /etc/kubernetes/pki/
 $ cp /home/ubuntu/apiserver-etcd-client.key /etc/kubernetes/pki/
 ```
 
-#### 6.2 첫번째 master node 생성
+#### 6.2 첫번째 master node 생성 - kubeadm-config.yaml 파일 생성
 먼저 kubeadm-config.yaml 파일을 생성합니다.
 
 첫번째 master node가 작업 대상입니다 !! 
