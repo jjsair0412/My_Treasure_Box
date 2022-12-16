@@ -14,7 +14,7 @@ etcd를 외부로 뺏기 때문에 , 고 가용성을 확보할 수는 있지만
 - OS : ubuntu 20.04
 - etcd : 2 vcore , 4GB , 2EA
 - master : 4 vCore , 8GB 1EA
-- container runtime : conatinerd
+- container runtime : containerd
 
 해당 환경에선 마스터노드를 바라보고있는 LB가 존재하지 않습니다.
 따라서 controlPlanEndPoint를 마스터노드로 두고 , DNS 정보를 hosts파일에 등록하지 않았습니다.
