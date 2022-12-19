@@ -2,7 +2,11 @@
 ## 0. precondition
 해당 문서는 ceph를 베어메탈 ubuntu 환경에서 cephadm으로 설치하는 방안에 대해 기술합니다.
 
-cephadm을 설치하는 방법은 apt-get과 curl 두가지로 나뉩니다.
+cephadm을 설치하는 방법은 apt-get과 curl . 그리고 ansible-cephamd 세 가지로 나뉩니다.
+해당 문서는 cephadm을 curl로 받아와서 설치하는 과정에 대해 기술합니다. 
+- 해당 방안이 가장 추천되는 방안 입니다. 
+  docker container로 ceph cluster를 생성하기에 , ansible보다 빠르고 간편합니다.
+
 ***둘중에 하나만 선택해서 진행해야 합니다 .!***
 
 해당 문서는 curl방식으로 진행합니다.
