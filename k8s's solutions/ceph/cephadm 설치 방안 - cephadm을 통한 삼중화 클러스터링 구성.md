@@ -77,7 +77,7 @@ git 주소에서 curl 명령어로 받아옵니다..
 $ curl --silent --remote-name --location https://github.com/ceph/ceph/raw/quincy/src/cephadm/cephadm
 ```
 
-해당 문서에는 현 시점 (22.12.19)자로 docs에 나와있는 quincy version을 통해 설치를 진행합니다.
+해당 문서에는 현 시점 (22.12.19)으로 docs에 나와있는 quincy version을 통해 설치를 진행합니다.
 다른 버전을 설치하고싶다면 , release 뒤에 명시해두면 됩니다.
 
 +x 권한을 부여하여 실행 권한을 부여하고 , quincy 레포를 추가한 후 설치를 진행합니다.
