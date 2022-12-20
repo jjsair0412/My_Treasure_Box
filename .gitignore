@@ -1,6 +1,6 @@
+*.DS_Store
+*.csv
+*.docx
+*.pdf
+*.xlsx
 
-/.DS_Store
-
-/Users/kb01-jjsair0412/kubernetes_info/for jenkins pipeline sample_code/sign_in_api/src/main/resources/application.properties
-
-/Users/kb01-jjsair0412/kubernetes_info/for jenkins pipeline sample_code/sign_up_api/src/main/resources/application.properties
