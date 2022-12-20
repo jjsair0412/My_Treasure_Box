@@ -226,7 +226,15 @@ jjs2        /dev/vdb  hdd   19634bfa-4615-4d75-9  21.4G             16m ago    I
 jjs3        /dev/vdb  hdd   83af627b-5574-4c9b-9  21.4G             2m ago     Insufficient space (<10 extents) on vgs, LVM detected, locked  
 ```
 
-## ETC. cluster 제거
+## troubleshooting
+### osd 마운트 안되는 에러
+만약 ceph를 설치하였음에도 볼륨이 osd로 마운트되지 않는다면 , 아래 명령어를 입력하여 유휴 자원을 osd로 등록시켜야 합니다.
+
+```
+# ceph orch apply osd --all-available-devices
+```
+
+### ceph cluster 제거
 만약 설치중 cluster에 문제가 생겻을 경우 , 아래 방법을 토대로 클러스터를 제거한 후 다시 시도합니다.
 
 ceph shell에 접속합니다.
