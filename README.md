@@ -48,7 +48,7 @@
         - [argocd-helm - argocd helm 설치 가이드](https://github.com/jjsair0412/kubernetes_info/blob/main/k8s's%20solutions/ArgoCD/argocd-helm.md)
     - [ceph - ceph 개념 정의](https://github.com/jjsair0412/kubernetes_info/tree/main/k8s's%20solutions/ceph)
         - [K8S storageclass에 외부 ( 기존 ) ceph cluster 사용 가이드](https://github.com/jjsair0412/kubernetes_info/blob/main/k8s's%20solutions/ceph/K8S%20storageclass%EC%97%90%20%EC%99%B8%EB%B6%80%20(%20%EA%B8%B0%EC%A1%B4%20)%20ceph%20cluster%20%EC%82%AC%EC%9A%A9%20%EA%B0%80%EC%9D%B4%EB%93%9C.md)
-        - [ceph object gateway bucket 사용법 - s3 command로 ceph 관리 방안 ( RESTAPI로 ceph 관리 )](https://github.com/jjsair0412/kubernetes_info/blob/main/k8s's%20solutions/ceph/ceph%20object%20gateway%20bucket%20%EC%82%AC%EC%9A%A9%EB%B2%95.md)
+        - [rook-ceph object gateway bucket 사용법 - s3 command로 ceph 관리 방안 ( RESTAPI로 ceph 관리 )](https://github.com/jjsair0412/kubernetes_info/blob/main/k8s's%20solutions/ceph/ceph%20object%20gateway%20bucket%20%EC%82%AC%EC%9A%A9%EB%B2%95.md)
         - [ceph with minio - minio를 통한 ceph 저장 파일 CRUD 시각화](https://github.com/jjsair0412/kubernetes_info/blob/main/k8s's%20solutions/ceph/ceph%20with%20minio.md)
         - [cephadm 설치 방안 - cephadm을 통한 삼중화 클러스터링 구성](https://github.com/jjsair0412/kubernetes_info/blob/main/k8s's%20solutions/ceph/cephadm%20%EC%84%A4%EC%B9%98%20%EB%B0%A9%EC%95%88%20-%20cephadm%EC%9D%84%20%ED%86%B5%ED%95%9C%20%EC%82%BC%EC%A4%91%ED%99%94%20%ED%81%B4%EB%9F%AC%EC%8A%A4%ED%84%B0%EB%A7%81%20%EA%B5%AC%EC%84%B1.md)
         - [rook-ceph 설치 방안 in k8s - k8s에서 ceph을 관리하기위한 rook을 통한 helm 설치 방안](https://github.com/jjsair0412/kubernetes_info/blob/main/k8s's%20solutions/ceph/rook-ceph%20%EC%84%A4%EC%B9%98%20%EB%B0%A9%EC%95%88%20in%20k8s.md)
