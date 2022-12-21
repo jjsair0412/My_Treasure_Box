@@ -17,6 +17,28 @@ spec:
         # openAPIV3Schema는 required option 
         openAPIV3Schema:
           type: object
+          required: ["spec"]
+          properties:
+            spec:
+              type: object
+              required: ["appId", "replicas", "message","image"]
+              properties:
+                message:
+                  type: string
+                image:
+                  type: string
+                appId:
+                  type: string
+                replicas:
+                  type: integer
+                  minimum: 1
+                  maximum: 3
+                language:
+                  type: string
+                  enum:
+                  - java
+                  - go
+                  - python
   # either Namespaced or Cluster
   scope: Namespaced
   names:

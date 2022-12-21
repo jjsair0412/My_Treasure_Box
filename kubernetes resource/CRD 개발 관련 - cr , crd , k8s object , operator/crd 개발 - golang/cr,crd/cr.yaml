@@ -1,4 +1,0 @@
-apiVersion: "jjsair0412.example.com/v1"
-kind: helloworld
-metadata:
-  name: hello-sample
