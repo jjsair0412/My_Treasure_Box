@@ -97,8 +97,6 @@
     - [Minikube](https://github.com/jjsair0412/kubernetes_info/tree/main/kubernetes%20%EA%B5%AC%EC%B6%95/Minikube)
 - [kubernetes resource - k8s resource에 관련한 가이드들](https://github.com/jjsair0412/kubernetes_info/tree/main/kubernetes%20resource)
     - [CRD 개발 관련 - cr , crd , k8s object , operator , controller , custom controller의 개념]()
-        - [crd 개발]()
-            - [golang code]()
     - [kubernetes Audit ( 감사 로그 ) - kube-api-server에서 로그 떨어트리기](https://github.com/jjsair0412/kubernetes_info/blob/main/kubernetes%20resource/kubernetes%20Audit%20(%20%EA%B0%90%EC%82%AC%20%EB%A1%9C%EA%B7%B8%20).md)
     - [RBAC - k8s command RBAC 설정 관련](https://github.com/jjsair0412/kubernetes_info/tree/main/kubernetes%20resource/RBAC)
         - [clusterrole & clusterrolebinding - all ns 접근 가능](https://github.com/jjsair0412/kubernetes_info/blob/main/kubernetes%20resource/RBAC/clusterrole%20%26%20clusterrolebinding%20-%20all%20ns%20%EC%A0%91%EA%B7%BC%20%EA%B0%80%EB%8A%A5.md)
