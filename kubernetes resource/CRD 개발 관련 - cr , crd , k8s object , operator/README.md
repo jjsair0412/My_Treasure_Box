@@ -102,3 +102,4 @@ k8s는 operator를 제공하는데 , k8s operator는의 클라이언트를 붙�
 [operator 종류](https://kubernetes.io/ko/docs/concepts/extend-kubernetes/operator/#writing-operator)
 
 위 링크를 타고가서 각 언어별 ( ruster , java , python , go 등 ...) operator를 확장 개발할 수 있습니다.
+제공되는 sdk 및 프레임워크를 커스텀하여 개발합니다.
