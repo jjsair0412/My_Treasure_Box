@@ -3,6 +3,9 @@ kubernetes custom resources를 개발하는 과정에 대해 기술한 폴더 �
 
 개발하기 위해서 CR과 CRD 그리고 Operator의 개념을 짚고 넘어가야 하기 때문에 , 이론의 관련한 내용은 여기에 작성해 두었습니다.
 
+또한 CRD를 해당 문서처럼 개발하기 위해선 , **k8s version 1.7** 이상이여야만 합니다.
+그 이전 버전에서는 CRD가 베타버전이거나 없습니다.
+
 ## INDEX
 1. [Kubernetes Object란 ?](#1-kubernetes-object란)
 2. [Custom Resource란 ?](#2-custom-resource--cr--이란)
@@ -50,20 +53,20 @@ object를 생성함으로써 , cluster workroad를 어떤 형태로 보이고자
 pod , deployment , daemonset .. 등 spec과 state를 가지는 것들이 있습니다.
 
 
-## 2. Custom Resource ( cr ) 이란 ?
+## 2. Custom Resource ( cr ) 란 ?
 cr은 , k8s의 특정 object 모음을 저장해 둔 endpoint 입니다.
 - 예를 들어 , pod resource에는 pod object 모음이 포함되어 있습니다.
 
 cr은 동적으로 생성되거나 사라질 수 있으며 , cr이 생성되면 사용자는 pod와 같은 resource들을 kubectl 명령어로 api server에 요청을 보내어 컨트롤할  수 있습니다.
 
-## 3. Custom Resource Definitions ( crd ) 란 ?
+## 3. Custom Resource Definitions ( crd ) 이란 ?
 cr을 생성하여 k8s object를 컨트롤하기 위해선 , cr을 etcd에 등록해야만 합니다.
 
 k8s etcd에 CR을 등록하기 위해 , CRD나 AAA( API Aggregation ) 를 사용합니다.
 
 CRD는 CR을 통해 kubectl로 api server에 요청을 보내어 object를 컨트롤하기 위해서 etcd에 cr을 등록시킬 때 사용하는 명세 입니다.
 
-## 4. API Aggregation ( AAA ) 이란 ?
+## 4. API Aggregation ( AAA ) 란 ?
 AAA 또한 CRD와 동일하게 CR을 etcd에 등록할 때 사용하는 명세 입니다.
 
 ## 5. CRD VS AAA
@@ -89,7 +92,7 @@ cr과 crd를 이용하여 생성한 cr은 , etcd에 등록되는 구조화된 �
 cr을 이용하여 사용자의 의도인 object 상태 (state)를 선언 (etcd에 등록) 하면 , custom controller가 그 상태를 맞추어 주기 위해 동작합니다.
 - object의 설정을 업데이트 및 object 컨트롤
 
-## 8. operator란 ?
+## 8. operator 란 ?
 - CR의 컨트롤러 역할을 할 수 있는 쿠버네티스 API 서버의 클라이언트(개발 패턴, 익스텐션을 칭하기도합니다.)
 - k8s 컨트롤러 개념을 통해 쿠버네티스 코드를 수정하지않고 클러스터의 동작을 확장합니다.
 - 컨트롤러의 역할을 할 뿐 아니라 쿠버네티스 운영에 필요한 모든것을 포함합니다.
