@@ -1,0 +1,6 @@
+apiVersion: "jjs.extension.example.com/v1"
+kind: Hello
+metadata:
+  name: hello-sample
+size: 3
+
