@@ -7,6 +7,7 @@ kubernetes custom resources를 개발하는 과정에 대해 기술한 폴더 �
 그 이전 버전에서는 CRD가 베타버전이거나 없습니다.
 
 ## INDEX
+0. [결론](#결론)
 1. [Kubernetes Object란 ?](#1-kubernetes-object란)
 2. [Custom Resource란 ?](#2-custom-resource--cr--이란)
 3. [Custom Resource Definition 이란 ?](#3-custom-resource-definitions--crd--란)
