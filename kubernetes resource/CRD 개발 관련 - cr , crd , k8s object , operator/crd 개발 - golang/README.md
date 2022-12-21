@@ -308,6 +308,72 @@ $ mkdir custom-operator-code
 $ cd custom-operator-code
 ```
 
+operator-sdk init 명령어로 go modules를 사용할 수 있도록 초기화 합니다.
+
+go project를 생성하는 명령어 입니다. ( go init과 동일 )
+- [operator-sdk init 관련 문서](https://sdk.operatorframework.io/docs/cli/operator-sdk_init/)
+
+domain에는 cr의 apiVersion 정보를 넣어주고 , repo는 github repo를 적어줍니다.
+- 실제 repository가 존재하지 않아도 무관합니다.
+
+```bash
+# 사용 예
+$ operator-sdk init --domain example.com --repo github.com/example/memcached-operator
+
+# 실제 수행 명령어
+$ operator-sdk init --domain jjsair0412.example.com  --repo github.com/jjsair0412/memcached-operator
+```
+
+수행 결과 golang project가 생성됩니다.
+```bash
+$ ls
+Dockerfile Makefile   PROJECT    README.md  config     go.mod     go.sum     hack       main.go
+```
+
+디렉터리 tree 구조는 다음과 같습니다.
+
+```bash
+.
+├── Dockerfile
+├── Makefile
+├── PROJECT
+├── README.md
+├── config
+│   ├── default
+│   │   ├── kustomization.yaml
+│   │   ├── manager_auth_proxy_patch.yaml
+│   │   └── manager_config_patch.yaml
+│   ├── manager
+│   │   ├── kustomization.yaml
+│   │   └── manager.yaml
+│   ├── manifests
+│   │   └── kustomization.yaml
+│   ├── prometheus
+│   │   ├── kustomization.yaml
+│   │   └── monitor.yaml
+│   ├── rbac
+│   │   ├── auth_proxy_client_clusterrole.yaml
+│   │   ├── auth_proxy_role.yaml
+│   │   ├── auth_proxy_role_binding.yaml
+│   │   ├── auth_proxy_service.yaml
+│   │   ├── kustomization.yaml
+│   │   ├── leader_election_role.yaml
+│   │   ├── leader_election_role_binding.yaml
+│   │   ├── role_binding.yaml
+│   │   └── service_account.yaml
+│   └── scorecard
+│       ├── bases
+│       │   └── config.yaml
+│       ├── kustomization.yaml
+│       └── patches
+│           ├── basic.config.yaml
+│           └── olm.config.yaml
+├── go.mod
+├── go.sum
+├── hack
+│   └── boilerplate.go.txt
+└── main.go
+```
 
 #### 3.2.2 api 생성
 api를 create 합니다.
@@ -321,4 +387,31 @@ $ operator-sdk create api --version v1 --kind Hello --group mygroup
 
 # 실제 수행 명령어
 $ operator-sdk create api --version v1 --kind helloworld --group jjsair0412.example.com
+```
+
+
+## troubleshooting
+### 1. operator-sdk init or create api 할 때 base.go.kubebuilder.io/v3 에러
+아래와 같은 에러 발생 시 , init한 프로젝트 루트 경로에서 PROJECT의 설정값을 확인해봐야 합니다.
+- 관련 stackoverflow 글 : https://stackoverflow.com/questions/69974777/kubebuilder-create-webhook-requires-a-previously-created-api
+
+
 ```bash
+FATA[0003] failed to create API: unable to inject the resource to "base.go.kubebuilder.io/v3": invalid Kind: must start with an uppercase character
+```
+
+PROJECT 설정값 확인
+
+```bash
+$ cat PROJECT
+domain: jjsair0412.example.com
+layout:
+- go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: custom-operator-code
+repo: github.com/jjsair0412/operator
+version: "3"
+```
+
