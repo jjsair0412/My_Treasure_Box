@@ -23,12 +23,14 @@ golang용 operator를 커스터마이징 하여 해당 cr를 통해서 k8s objec
 helloworld kind를 가지는 cr을 개발합니다.
 
 기능은 다음과 같습니다.
-helloworld resource를 생성하면
+helloworld kind를 가진 resource를 생성하면
 
 1. nginx image를 가진 deployment 배포
 2. 해당 deployment를 expose하는 서비스 생성
 - service type은 NodePort 사용
 3. log로 "hello world i'm jinseong" 출력
+
+를 한번에 할 수 있게끔 하는 custom resource를 개발합니다.
 
 해당 CRD는 namespace에 종속적이게끔 개발합니다.
 
@@ -114,7 +116,7 @@ kubectl explain 명령어를 통해 crd의 대한 정보를 확인할 수 있습
 $ kubectl explain helloworlds
 ```
 
-이제 helloworld라는 kind로 CR을 생성할 수 있습니다.
+***이제 helloworld라는 kind로 CR을 생성할 수 있습니다.***
 
 
 ## 2. CR 생성
@@ -132,3 +134,36 @@ kind: helloworld
 metadata:
   name: hello-sample
 ```
+
+
+kubectl apply로 CR을 etcd에 정의 합니다.
+
+```bash
+$ kubectl apply -f cr.yaml 
+helloworld.jjsair0412.example.com/hello-sample created
+```
+
+kubectl get 명령어로 pod나 deploy와 같은 k8s object 처럼 CR을 관리할 수 있습니다.
+
+describe와 같은 명령어도 작동 합니다.
+
+```bash
+$ kubectl get hw
+NAME           AGE
+hello-sample   10m
+
+$ kubectl describe hw hello-sample
+```
+
+CR을 kubectl 명령어로 조회나 삭제 , 수정 등록 등은 가능하지만 , etcd에 미리 등록되어있는 pod나 deploy와 같은 k8s resource를 조작할 수는 없습니다.
+
+따라서 operator를 custom 합니다.
+
+## 3. operator 사용
+git 명령어로 operator 가져옵니다.
+
+```bash
+$ git clone https://github.com/operator-framework/operator-sdk
+```
+
+operator로 이동한 뒤 

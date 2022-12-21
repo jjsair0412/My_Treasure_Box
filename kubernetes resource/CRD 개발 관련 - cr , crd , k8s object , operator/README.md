@@ -24,7 +24,126 @@ kubernetes custom resources를 개발하는 과정에 대해 기술한 폴더 �
 - [controller 란 ?](https://kubernetes.io/ko/docs/concepts/architecture/controller/)
 - [k8s operator](https://kubernetes.io/ko/docs/concepts/extend-kubernetes/operator/#writing-operator)
 - [devjh님의 블로그](https://frozenpond.tistory.com/111)
+- [Kubernetes의 확장인 CRD Custom Resource Definition 와 CR Custom Resource 에 대한 개념 정리
+](https://ccambo.tistory.com/m/entry/Kubernetes-%ED%99%95%EC%9E%A5%EC%9D%B8-CRD%EC%99%80-CR-%EC%97%90-%EB%8C%80%ED%95%9C-%EA%B0%9C%EB%85%90-%EC%A0%95%EB%A6%AC)
 
+
+# 결론
+먼저 , k8s cr과 crd의 관계를 결론지은 후 각 요소들에 대한 설명을 읽어보면 더 좋기 때문에 , 결론부터 작성합니다.
+
+### **kubernetes은 상태 관리 시스템입니다.**
+
+만약 deployment의 replicas 개수가 3개에서, 2개로 변경되었다고 생각해 봅시다.
+이때 생성되어있는 pod는 3개에서 2개로 변경 되어야 할 것입니다.
+
+이러한 k8s object ( pod , deployment ,,, ) 의 상태를 변경시키는것이 controller 입니다.
+controller의 role을 정리하면 다음과 같습니다.
+- Kubernetes는 Resource들의 변경을 감시하고 있다.
+- 변경이 감지되면 Kubernetes는 관련된 이벤트를 발생시킨다.
+- 발생된 이벤트는 Controller의 Reconcile 함수로 전달된다.
+- Reconcile 함수에서 전달된 이벤트 데이터에 따라 Current State를 Desired State로 맞추기 위한 작업을 진행한다.
+
+### **kubernetes의 모든 resource는 GVR로 식별됩니다.**
+
+GVR이란 , Group , Version , Resource 의 앞 글자의 조합 입니다.
+예를들어 deployment spec을 보면 , GVR의 구조를 가진것을 알 수 있습니다.
+- apiVersion: apps/v1 <<- Group이 apps, Version이 V1 kind: Deployment <<- Resource가 Deployment ...
+
+pod나 deployment 모두 kubernetes의 resource로 controller의 관리 대상이 됩니다.
+
+
+### ***그렇다면 CR과 CRD는 무엇일까 ?***
+kubernetes에서는 실제 application이 동작하거나 운영할 때 필요한 기본적인 resource들만을 제공하고 있습니다.
+(Pod , Deployment , service)
+
+***prometheus를 기준으로 CRD 개념을 설명해 보면 ,***
+
+만약 k8s의 기본 resource만을 기준으로 메트릭을 수집하게 된다면 , 수집대상 정보나 규칙이 많아질수록 prometheus의 설정이 복잡해질 것입니다.
+또한 대상 시스템에 따라 , 하나 이상의 promehteus를 실행하여 연계하거나 , 각각 메트릭 수집을 분리하여 운영하는 등의 작업이 필요할 것 입니다.
+
+운영자 입장에선 , 너무 불편합니다.
+이런 작업들이 자동화 되면 좋겟는데 ..
+그러나 k8s는 상태관리 시스템이기에 , 자동화를 위한 상태 정보를 관리할 대상이 없기 때문에 k8s는 이런 작업을 할 수 없습니다.
+
+#### ***그래서 CRD는 .. ?***
+그래서 , k8s는 CRD를 사용합니다.
+
+개발 언어 (여기서는 Go) 관점에서 풀어보면 구조체 Structure 를 오브젝트 데이터 관리용으로 사용합니다. 구조체에서 관리할 데이터 항목과 형식을 지정하며, 관리할 데이터를 정의 합니다.
+
+```go
+type struct HelloSpec {
+  Message string    `json:"message"`
+  ...
+}
+```
+
+operator를 통해 해당 object를 생성해 주엇다 하더라도 , k8s는 이 object를 인식하지 못하기에 GVR 형식으로 K8S에 등록 시켜 주어야 하는데 , 즉 !
+
+**Kubernetes에 사용자가 정의한 오브젝트(Kubernetes에서는 리소스)에 대한 이름과 형식과 사이즈등의 데이터 관리 정보를 GVR 기준으로 정의한 것이 CRD** 입니다.
+
+
+위의 go struct를 바탕으로 CRD를 생성해 보면 , 아래와 같습니다.
+
+```yaml
+apiVersion: apiextensions.k8s.io/v1        # Kubernetes에서 제공하는 CRD용 Group과 Version
+kind: CustomResourceDefinition                # Kubernetes에서 제공하는 Resource
+metadata:
+  name: hellos.examples.com              # CRD 식별명
+spec:
+  group: examples.com                # Group
+  versions: 
+    - name: v1alpha1        # Version
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                message:        # 필드명 ! 위의 struct에서 정의한 필드에 대응된다.
+                  type: string  # 필드 형식
+                replicas:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+  names:
+    kind: Hello                            # Resource
+    plural: hellos                    # List 등으로 표현할 Resource의 복수형
+  scope: Namespaced                    # Namespace 범위로 한정
+```
+
+그러나 , CRD만을 생성했다 해서 , 할수있는건 아무것도 없습니다.
+
+#### ***그래서 CR은 .. ?***
+
+**따라서 , 명세서 (CRD) 를 작성했으니 kubernetes가 해당 명세의 실제 상태정보를 관리할 수 있는 object가 바로 CR 입니다.**
+
+개발 언어 면으로 이해한다면 , CRD는 class이고 , CRD라는 class로 만들어낸 객체가 바로 CR 입니다.
+
+위 CRD를 바탕으로 생성해낸 CR은 다음과 같아질 것입니다.
+
+```yaml
+apiVersion: examples.com/v1alpha1        # CRD에서 지정한 Group/Version
+kind: Hello                                                    # CRD에서 지정한 Resource Kind
+metadata:
+  name: my-new-hello-object                    # CR 식별명 (오브젝트 인스턴스 식별)
+spec:
+  message: "hi crd!!"                                # 필드에 저장할 값
+```
+
+그러나 , 여기까지 만들어주엇다 해서 k8s 기본 리소스인 pod나 deployment와 함께 연계해서 동작하진 않습니다.
+
+### **중요**
+위에서 , k8s는 상태 관리 시스템이라 하였습니다.
+
+controller가 object의 상태변화를 감시하다가 , 변화되면 k8s resource와 연계하여 동작 ( replica 개수 맞추기 ) 합니다.
+
+따라서 , 해당 CR에 상태 변화를 감시하고 , 상태가 변화하면 k8s resource와 연계하여 작동하는 custom controller가 필요하게 됩니다.
+
+이때 상태가 변화한다는 이야기는 , 위에 예를 빗대어 설명하자면 ```yaml sepc.message``` 필드의 값이 "hi crd!!" 에서 , "hello world" 값으로 변경되는것 을 이야기 합니다.
+- replica의 갯수가 변경되는것과 동일
 
 ## 1. Kubernetes Object란 ?
 k8s object는 k8s에서 영 속성을 가진 요소입니다.
