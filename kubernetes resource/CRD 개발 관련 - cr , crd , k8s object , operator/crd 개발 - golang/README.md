@@ -7,6 +7,7 @@ golang용 operator를 커스터마이징 하여 해당 cr를 통해서 k8s objec
 참고 문서
 - [CRD 생성관련 공식문서](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/)
 - [by devjh의 블로그](https://frozenpond.tistory.com/111)
+- [operator SDK 개발 방안 공식문서](https://sdk.operatorframework.io/docs/building-operators/golang/tutorial/)
 
 실제 코드 위치
 - [CR , CRD yaml manifest]
