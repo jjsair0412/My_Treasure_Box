@@ -18,7 +18,10 @@ kubernetes custom resources를 개발하는 과정에 대해 기술한 폴더 �
 ## 0. 참고 문서
 - [k8s object에 관련한 docs](https://kubernetes.io/ko/docs/concepts/overview/working-with-objects/kubernetes-objects/)
 - [Custom resource 란 ?](https://kubernetes.io/ko/docs/concepts/extend-kubernetes/api-extension/custom-resources/)
+- [controller 란 ?](https://kubernetes.io/ko/docs/concepts/architecture/controller/)
+- [k8s operator](https://kubernetes.io/ko/docs/concepts/extend-kubernetes/operator/#writing-operator)
 - [devjh님의 블로그](https://frozenpond.tistory.com/111)
+
 
 ## 1. Kubernetes Object란 ?
 k8s object는 k8s에서 영 속성을 가진 요소입니다.
@@ -67,7 +70,35 @@ AAA 또한 CRD와 동일하게 CR을 etcd에 등록할 때 사용하는 명세 �
 AAA는 GO 언어를 통해 바이너리 이미지를 따로 만들어 주어야 하지만 , CRD는 yml파일로 간편하게 작성할 수 있습니다.
 
 ## 6. controller 란?
+software 계층에서 controller는 쌓여진 요청을 처리하는 장치를 의미합니다. ( spring에서의 controller , device controller 등 ..)
+
+k8s controller는 etcd를 감시하여 선언된 object api에 맞게 의도하는 상태로 맞추어주려 노력하는 컴포넌트 입니다.
+
+예를 들어 , pod를 생성하여 etcd에 넣어 놓으면 , 해당 변경 사항을 controller가 감시하여 컨테이너를 띄웁니다.
+
+또한 controller는 object의 설정을 업데이트 합니다.
+- job이 종료되면 controller가 job object가 finished로 표시되도록 업데이트
 
 ## 7. custom controller 란?
+일반 controller 는 pod와 같이 api object를 컨트롤 합니다.
+
+그러나 custom controller는 custom resource ( cr ) 을 컨트롤 하는 컴포넌트 입니다.
+
+cr과 crd를 이용하여 생성한 cr은 , etcd에 등록되는 구조화된 데이터 명세일 뿐이고 , cr을 통해 object을 컨트롤하기 위해선 custom controller가 필요합니다.
+
+cr을 이용하여 사용자의 의도인 object 상태 (state)를 선언 (etcd에 등록) 하면 , custom controller가 그 상태를 맞추어 주기 위해 동작합니다.
+- object의 설정을 업데이트 및 object 컨트롤
 
 ## 8. operator란 ?
+- CR의 컨트롤러 역할을 할 수 있는 쿠버네티스 API 서버의 클라이언트(개발 패턴, 익스텐션을 칭하기도합니다.)
+- k8s 컨트롤러 개념을 통해 쿠버네티스 코드를 수정하지않고 클러스터의 동작을 확장합니다.
+- 컨트롤러의 역할을 할 뿐 아니라 쿠버네티스 운영에 필요한 모든것을 포함합니다.
+
+k8s는 operator를 제공하는데 , k8s operator는의 클라이언트를 붙여 서버 동작을 제어할 수 있는 컴포넌트 입니다.
+
+쿠버네티스의 소스를 몰라도 operator를 만들어놓으면 cr과 crd에 의한 etcd의 변경을 감지하고 쿠버네티스에 원하는 동작을 하게 할 수 있습니다.
+
+### 8.1 operator 개발 방법
+[operator 종류](https://kubernetes.io/ko/docs/concepts/extend-kubernetes/operator/#writing-operator)
+
+위 링크를 타고가서 각 언어별 ( ruster , java , python , go 등 ...) operator를 확장 개발할 수 있습니다.
