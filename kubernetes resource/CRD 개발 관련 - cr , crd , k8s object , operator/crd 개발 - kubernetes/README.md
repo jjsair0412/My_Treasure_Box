@@ -337,6 +337,8 @@ $ docker pull ghcr.io/kubernetes-client/java/crd-model-gen:v1.0.6
 ```bash
 # Downloading 
 mkdir -p /tmp/crds && cd /tmp/crds
+
+# 실습용 CRD 받아오기. 가이드에선 이미 있기 때문에 하지않는다.
 wget https://gist.githubusercontent.com/yue9944882/266fee8e95c2f15a93778263633e72ed/raw/be12c13379eeed13d2532cb65da61fffb19ee3e7/crontab-crd.yaml
 
 # Local generation
@@ -381,9 +383,42 @@ docker run \
   -p com.example.customcontrollercode \
   -o "$(pwd)"
 ```
+평균 10~30분 정도 시간이 소요됩니다.
 
 model 생성을 성공한다면 아래와 같은 결과값을 볼 수 있습니다.
 
+만약 자꾸 생성이 실패한다면 , 스크립트를 실행하는 경로를 HOME 으로 이동하여 수행하면 됩니다.
 ```bash
-
+$ cd ~
+$ bash create-model.sh
 ```
+
+
+```bash
+...
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 20.660 s
+[INFO] Finished at: 2022-12-22T13:32:11Z
+[INFO] ------------------------------------------------------------------------
+---Done.
+---Done.
+```
+
+생성해 두었던 /tmp/java 디렉터리에 자바 프로젝트가 생성된 것을 확인 할 수 있으며 , 아래 경로에서 model java file들을 확인할 수 있습니다.
+
+```bash
+$ cd ~/tmp/java/src/main/java/com/example/customcontrollercode/models
+
+$ tree
+.
+├── V1Helloworld.java
+├── V1HelloworldList.java
+└── V1HelloworldSpec.java
+```
+
+
+
+#### 3.1.3 custom controller 생성
+- 참고 문서 : https://www.programcreek.com/java-api-examples/?api=io.kubernetes.client.openapi.apis.CoreV1Api
