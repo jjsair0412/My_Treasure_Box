@@ -46,6 +46,7 @@ public class CustomControllerCodeApplication {
         return sharedInformerFactory.sharedIndexInformerFor(api, V1Helloworld.class, 0);
     }
 
+    // AppsV1Api가 k8s api server와 통신하여 k8s resource 관리 수행
     @Bean
     Reconciler reconciler(SharedIndexInformer<V1Helloworld> shareIndexInformer,
             AppsV1Api appsV1Api) {
