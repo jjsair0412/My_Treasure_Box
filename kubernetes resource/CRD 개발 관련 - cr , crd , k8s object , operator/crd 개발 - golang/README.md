@@ -3,14 +3,21 @@
 
 golang용 operator를 커스터마이징 하여 해당 cr를 통해서 k8s object를 컨트롤하는 실습 입니다.
 
+## INDEX
+- [CRD 생성](#1-crd-생성)
+- [CR 생성](#2-cr-생성)
+- [kubernetes custom controlelr 생성](#3-custom-controller-생성)
+
 ## 0. prerequisite
 참고 문서
 - [CRD 생성관련 공식문서](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/)
 - [by devjh의 블로그](https://frozenpond.tistory.com/111)
 - [operator SDK 개발 방안 공식문서](https://sdk.operatorframework.io/docs/building-operators/golang/tutorial/)
+- [operator 사용 방안](https://sphong0417.tistory.com/3)
+- [CRD , CR yaml manifest 참고 문서](https://www.techtarget.com/searchitoperations/tip/Learn-to-use-Kubernetes-CRDs-in-this-tutorial-example)
 
 실제 코드 위치
-- [CR , CRD yaml manifest]
+- [CR , CRD yaml manifest]()
 - [golang code]()
 
 ## 0.1 개발 환경
@@ -265,153 +272,12 @@ $ kubectl get hw -n test
 NAME           AGE
 hello-sample   6s
 ```
+
+그러나 해당 CR을 control하여 kubernetes resource를 감시하다가 상태를 변경시킬 수 있는 custom controller가 없기때문에 , 동작하지 않습니다.
+
+따라서 custom controller를 생성해야 합니다.
+
 ## 3. Custom controller 생성
 이제 만들어진 CR이 k8s 기본 리소스인 Pod , Deployment , service 등과 연계해서 동작할 수 있도록 custom controller를 생성해야 합니다.
 
-해당 문서에서는 golang을 통해 operator SDK로 개발합니다.
-
-### 3.1 operator 설치
-[operator SDK 공식 문서](https://sdk.operatorframework.io/docs/building-operators/golang/installation/)
-
-#### **설치 필수 조건**
-- git 설치
-- go version 1.18 이상
-- docker version 17.03+.
-- kubectl and access to a Kubernetes cluster of a compatible version.
-
-아래 공식 문서에서 나온 방안으로 설치합니다.
-- [operator-sdk 설치 방안](https://sdk.operatorframework.io/docs/installation/)
-
-macOS를 사용중이기 때문에 brew 명령어로 설치합니다.
-
-```
-$ brew install operator-sdk
-```
-
-아래 명령어로 설치결과 확인합니다.
-```
-$ operator-sdk version 
-operator-sdk version: "v1.26.0", commit: "cbeec475e4612e19f1047ff7014342afe93f60d2", kubernetes version: "v1.25.0", go version: "go1.19.4", GOOS: "darwin", GOARCH: "arm64"
-```
-
-### 3.2 resource 정의
-#### **필수 조건**
-- cluster-admin 권한이 user에게 부여 되어 있어야 합니다.
-- 다양한 운영자 이미지(예: hub.docker.com , quay.io )에 대한 액세스 가능한 이미지 레지스트리 및 명령줄 환경에 로그인됩니다.
-  - example.com이 예제에서는 레지스트리 Docker Hub 네임스페이스로 사용됩니다. 다른 레지스트리 또는 네임스페이스를 사용하는 경우 다른 값으로 바꿉니다.
-
-#### 3.2.1
-프로젝트의 프로젝트 디렉터리를 만들고 프로젝트를 초기화합니다.
-
-```bash
-$ mkdir custom-operator-code
-$ cd custom-operator-code
-```
-
-operator-sdk init 명령어로 go modules를 사용할 수 있도록 초기화 합니다.
-
-go project를 생성하는 명령어 입니다. ( go init과 동일 )
-- [operator-sdk init 관련 문서](https://sdk.operatorframework.io/docs/cli/operator-sdk_init/)
-
-domain에는 cr의 apiVersion 정보를 넣어주고 , repo는 github repo를 적어줍니다.
-- 실제 repository가 존재하지 않아도 무관합니다.
-
-```bash
-# 사용 예
-$ operator-sdk init --domain example.com --repo github.com/example/memcached-operator
-
-# 실제 수행 명령어
-$ operator-sdk init --domain jjsair0412.example.com  --repo github.com/jjsair0412/memcached-operator
-```
-
-수행 결과 golang project가 생성됩니다.
-```bash
-$ ls
-Dockerfile Makefile   PROJECT    README.md  config     go.mod     go.sum     hack       main.go
-```
-
-디렉터리 tree 구조는 다음과 같습니다.
-
-```bash
-.
-├── Dockerfile
-├── Makefile
-├── PROJECT
-├── README.md
-├── config
-│   ├── default
-│   │   ├── kustomization.yaml
-│   │   ├── manager_auth_proxy_patch.yaml
-│   │   └── manager_config_patch.yaml
-│   ├── manager
-│   │   ├── kustomization.yaml
-│   │   └── manager.yaml
-│   ├── manifests
-│   │   └── kustomization.yaml
-│   ├── prometheus
-│   │   ├── kustomization.yaml
-│   │   └── monitor.yaml
-│   ├── rbac
-│   │   ├── auth_proxy_client_clusterrole.yaml
-│   │   ├── auth_proxy_role.yaml
-│   │   ├── auth_proxy_role_binding.yaml
-│   │   ├── auth_proxy_service.yaml
-│   │   ├── kustomization.yaml
-│   │   ├── leader_election_role.yaml
-│   │   ├── leader_election_role_binding.yaml
-│   │   ├── role_binding.yaml
-│   │   └── service_account.yaml
-│   └── scorecard
-│       ├── bases
-│       │   └── config.yaml
-│       ├── kustomization.yaml
-│       └── patches
-│           ├── basic.config.yaml
-│           └── olm.config.yaml
-├── go.mod
-├── go.sum
-├── hack
-│   └── boilerplate.go.txt
-└── main.go
-```
-
-#### 3.2.2 api 생성
-api를 create 합니다.
-
-api를 operator-sdk로 생성합니다.
-- 이전에 생성한 CRD yaml manifest를 확인하여 각 필드값에 맞는 값을 넣어줍니다.
-
-```bash
-# 사용 예
-$ operator-sdk create api --version v1 --kind Hello --group mygroup
-
-# 실제 수행 명령어
-$ operator-sdk create api --version v1 --kind helloworld --group jjsair0412.example.com
-```
-
-
-## troubleshooting
-### 1. operator-sdk init or create api 할 때 base.go.kubebuilder.io/v3 에러
-아래와 같은 에러 발생 시 , init한 프로젝트 루트 경로에서 PROJECT의 설정값을 확인해봐야 합니다.
-- 관련 stackoverflow 글 : https://stackoverflow.com/questions/69974777/kubebuilder-create-webhook-requires-a-previously-created-api
-
-
-```bash
-FATA[0003] failed to create API: unable to inject the resource to "base.go.kubebuilder.io/v3": invalid Kind: must start with an uppercase character
-```
-
-PROJECT 설정값 확인
-
-```bash
-$ cat PROJECT
-domain: jjsair0412.example.com
-layout:
-- go.kubebuilder.io/v3
-plugins:
-  manifests.sdk.operatorframework.io/v2: {}
-  scorecard.sdk.operatorframework.io/v2: {}
-projectName: custom-operator-code
-repo: github.com/jjsair0412/operator
-version: "3"
-```
-
+해당 문서에서는 java의 spring을 통해서 custom controller를 생성합니다.

@@ -24,9 +24,8 @@ kubernetes custom resources를 개발하는 과정에 대해 기술한 폴더 �
 - [Custom resource 란 ?](https://kubernetes.io/ko/docs/concepts/extend-kubernetes/api-extension/custom-resources/)
 - [controller 란 ?](https://kubernetes.io/ko/docs/concepts/architecture/controller/)
 - [k8s operator](https://kubernetes.io/ko/docs/concepts/extend-kubernetes/operator/#writing-operator)
-- [devjh님의 블로그](https://frozenpond.tistory.com/111)
-- [Kubernetes의 확장인 CRD Custom Resource Definition 와 CR Custom Resource 에 대한 개념 정리
-](https://ccambo.tistory.com/m/entry/Kubernetes-%ED%99%95%EC%9E%A5%EC%9D%B8-CRD%EC%99%80-CR-%EC%97%90-%EB%8C%80%ED%95%9C-%EA%B0%9C%EB%85%90-%EC%A0%95%EB%A6%AC)
+- [devjh님의 블로그 - cr ,crd 개발 프로세스 학습](https://frozenpond.tistory.com/111)
+- [Kubernetes의 확장인 CRD Custom Resource Definition 와 CR Custom Resource 에 대한 개념 정리](https://ccambo.tistory.com/m/entry/Kubernetes-%ED%99%95%EC%9E%A5%EC%9D%B8-CRD%EC%99%80-CR-%EC%97%90-%EB%8C%80%ED%95%9C-%EA%B0%9C%EB%85%90-%EC%A0%95%EB%A6%AC)
 
 
 # 결론
