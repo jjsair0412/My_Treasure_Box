@@ -23,7 +23,7 @@ golang용 operator를 커스터마이징 하여 해당 cr를 통해서 k8s objec
 ## 0.1 개발 환경
 - macOS m1
 - IDE Tool : vscode
-- Golang : version go1.19.3 darwin/amd64
+- Java : java 17.0.5 2022-10-18 LTS
 - operator version : [operator sdk](https://github.com/operator-framework/operator-sdk)
 - kubernetes version : v1.25.2
 
@@ -281,3 +281,109 @@ hello-sample   6s
 이제 만들어진 CR이 k8s 기본 리소스인 Pod , Deployment , service 등과 연계해서 동작할 수 있도록 custom controller를 생성해야 합니다.
 
 해당 문서에서는 java의 spring을 통해서 custom controller를 생성합니다.
+
+아래 작성된 URL을 확인해보면 , 다양한 언어에서 client 라이브러리를 지원하는것을 확인할 수 있습니다.
+- [공식적으로 지원되는 쿠버네티스 클라이언트 라이브러리](https://kubernetes.io/ko/docs/reference/using-api/client-libraries/#%EA%B3%B5%EC%8B%9D%EC%A0%81%EC%9C%BC%EB%A1%9C-%EC%A7%80%EC%9B%90%EB%90%98%EB%8A%94-%EC%BF%A0%EB%B2%84%EB%84%A4%ED%8B%B0%EC%8A%A4-%ED%81%B4%EB%9D%BC%EC%9D%B4%EC%96%B8%ED%8A%B8-%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC)
+
+Java kubernetes client 공식문서는 git에 있습니다.
+- [Java Kubernetes client docs](https://github.com/kubernetes-client/java/wiki)
+
+### 3.1 CRD model 생성하기
+아래 문서를 보고 , 미리 생성해둔 CRD와 CR yaml manifest를 java용 model로 변환작업을 수행해야 합니다.
+
+생성한 CRD , CR이 MVC 패턴의 model이라고 생각하면 됩니다.
+먼저 아래 참조한 가이드를 읽어봅시다.
+
+- [관련 docs : CustomResourceDefinition에서 Java 코드 생성 가이드](https://github.com/kubernetes-client/java/blob/master/docs/generate-model-from-third-party-resources.md#example-commands-for-local-crd-manifests)
+
+해당 문서처럼 docker 명령어를 통해 model을 생성할 수 도 있지만 , 아래 인터페이스들을 implement하여 직접 커스터마이징도 가능합니다.
+- [KubernetesListObject interface](https://github.com/kubernetes-client/java/blob/master/kubernetes/src/main/java/io/kubernetes/client/common/KubernetesListObject.java)
+- [KubernetesObject intreface](https://github.com/kubernetes-client/java/blob/master/kubernetes/src/main/java/io/kubernetes/client/common/KubernetesObject.java)
+
+#### 3.1.1 image pull
+작업중인 로컬에서 k8s client image를 pull 합니다.
+
+```bash
+$ docker pull ghcr.io/kubernetes-client/java/crd-model-gen:v1.0.6
+```
+
+#### 3.1.2 model 생성
+받은 docker image로 이전에 생성해둔 CRD yaml을 java model로 변환해 줍니다.
+
+원격지 ( 통신이 되어야 함 ) 에 있는 CRD yaml 파일을 model로 변환시킬 수도 있고 , 로컬에 있는 CRD yaml 파일을 model로 변환시킬 수 있습니다.
+- [원격지 방법 from docs]()
+- [로컬 방법 from docs]()
+
+기본적으로 model 생성기 컨테이너는 로컬 도커 데몬에 [kind kubernetes](https://refactorfirst.com/kind-kubernetes-cluster) 클러스터를 자동으로 프로비저닝하고 CRD를 클러스터에 적용하는 방식으로 작동합니다. 
+따라서 호스트에는 docker 가 실행중 ( deamon ) 이여야만 합니다.
+
+아래 옵션 설명을 잘 읽고 , 자신의 환경에 맞게끔 option을 넣어 생성합니다.
+```bash
+-u: <CRD's download URL or file path, use it multiple times to read multiple CRDs>
+-n: <the target CRD group name, which is in the reverse order of ".spec.group">
+-p: <output package name for the generated java classes>
+-o: <output path of the generated project>
+```
+
+**주의 !**
+- -n 옵션에 들어가는 CRD group name은 역순으로 넣어야 합니다. 
+  -  만약 CRD group이 jjs.group.com 이라면 , -n에 들어가는 옵션은 com.group.jjs
+
+가이드문서를 작성하는 환경에선 , local에 yaml manifest가 있기에 로컬 방법으로 합니다.
+아래 명령어로 model을 생성시켜줍니다.
+- LOCAL_MANIFEST_FILE : 로컬의 CRD 파일의 경로를 작성합니다.
+
+***docs의 가이드 방법***
+```bash
+# Downloading 
+mkdir -p /tmp/crds && cd /tmp/crds
+wget https://gist.githubusercontent.com/yue9944882/266fee8e95c2f15a93778263633e72ed/raw/be12c13379eeed13d2532cb65da61fffb19ee3e7/crontab-crd.yaml
+
+# Local generation
+LOCAL_MANIFEST_FILE=/tmp/crds/crontab-crd.yaml
+mkdir -p /tmp/java && cd /tmp/java
+docker run \
+  --rm \
+  -v "$LOCAL_MANIFEST_FILE":"$LOCAL_MANIFEST_FILE" \
+  -v /var/run/docker.sock:/var/run/docker.sock \ # 로컬에 설치된 docker sock 파일 참조
+  -v "$(pwd)":"$(pwd)" \
+  -ti \
+  --network host \
+  ghcr.io/kubernetes-client/java/crd-model-gen:v1.0.6 \
+  /generate.sh \
+  -u $LOCAL_MANIFEST_FILE \
+  -n com.example.stable \
+  -p com.example.stable \
+  -o "$(pwd)"
+```
+
+***실 수행한 명령어***
+스크립트를 하나 생성해서 실행했습니다.
+```bash
+$ cat create-model.sh
+#!/usr/bin/env bash
+
+LOCAL_MANIFEST_FILE=~/tmp/jjscrds/mycrd.yaml
+
+mkdir -p /tmp/java && cd /tmp/java
+
+docker run \
+  --rm \
+  -v "$LOCAL_MANIFEST_FILE":"$LOCAL_MANIFEST_FILE" \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v "$(pwd)":"$(pwd)" \
+  -ti \
+  --network host \
+  ghcr.io/kubernetes-client/java/crd-model-gen:v1.0.6 \
+  /generate.sh \
+  -u $LOCAL_MANIFEST_FILE \
+  -n com.example.jjsair0412 \
+  -p com.example.customcontrollercode \
+  -o "$(pwd)"
+```
+
+model 생성을 성공한다면 아래와 같은 결과값을 볼 수 있습니다.
+
+```bash
+
+```

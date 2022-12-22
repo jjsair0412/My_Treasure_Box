@@ -145,6 +145,9 @@ controller가 object의 상태변화를 감시하다가 , 변화되면 k8s resou
 이때 상태가 변화한다는 이야기는 , 위에 예를 빗대어 설명하자면 ```yaml sepc.message``` 필드의 값이 "hi crd!!" 에서 , "hello world" 값으로 변경되는것 을 이야기 합니다.
 - replica의 갯수가 변경되는것과 동일
 
+결론은 CR을 감시하다가, CR 상태가 변경되면 k8s resource를 컨트롤하기 위해선 , custom controller를 개발해야 하며 , custom controller를 개발하는 방법은 spinrg으로도 가능하며 , golang의 opeartor-sdk로 개발하는것 또한 가능합니다.
+- 여러언어 지원함
+
 ## 1. Kubernetes Object란 ?
 k8s object는 k8s에서 영 속성을 가진 요소입니다.
 
