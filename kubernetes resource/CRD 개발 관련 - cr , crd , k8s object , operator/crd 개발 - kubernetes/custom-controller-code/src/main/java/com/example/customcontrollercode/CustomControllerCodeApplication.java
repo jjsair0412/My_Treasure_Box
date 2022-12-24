@@ -167,10 +167,10 @@ public class CustomControllerCodeApplication {
         deploymentSpec.template(podTemplate(resourceInstance, applanguageInfo)); // pod template 들어감
         deploymentSpec.replicas(resourceInstance.getSpec().getReplicas());
 
-        deploymentSet.setMetadata(
-                new V1ObjectMeta()
+        deploymentSet.setMetadata( 
+                new V1ObjectMeta() 
                         .name(craeteDeploymentName(resourceInstance))
-                        .labels(
+                        .labels( // deployment lable 지정
                                 Map.of(
                                         "app", applanguageInfo,
                                         "message", resourceInstance.getSpec().getMessage()
@@ -178,7 +178,7 @@ public class CustomControllerCodeApplication {
                                 )
                     );
 
-        deploymentSpec.selector(new V1LabelSelector() // deployment selector 지정
+        deploymentSpec.selector(new V1LabelSelector() // deployment  pod selector 지정
                         .matchLabels(
                         Map.of(
                                 "app", applanguageInfo,
@@ -207,14 +207,14 @@ public class CustomControllerCodeApplication {
         V1ObjectMeta podMeta = new V1ObjectMeta();
         V1PodTemplateSpec podTemplateSpec = new V1PodTemplateSpec();
 
-        podMeta.labels( // label 지정
+        podMeta.labels( // pod label 지정 ( required )
                 Map.of(
                         "app", applanguageInfo,
                         "message", resourceInstance.getSpec().getMessage()
                     )
                 );
 
-        podMeta.setName("hello" + "-" + UUID.randomUUID()); // pod name 지정
+        podMeta.setName("hello" + "-" + UUID.randomUUID()); // pod name 지정 ( required )
 
         podTemplateSpec.setMetadata(podMeta);
         podTemplateSpec.spec(new V1PodSpec()
