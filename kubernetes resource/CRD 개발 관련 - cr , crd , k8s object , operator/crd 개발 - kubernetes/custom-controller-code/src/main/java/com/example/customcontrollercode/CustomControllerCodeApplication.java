@@ -3,7 +3,10 @@ package com.example.customcontrollercode;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -47,7 +50,7 @@ public class CustomControllerCodeApplication {
     @Bean
     SharedIndexInformer<V1Helloworld> sharedIndexInformer(SharedInformerFactory sharedInformerFactory,
             ApiClient apiClient) {
-                System.out.println("hello im sharedIndexInformer method");
+        System.out.println("hello im sharedIndexInformer method");
         GenericKubernetesApi<V1Helloworld, V1HelloworldList> api = new GenericKubernetesApi<>(V1Helloworld.class,
                 V1HelloworldList.class,
                 "jjsair0412.example.com", // CRD Group
@@ -62,22 +65,21 @@ public class CustomControllerCodeApplication {
     Reconciler reconciler(SharedIndexInformer<V1Helloworld> shareIndexInformer,
             AppsV1Api appsV1Api) {
         return request -> {
-            System.out.println("hello im reconciled method");
             String key = request.getNamespace() + "/" + request.getName();
-            
+
             V1Helloworld resourceInstance = shareIndexInformer
                     .getIndexer()
                     .getByKey(key);
 
             if (resourceInstance != null) {
-                System.out.println("start !!");
                 V1Deployment v1Deployment = createDeployment(resourceInstance);
                 System.out.println("Creating resource deployment...");
 
                 try {
-                    appsV1Api.createNamespacedDeployment(request.getNamespace(),
+                    appsV1Api.createNamespacedDeployment(
+                            request.getNamespace(),
                             v1Deployment,
-                            "true",
+                            null,
                             null,
                             "",
                             "");
@@ -86,11 +88,11 @@ public class CustomControllerCodeApplication {
                     if (e.getCode() == 409) {
                         System.out.println("Updating resource...");
                         try {
-
-                            appsV1Api.replaceNamespacedDeployment(craeteDeploymentName(resourceInstance),
+                            appsV1Api.replaceNamespacedDeployment(
+                                    craeteDeploymentName(resourceInstance),
                                     request.getNamespace(),
                                     v1Deployment,
-                                    "true",
+                                    null,
                                     null,
                                     "",
                                     "");
@@ -101,6 +103,10 @@ public class CustomControllerCodeApplication {
                     } else {
                         throw new RuntimeException(e);
                     }
+                    if(e.getCode() == 400){
+                        System.out.println("delete resource...");
+                        
+                    }
                 }
                 return new Result(false);
             }
@@ -109,8 +115,8 @@ public class CustomControllerCodeApplication {
         };
     }
 
-    //controller , ExcutorService , ApplicationRunner 코드 분석 필요
-    // 아마 셋이서 맞물려서 kube-api-server와 통신하는듯
+    // controller , ExcutorService , ApplicationRunner 코드 분석 필요
+    // // 아마 셋이서 맞물려서 kube-api-server와 통신하는듯
     @Bean
     Controller controller(SharedInformerFactory shareformerFactory,
             Reconciler reconsiler,
@@ -135,8 +141,8 @@ public class CustomControllerCodeApplication {
 
     @Bean
     ApplicationRunner runner(ExecutorService executorService,
-                             SharedInformerFactory sharedInformerFactory,
-                             Controller controller) {
+            SharedInformerFactory sharedInformerFactory,
+            Controller controller) {
         return args -> executorService.execute(() -> {
             sharedInformerFactory.startAllRegisteredInformers();
             controller.run();
@@ -147,55 +153,87 @@ public class CustomControllerCodeApplication {
     @Bean
     AppsV1Api appsV1Api(ApiClient apiClient) {
         System.out.println("hello im appsV1Api method");
-        apiClient.setBasePath("https://localhost:"+31458); // kube-api server와 통신하는부분 . kubernetes service가 kube-api server의 service이기 때문에 , 걔를 nodeport로 열어준다.
-
-
+        apiClient.setBasePath("http://127.0.0.1:" + 8001); // kube-api server와 통신하는부분 . kubernetes service가 kube-api
+                                                           // server의 service이기 때문에 , 걔를 nodeport로 열어준다.
+        // apiClient.setDebugging(true); // kube api server와 통신시 debugging option 설정
         return new AppsV1Api(apiClient);
     }
 
     private static V1Deployment createDeployment(V1Helloworld resourceInstance) {
         V1Deployment deploymentSet = new V1Deployment();
         V1DeploymentSpec deploymentSpec = new V1DeploymentSpec();
-
         String applanguageInfo = resourceInstance.getSpec().getLanguage().toString();
 
         deploymentSpec.template(podTemplate(resourceInstance, applanguageInfo)); // pod template 들어감
         deploymentSpec.replicas(resourceInstance.getSpec().getReplicas());
 
-        deploymentSet.metadata(new V1ObjectMeta()
-                .name(craeteDeploymentName(resourceInstance))
-                .labels(Map.of("app", applanguageInfo))
-                .labels(Map.of("message", resourceInstance.getSpec().getMessage())));
+        deploymentSet.setMetadata(
+                new V1ObjectMeta()
+                        .name(craeteDeploymentName(resourceInstance))
+                        .labels(
+                                Map.of(
+                                        "app", applanguageInfo,
+                                        "message", resourceInstance.getSpec().getMessage()
+                                    )
+                                )
+                    );
 
-        deploymentSpec.selector(new V1LabelSelector()
-                .matchLabels(Map.of("app", applanguageInfo))
-                .matchLabels(Map.of("message", resourceInstance.getSpec().getMessage())));
+        deploymentSpec.selector(new V1LabelSelector() // deployment selector 지정
+                        .matchLabels(
+                        Map.of(
+                                "app", applanguageInfo,
+                                "message", resourceInstance.getSpec().getMessage()
+                            )
+                        )
+                        
+                    );
 
         deploymentSet.setSpec(deploymentSpec);
 
+        System.out.println("deployment spec init com");
         return deploymentSet;
     }
 
     // deployment pod template 생성
     private static V1PodTemplateSpec podTemplate(V1Helloworld resourceInstance, String applanguageInfo) {
+        System.out.println("hello im V1PodTemplate");
+    
+        
+        List<V1Container> podContainers = new ArrayList<V1Container>();
+        
 
-        String imageName = resourceInstance.getSpec().getImage();
+        podContainers.add(0, createContainers(resourceInstance));
 
         V1ObjectMeta podMeta = new V1ObjectMeta();
         V1PodTemplateSpec podTemplateSpec = new V1PodTemplateSpec();
 
-        podMeta.labels(Map.of("app", applanguageInfo)); // label app : applanguageInfo
-        podMeta.labels(Map.of("message", resourceInstance.getSpec().getMessage()));
+        podMeta.labels( // label 지정
+                Map.of(
+                        "app", applanguageInfo,
+                        "message", resourceInstance.getSpec().getMessage()
+                    )
+                );
 
-        podMeta.setName(createDeployment(resourceInstance) + "-" + UUID.randomUUID()); // pod name 지정
+        podMeta.setName("hello" + "-" + UUID.randomUUID()); // pod name 지정
+
+        podTemplateSpec.setMetadata(podMeta);
         podTemplateSpec.spec(new V1PodSpec()
-                    .containers(Arrays.asList(new V1Container().name(imageName)))); // CR로 생성한 이미지 이름 받아옴
-
+                                    .containers(podContainers)
+                            ); 
         return podTemplateSpec;
     }
 
     // deployment name 생성
     public static String craeteDeploymentName(V1Helloworld resourceInstance) {
         return "jjs" + resourceInstance.getSpec().getAppId();
+    }
+
+    // pod container 정보 생성
+    public static V1Container createContainers(V1Helloworld resourceInstance){
+        V1Container container = new V1Container();
+        container.setImage(resourceInstance.getSpec().getImage());
+        container.setName(resourceInstance.getSpec().getAppId());
+
+        return container;
     }
 }
