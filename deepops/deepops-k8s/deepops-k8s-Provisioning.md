@@ -35,15 +35,11 @@ ansible 2.9.6
   executable location = /usr/bin/ansible
   python version = 3.8.10 (default, Nov 14 2022, 12:59:47) [GCC 9.4.0]
 
-# python 설치
-$ sudo apt-get install python
+# python3 설치
+$ sudo apt-get install python3
 
-# 설치된 python version 확인
-$ python --version
-Python 3.8.10
-
-# python3 pip 설치
-$ sudo apt-get install python3-pip
+$ python3 --version
+Python 3.10.4
 ```
 
 ## 02. deepops 구성
@@ -82,6 +78,21 @@ $ cd deepops/scripts
 $ source ./setup.sh
 ```
 ## 03. K8S cluster 구성
+### 3.0 ssh key 생성
+각 노드들에게 접속할 수 있도록 ssh key를 생성한 뒤 , 노드들의 authorized_keys 파일에 pub key를 등록하여 ssh 연결을 할 수 있도록 설정합니다.
+
+```
+# ssh key 생성
+$ ssh-keygen -t rsa
+
+$ cd ~/.ssh
+$ ls
+authorized_keys  id_rsa  id_rsa.pub  known_hosts
+
+# 나머지 모든 노드들에게 id_rsa.pub 키 복사 붙여넣기
+$ cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+```
+
 ### 3.1 inventory 설정
 deepops를 실행시키기 위해 configration파일을 수정해야 합니다.
 
