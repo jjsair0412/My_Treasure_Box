@@ -7,10 +7,12 @@ kube-vela의 MLOps 기능을 사용하기 위해서 k8s version은 20.01 이하�
 따라서 deepops의 20.10 version 으로 구축합니다.
 
 20.10은 k8s 버전이 v1.18.9 버전으로 설치됩니다.
+
+또한 ubuntu 환경에선 설치 전 ansible plugin 요소 설치 스크립트가 잘 동작하지 않기에 , centos7.8 version으로 진행합니다.
 **설치 환경**
 | os | 사양 | k8s version | deepops version | container runtime |
 |--|--|--|--|--|
-| ubuntu 20.04 | 4core 8GB |  | 22.01 | docker://19.3.12 |
+| CentOS 7.8 64bit | 4core 8GB |  | 22.01 | docker://19.3.12 |
 
 
 ## 01. 설치 전 환경 구성
@@ -21,10 +23,10 @@ python3와 ansible을 먼저 설치 합니다.
 ansilbe version은 2.7.8 또는 더 높아야 합니다.
 ```
 # update
-$ apt-get update
+$ sudo yum update -y
 
 # ansible 설치
-$ sudo apt install ansible python3-argcomplete -y
+$ sudo yum install ansible python3-argcomplete -y
 
 # 설치된 ansible version 확인
 $ ansible --version
@@ -36,7 +38,7 @@ ansible 2.9.6
   python version = 3.8.10 (default, Nov 14 2022, 12:59:47) [GCC 9.4.0]
 
 # python3 설치
-$ sudo apt-get install python3
+$ sudo yum install python3 -y
 
 $ python3 --version
 Python 3.10.4
