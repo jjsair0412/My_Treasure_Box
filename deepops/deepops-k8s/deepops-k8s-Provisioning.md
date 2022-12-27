@@ -23,8 +23,8 @@ ansilbe version은 2.7.8 또는 더 높아야 합니다.
 # update
 $ sudo yum update -y
 
-$ sudo yum install ansible python3-argcomplete -y
 # ansible 설치
+$ sudo yum install ansible python3-argcomplete -y
 
 # 설치된 ansible version 확인
 $ ansible --version
