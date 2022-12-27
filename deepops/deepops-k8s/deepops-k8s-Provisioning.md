@@ -75,7 +75,8 @@ CLA          config.example  LICENSE  README.md  scripts  submodules  workloads
 ```
 $ cd deepops/scripts
 
-$ source ./setup.sh
+# bash나 source명령어 없이 그냥 수행
+$ ./setup.sh
 ```
 ## 03. K8S cluster 구성
 ### 3.0 ssh key 생성
@@ -140,3 +141,45 @@ $ kubectl get nodes -o wide
 NAME    STATUS   ROLES    AGE     VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME
 node1   Ready    master   2m55s   v1.18.9   172.25.0.81   <none>        Ubuntu 20.04.4 LTS   5.15.0-41-generic   docker://19.3.12
 ```
+
+## ETC. known Issue
+### 1. ansible.posix.firewalld error
+엔서블 수행하여 k8s provisioning 시 아래와 같은 에러 발생
+
+```
+ERROR! couldn't resolve module/action 'ansible.posix.firewalld'. This often indicates a misspelling, missing collection, or incorrect module path.
+
+The error appears to be in '/home/ubuntu/deepops/roles/nfs/tasks/firewall.yml': line 17, column 3, but may
+be elsewhere in the file depending on the exact syntax problem.
+
+The offending line appears to be:
+
+
+- name: configure firewall to allow NFS server
+  ^ here
+```
+
+ansible galaxy로 ansible.posix 설치
+
+```
+$ ansible-galaxy collection install ansible.posix
+```
+
+### 2. ERROR! the role 'DeepOps.chrony' was not found
+엔서블 수행하여 k8s provisioning 시 아래와 같은 에러 발생
+
+```
+ERROR! the role 'DeepOps.chrony' was not found in /home/ubuntu/deepops/playbooks/generic/roles:/home/ubuntu/deepops/roles/galaxy:/home/ubuntu/deepops/roles:/home/ubuntu/deepops/submodules/kubespray/roles:/home/ubuntu/deepops/playbooks/generic
+
+The error appears to be in '/home/ubuntu/deepops/playbooks/generic/chrony-client.yml': line 8, column 15, but may
+be elsewhere in the file depending on the exact syntax problem.
+
+The offending line appears to be:
+
+      include_role:
+        name: DeepOps.chrony
+              ^ here
+```
+
+- scripts/setup.sh 스크립트 재 실행하여 구성요소 설치 필요
+- 
