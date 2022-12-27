@@ -1,5 +1,6 @@
 package com.example.customcontrollercode;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 
 import com.example.customcontrollercode.CrCrdModel.V1Helloworld;
 import com.example.customcontrollercode.CrCrdModel.V1HelloworldList;
+import com.google.protobuf.Api;
 
 import io.kubernetes.client.extended.controller.builder.ControllerBuilder;
 import io.kubernetes.client.extended.controller.Controller;
@@ -27,20 +29,29 @@ import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.apis.AppsV1Api;
 import io.kubernetes.client.openapi.models.V1Container;
+import io.kubernetes.client.openapi.models.V1DeleteOptions;
 import io.kubernetes.client.openapi.models.V1Deployment;
 import io.kubernetes.client.openapi.models.V1DeploymentSpec;
 import io.kubernetes.client.openapi.models.V1LabelSelector;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.openapi.models.V1PodSpec;
 import io.kubernetes.client.openapi.models.V1PodTemplateSpec;
+import io.kubernetes.client.util.ClientBuilder;
 import io.kubernetes.client.util.generic.GenericKubernetesApi;
 
 @SpringBootApplication
 public class CustomControllerCodeApplication {
 
+    
     public static void main(String[] args) {
         SpringApplication.run(CustomControllerCodeApplication.class, args);
     }
+
+    @Bean
+    SharedInformerFactory sharedInformerFactory(ApiClient apiClient){
+        return new SharedInformerFactory(apiClient);
+    }
+
 
     @Bean
     SharedIndexInformer<V1Helloworld> sharedIndexInformer(SharedInformerFactory sharedInformerFactory,
@@ -55,17 +66,20 @@ public class CustomControllerCodeApplication {
         return sharedInformerFactory.sharedIndexInformerFor(api, V1Helloworld.class, 0);
     }
 
-    // AppsV1Api가 k8s api server와 통신하여 k8s resource 관리 수행
+    
+
+    // AppsV1Api가 k8s api server에 request를 보내어 k8s resource 관리 수행
     @Bean
     Reconciler reconciler(SharedIndexInformer<V1Helloworld> shareIndexInformer,
             AppsV1Api appsV1Api) {
         return request -> {
             String key = request.getNamespace() + "/" + request.getName();
-
+            
             V1Helloworld resourceInstance = shareIndexInformer
                     .getIndexer()
                     .getByKey(key);
 
+            
             if (resourceInstance != null) {
                 V1Deployment v1Deployment = createDeployment(resourceInstance);
                 System.out.println("Creating resource deployment...");
@@ -74,36 +88,53 @@ public class CustomControllerCodeApplication {
                     appsV1Api.createNamespacedDeployment(
                             request.getNamespace(),
                             v1Deployment,
-                            null,
+                            "true",
                             null,
                             "",
                             "");
                 } catch (ApiException e) {
+                    createErrorCode("createNamespacedDeployment",e);
                     System.out.println("Creating resource failed");
-                    if (e.getCode() == 409) {
+                    if (e.getCode() == 409) { // 생성되어있다면 409 에러 발생 . 생성되어있는데 다시한번 resourceInstance가 들어왔다는건 update
+                        
                         System.out.println("Updating resource...");
                         try {
                             appsV1Api.replaceNamespacedDeployment(
-                                    craeteDeploymentName(resourceInstance),
+                                    request.getName(),
                                     request.getNamespace(),
                                     v1Deployment,
                                     null,
                                     null,
                                     "",
                                     "");
-
+                            
                         } catch (ApiException ex) {
+                            createErrorCode("replaceNamespacedDeployment",ex);
                             throw new RuntimeException(ex);
                         }
                     } else {
                         throw new RuntimeException(e);
                     }
-                    if(e.getCode() == 400){
-                        System.out.println("delete resource...");
-                        
-                    }
+                    
                 }
                 return new Result(false);
+            }else{
+                try {
+                    System.out.println("delete deployment resource...");
+                    appsV1Api.deleteNamespacedDeployment(
+                            request.getName(), 
+                            request.getNamespace(), 
+                            null, 
+                            null, 
+                            null, 
+                            null, 
+                            null, 
+                            null
+                            );
+                } catch (ApiException de) {
+                    createErrorCode("deleteNamespacedDeployment",de);
+                    throw new RuntimeException(de);
+                }
             }
             return new Result(false);
 
@@ -144,6 +175,15 @@ public class CustomControllerCodeApplication {
         });
     }
 
+
+    @Bean
+    ApiClient myApiClient() throws IOException {
+      ApiClient apiClient = new ApiClient();
+      System.out.println("basepath is + "+ apiClient.getBasePath());
+      return apiClient.setHttpClient(
+          apiClient.getHttpClient().newBuilder().readTimeout(Duration.ZERO).build());
+    }
+
     // AppsV1Api로 kube api server와 통신 . v1api bean required Bean.
     @Bean
     AppsV1Api appsV1Api(ApiClient apiClient) {
@@ -151,8 +191,11 @@ public class CustomControllerCodeApplication {
         apiClient.setBasePath("http://127.0.0.1:" + 8001); // kube-api server와 통신하는부분 . kubernetes service가 kube-api
                                                            // server의 service이기 때문에 , 걔를 nodeport로 열어준다.
         // apiClient.setDebugging(true); // kube api server와 통신시 debugging option 설정
+        System.out.println("final basepath is + "+ apiClient.getBasePath());
         return new AppsV1Api(apiClient);
     }
+
+
 
     private static V1Deployment createDeployment(V1Helloworld resourceInstance) {
         V1Deployment deploymentSet = new V1Deployment();
@@ -164,7 +207,7 @@ public class CustomControllerCodeApplication {
 
         deploymentSet.setMetadata( 
                 new V1ObjectMeta() 
-                        .name(craeteDeploymentName(resourceInstance))
+                        .name(resourceInstance.getMetadata().getName())
                         .labels( // deployment lable 지정
                                 Map.of(
                                         "app", applanguageInfo,
@@ -218,17 +261,19 @@ public class CustomControllerCodeApplication {
         return podTemplateSpec;
     }
 
-    // deployment name 생성
-    public static String craeteDeploymentName(V1Helloworld resourceInstance) {
-        return "jjs" + resourceInstance.getSpec().getAppId();
-    }
-
     // pod container 정보 생성
     public static V1Container createContainers(V1Helloworld resourceInstance){
         V1Container container = new V1Container();
         container.setImage(resourceInstance.getSpec().getImage());
         container.setName(resourceInstance.getSpec().getAppId());
 
-        return container;
+        return new V1Container();
+    }
+
+    private void createErrorCode(String name , ApiException e){
+        System.err.println("Exception when calling AppsV1Api#"+name);
+        System.err.println("Status code: " + e.getCode());
+        System.err.println("Reason: " + e.getResponseBody()); 
+        System.err.println("Response headers: " + e.getResponseHeaders());
     }
 }
