@@ -24,7 +24,7 @@ ansilbe version은 2.7.8 또는 더 높아야 합니다.
 $ apt-get update
 
 # ansible 설치
-$ sudo apt install ansible python3-argcomplete
+$ sudo apt install ansible python3-argcomplete -y
 
 # 설치된 ansible version 확인
 $ ansible --version
@@ -46,7 +46,8 @@ Python 3.10.4
 deepops의 github를 clone합니다.
 
 ```
-$ git clone https://github.com/NVIDIA/deepops.git
+$ git clone --recurse-submodules https://github.com/NVIDIA/deepops
+# git version 2.16.2 와 이전버젼은 --recursive 를 사용
 ```
 
 받아온 폴더로 이동 후 , checkout으로 deepops 설치 대상 version으로 이동합니다.
@@ -55,6 +56,16 @@ $ git clone https://github.com/NVIDIA/deepops.git
 $ cd deepops
 
 $ git checkout 22.01
+```
+
+submodule을 update 합니다.
+
+deepops의 release를 변경시킬 때 마다 submodule을 update해야합니다.
+
+```
+$ cd deepops
+
+$ git submodule update
 ```
 
 config 폴더를 복사합니다.
