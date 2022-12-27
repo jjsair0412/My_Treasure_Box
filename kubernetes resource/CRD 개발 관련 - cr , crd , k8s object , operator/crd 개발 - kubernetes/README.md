@@ -424,3 +424,4 @@ $ tree
 - 참고 문서 : https://www.programcreek.com/java-api-examples/?api=io.kubernetes.client.openapi.apis.CoreV1Api
 - crd 생성하기 참고 블로그 : https://refactorfirst.com/create-kubernetes-custom-resource-definition-crd
 - 예제 코드 모여있는곳 : https://github.com/kubernetes-client/java/tree/master/examples
+- AppsV1API RestAPI 및 각 메서드 별 설명 : https://github.com/kubernetes-client/java/blob/master/kubernetes/docs/AppsV1Api.md
