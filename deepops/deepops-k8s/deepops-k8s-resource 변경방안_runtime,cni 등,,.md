@@ -28,7 +28,7 @@ $ (env) ubuntu@jjs:~/deepops $
 | ubuntu 20.04 | 2core 4GB | v1.21.6 | 22.01 | docker://19.3.12 | worker | 10.0.0.3 |
 
 ## 1. container runtime 변경 방안
-- 참고 문서 . kubespray 
+- 참고 문서 : [kubespray_migrate_docker2contianerd.md](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/upgrades/migrate_docker2containerd.md)
 
 목표 환경은 다음과 같습니다.
 - container runtime을 containerd로 변경합니다.
@@ -47,26 +47,53 @@ submodules에 위치한 kubespray 관련 설정파일들을 변경시켜주어�
 먼저 k8s-cluster.yml 파일을 수정합니다.
 
 ```bash 
-$ cd ~/deepops/submodules/kubespray/inventory/local/group_vars/k8s_cluster
+$ cd ~/deepops/submodules/kubespray/inventory/sample/group_vars/k8s_cluster
 
 # container manager 수정
 $ vi k8s-cluster.yml
 container_manager: docker > container_manager: containerd로 변경 저장
+
+# resolvconf_mode 변경 저장
+resolvconf_mode: docker_dns > resolvconf_mode: host_resolvconf . host_resolvconf로 변경 저장
 ```
 
 etcd의 etcd_deployment_type을 변경합니다.
 
 ```bash 
-$ cd ~/deepops/submodules/kubespray/inventory/local/group_vars/
+$ cd ~/deepops/submodules/kubespray/inventory/sample/group_vars
 
 $ vi etcd.yml
 etcd_deployment_type: docker > etcd_deployment_type: host로 변경 저장
 ```
 
+### 2. docker 관련 설정변경
+
+### 2.1 docker , kubelet 정지
+docker service와 kubelet service를 정지시킵니다.
+
+```bash 
+sudo service kubelet stop
+sudo service docker stop
+```
+
+### 2.2 uninstall docker + dependencies 
+docker와 의존성 패키지들을 같이 제거합니다.
+
+```bash 
+$ sudo apt-get remove -y --allow-change-held-packages containerd.io docker-ce docker-ce-cli docker-ce-rootless-extras
+ ```
+
 ### 1.2 k8s 재 배포
 ansible 명령어를 통해 k8s를 재 배포합니다.
 
 이때 deepops의 k8s-cluster.yml이 아닌 submodules/kubespray의 cluster.yml 파일로 ansible 명령어를 수행해야 합니다.
+
+또한 inventory는 미리 만들어두었던 deepops의 inventory를 사용해야 합니다.
+- worker , master 한개만 limit 걸어서 수행하는것이 자꾸 에러가 남. 테스트 후 하나씩만 업그레이드 및 변경하는 방안 테스트 예정
 ```bash 
-(env) ubuntu@jjs: $ ansible-playbook -l k8s-cluster playbooks/k8s-cluster.yml --limit=mgmt01
+# kubespray ansible 위치로 이동
+$ cd ~/deepops/submodules/kubespray
+
+# ansible 명령어 수행
+(env) ubuntu@jjs: $ ansible-playbook -i inventory/sample/inventory.ini cluster.yml --limit=mgmt01,mgmt02
 ```

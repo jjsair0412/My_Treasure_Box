@@ -10,7 +10,7 @@ kube-vela의 MLOps 기능을 사용하기 위해서 k8s version은 20.01 이하�
 **설치 환경**
 | os | 사양 | k8s version | deepops version | container runtime |
 |--|--|--|--|--|
-| ubuntu 20. | 4core 8GB | v1.21.6 | 22.01 | docker://20.10.8 |
+| ubuntu 20.04 | 4core 8GB | v1.21.6 | 22.01 | docker://20.10.8 |
 
 
 ## 01. 설치 전 환경 구성
