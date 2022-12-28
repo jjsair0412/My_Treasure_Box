@@ -79,7 +79,8 @@ $ cd deepops/scripts
 $ ./setup.sh
 ```
 
-setup 스크립트 수행 후 출력되는 source 명령어를 command line에 입력해야 합니다 !
+***script를 수행한 후 exit으로 bash에서 빠져나온 뒤 , 출력되는 source 명령어를 command line에 입력해야 합니다 !***
+- ***ansible을 따로 설치해서 수행하면 python import error 발생함***
 
 그래야 현재 ubuntu user에서 ansible 명령어를 수행할 수 있습니다.
 ```
@@ -88,6 +89,35 @@ $ source /opt/deepops/env/bin/activate
 # 위 source 명령어 수행 시 , 아래와 같이 (env) 가 추가됨
 $ (env) ubuntu@jjs:~/deepops $ 
 ```
+
+ansible firewall을 설치하여 galaxy roles들이 추가될 수 있도록 합니다.
+
+```bash
+(env) ubuntu@jjs: ansible-galaxy collection install ansible.posix
+```
+
+그리고 다시 스크립트를 실행합니다.
+
+
+```bash
+./setup.sh
+```
+
+구성 완료시 나오는 output은 다음과 같습니다.
+
+```bash
+Updating Ansible Galaxy roles...
+[WARNING]: No inventory was parsed, only implicit localhost is available
+localhost | CHANGED => {
+    "backup": "/home/ubuntu/.bashrc.23834.2022-12-28@16:11:40~",
+    "changed": true,
+    "msg": "line added"
+}
+
+*** Setup complete ***
+To use Ansible, run: source /opt/deepops/env/bin/activate
+```
+
 ## 03. K8S cluster 구성
 ### 3.0 ssh key 생성
 각 노드들에게 접속할 수 있도록 ssh key를 생성한 뒤 , 노드들의 authorized_keys 파일에 pub key를 등록하여 ssh 연결을 할 수 있도록 설정합니다.
@@ -153,6 +183,32 @@ node1   Ready    master   2m55s   v1.18.9   172.25.0.81   <none>        Ubuntu 2
 ```
 
 ## ETC. known Issue
+### 0. ImportError: cannot import name 'soft_unicode' from 'markupsafe'
+ansible 명령어 수행 시 아래와 같은 에러 발생
+
+```bash
+Traceback (most recent call last):
+  File "/opt/deepops/env/bin/ansible-playbook", line 62, in <module>
+    import ansible.constants as C
+  File "/opt/deepops/env/lib/python3.8/site-packages/ansible/constants.py", line 12, in <module>
+    from jinja2 import Template
+  File "/opt/deepops/env/lib/python3.8/site-packages/jinja2/__init__.py", line 12, in <module>
+    from .environment import Environment
+  File "/opt/deepops/env/lib/python3.8/site-packages/jinja2/environment.py", line 25, in <module>
+    from .defaults import BLOCK_END_STRING
+  File "/opt/deepops/env/lib/python3.8/site-packages/jinja2/defaults.py", line 3, in <module>
+    from .filters import FILTERS as DEFAULT_FILTERS  # noqa: F401
+  File "/opt/deepops/env/lib/python3.8/site-packages/jinja2/filters.py", line 13, in <module>
+    from markupsafe import soft_unicode
+ImportError: cannot import name 'soft_unicode' from 'markupsafe' (/opt/deepops/env/lib/python3.8/site-packages/markupsafe/__init__.py)
+```
+
+아래 명령어를 수행하여 pip version 낮추는것으로 해결
+
+```
+$ pip install markupsafe==2.0.1
+```
+
 ### 1. ansible.posix.firewalld error
 엔서블 수행하여 k8s provisioning 시 아래와 같은 에러 발생
 
