@@ -10,30 +10,16 @@ kube-vela의 MLOps 기능을 사용하기 위해서 k8s version은 20.01 이하�
 **설치 환경**
 | os | 사양 | k8s version | deepops version | container runtime |
 |--|--|--|--|--|
-| ubuntu 20. | 4core 8GB |  | 22.01 | docker://19.3.12 |
+| ubuntu 20. | 4core 8GB | v1.21.6 | 22.01 | docker://20.10.8 |
 
 
 ## 01. 설치 전 환경 구성
 deepops는 ansible을 바탕으로 각종 솔루션 ( slurm , k8s 등 ) 을 배포하게 됩니다.
 
-python3와 ansible을 먼저 설치 합니다.
-
-ansilbe version은 2.7.8 또는 더 높아야 합니다.
+ansible은 차후에 실행할 스크립트 파일에서 같이 설치되어 source 명령어로 사용을 등록합니다.
 ```
 # update
 $ sudo yum update -y
-
-# ansible 설치
-$ sudo yum install ansible python3-argcomplete -y
-
-# 설치된 ansible version 확인
-$ ansible --version
-ansible 2.9.6
-  config file = /home/ubuntu/deepops/ansible.cfg
-  configured module search path = ['/home/ubuntu/deepops/submodules/kubespray/library']
-  ansible python module location = /usr/lib/python3/dist-packages/ansible
-  executable location = /usr/bin/ansible
-  python version = 3.8.10 (default, Nov 14 2022, 12:59:47) [GCC 9.4.0]
 
 # python3 설치
 $ sudo yum install python3 -y
@@ -91,6 +77,16 @@ $ cd deepops/scripts
 
 # bash나 source명령어 없이 그냥 수행
 $ ./setup.sh
+```
+
+setup 스크립트 수행 후 출력되는 source 명령어를 command line에 입력해야 합니다 !
+
+그래야 현재 ubuntu user에서 ansible 명령어를 수행할 수 있습니다.
+```
+$ source /opt/deepops/env/bin/activate
+
+# 위 source 명령어 수행 시 , 아래와 같이 (env) 가 추가됨
+$ (env) ubuntu@jjs:~/deepops $ 
 ```
 ## 03. K8S cluster 구성
 ### 3.0 ssh key 생성
@@ -196,4 +192,3 @@ The offending line appears to be:
 ```
 
 - scripts/setup.sh 스크립트 재 실행하여 구성요소 설치 필요
-- 
