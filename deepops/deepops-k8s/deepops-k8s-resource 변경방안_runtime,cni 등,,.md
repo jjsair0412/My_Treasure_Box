@@ -27,7 +27,7 @@ $ (env) ubuntu@jjs:~/deepops $
 | ubuntu 20.04 | 4core 8GB | v1.21.6 | 22.01 | docker://19.3.12 | control plane | 10.0.0.2 |
 | ubuntu 20.04 | 2core 4GB | v1.21.6 | 22.01 | docker://19.3.12 | worker | 10.0.0.3 |
 
-## 1. container runtime 변경 방안
+## container runtime 변경 방안
 - 참고 문서 : [kubespray_migrate_docker2contianerd.md](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/upgrades/migrate_docker2containerd.md)
 
 목표 환경은 다음과 같습니다.
@@ -41,59 +41,115 @@ $ (env) ubuntu@jjs:~/deepops $
 | ubuntu 20.04 | 4core 8GB | v1.21.6 | 22.01 | containerd | control plane | 10.0.0.2 |
 | ubuntu 20.04 | 2core 4GB | v1.21.6 | 22.01 | containerd | worker | 10.0.0.3 |
 
-### 1.1 group_vars 수정
-submodules에 위치한 kubespray 관련 설정파일들을 변경시켜주어야 합니다.
+기존 kubespray에서 container runtime을 변경하기 위해선 두가지 설정을 변경해야 합니다.
+1. container_manager
+2. etcd deployment option
 
-먼저 k8s-cluster.yml 파일을 수정합니다.
+이 두가지를 ansible script에 추가하는 방법으로 container runtime을 변경합니다.
+- 22.01버전 이상은 container_manager option이나 etcd deploy task관련 설정 부분이 ansible yml에 존재하기때문에 , containerd로 바꿔주기만 하면 됩니다.
 
+## 1. deepops ansible 수정
+deepops의 하위버전 (22.01 이하) 들에서는 containerd 관련 설정이 없습니다.
+
+그러나 현재 구성되어있는 deepops의 version이 22.01 이기 때문에 , containerd 관련 설정을 ansible script에 추가해야 합니다.
+
+### 1.1 ~/deepops/playbooks/k8s-cluster.yml 수정
+deepops의 k8s-cluster.yaml은 파일이 두개가 잇는데 , 둘다 수정해야 합니다.
+
+먼저 playbook의 k8s-cluster.yml파일을 수정하여 etcd deployment type을 containerd에 맞게 (host) 변경할 수 있도록 스크립트를 추가합니다.
+
+위치는 아래와 같습니다.
 ```bash 
-$ cd ~/deepops/submodules/kubespray/inventory/sample/group_vars/k8s_cluster
-
-# container manager 수정
-$ vi k8s-cluster.yml
-container_manager: docker > container_manager: containerd로 변경 저장
-
-# resolvconf_mode 변경 저장
-resolvconf_mode: docker_dns > resolvconf_mode: host_resolvconf . host_resolvconf로 변경 저장
+$ vi ~/deepops/playbooks/k8s-cluster.yml
 ```
 
-etcd의 etcd_deployment_type을 변경합니다.
-
-```bash 
-$ cd ~/deepops/submodules/kubespray/inventory/sample/group_vars
-
-$ vi etcd.yml
-etcd_deployment_type: docker > etcd_deployment_type: host로 변경 저장
+아래는 기존 k8s-cluster.yml에선 container runtime을 선택할 수있는 부분이 없습니다. 
+따라서 hosts: all 파일에 추가해 주어야 합니다.
+```yaml
+# Install 'sshpass' program for: https://github.com/ansible/ansible/issues/56629
+- hosts: all
+  gather_facts: true
+  tasks:
+    - name: install epel
+      package:
+        name: epel-release
+        state: present
+      when: ansible_os_family == "RedHat"
+    - name: install sshpass
+      package:
+        name: sshpass
+        state: present
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  tags:
+    - bootstrap
 ```
 
-### 2. docker 관련 설정변경
-
-### 2.1 docker , kubelet 정지
-docker service와 kubelet service를 정지시킵니다.
-
-```bash 
-sudo service kubelet stop
-sudo service docker stop
+아래와 같이 container runtime 변경 기능을 추가합니다.
+- crio일 경우 , tasks를 하나 더 생성해두면 될 것 같습니다. ( 테스트 필요 )
+```yaml
+# Make sure Kubespray submodule is correct
+- hosts: all
+  gather_facts: false
+  tasks:
+    - name: make sure kubespray is at the correct version
+      command: git submodule update --init
+      args:
+        chdir: "{{ playbook_dir | dirname }}"
+      delegate_to: localhost
+      run_once: true
+    - name: Set facts when not using docker container runtime (default)
+      set_fact:
+        deepops_gpu_operator_enabled: true
+        etcd_deployment_type: host
+      when:
+        - container_manager is defined
+        - container_manager != "docker"
+    - name: Set facts when using Docker container runtime
+      set_fact:
+        etcd_deployment_type: docker
+        gpu_operator_default_runtime: "docker"
+      when:
+        - container_manager is defined
+        - container_manager == "docker"
+  vars:
+    ansible_become: no
+    ansible_connection: local
+  tags:
+    - local
 ```
 
-### 2.2 uninstall docker + dependencies 
-docker와 의존성 패키지들을 같이 제거합니다.
+### 1.2 ~/deepops/config/group_vars/k8s-cluster.yml 수정
+container runtime을 변경할 수 있도록 input option을 추가합니다.
+
+이후 container runtime을 변경시키고 싶다면, 해당 파일에서 containerd를 docker로 변경하거나 , tasks에 crio를 추가하여 crio로 변경해 주면 됩니다.
 
 ```bash 
-$ sudo apt-get remove -y --allow-change-held-packages containerd.io docker-ce docker-ce-cli docker-ce-rootless-extras
- ```
+$ vi ~/deepops/config/group_vars/k8s-cluster.yml
+# see: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-storage/flexvolume.md
+kubelet_flexvolumes_plugins_dir: /usr/libexec/kubernetes/kubelet-plugins/volume/exec
 
-### 1.2 k8s 재 배포
-ansible 명령어를 통해 k8s를 재 배포합니다.
+# container_manager option을 추가합니다.
+container_manager: containerd 
 
-이때 deepops의 k8s-cluster.yml이 아닌 submodules/kubespray의 cluster.yml 파일로 ansible 명령어를 수행해야 합니다.
+# Provide option to use GPU Operator instead of setting up NVIDIA driver and
+# Docker configuration.
+deepops_gpu_operator_enabled: false
+```
 
-또한 inventory는 미리 만들어두었던 deepops의 inventory를 사용해야 합니다.
-- worker , master 한개만 limit 걸어서 수행하는것이 자꾸 에러가 남. 테스트 후 하나씩만 업그레이드 및 변경하는 방안 테스트 예정
+## 2. ansible playbook 실행
+ploybooks의 k8s-cluster.yml로 ansible을 실행합니다.
+
 ```bash 
-# kubespray ansible 위치로 이동
-$ cd ~/deepops/submodules/kubespray
+$ (env) ubuntu@jjs: $ ansible-playbook -l k8s-cluster playbooks/k8s-cluster.yml --limit=node1,node2
+```
 
-# ansible 명령어 수행
-(env) ubuntu@jjs: $ ansible-playbook -i inventory/sample/inventory.ini cluster.yml --limit=mgmt01,mgmt02
+
+## 3. 결과 확인
+containerd로 runtime이 정상 변경된것을 확인합니다.
+
+```bash 
+$ kubectl get nodes -o wide
+NAME     STATUS   ROLES                  AGE    VERSION   INTERNAL-IP    EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME
+mgmt01   Ready    control-plane,master   113m   v1.21.6   10.0.0.2       <none>        Ubuntu 20.04.4 LTS   5.15.0-41-generic   containerd://1.4.9
+mgmt02   Ready    <none>                 112m   v1.21.6   10.0.0.2       <none>        Ubuntu 20.04.4 LTS   5.15.0-41-generic   containerd://1.4.9
 ```

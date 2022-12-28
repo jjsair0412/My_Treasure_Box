@@ -260,5 +260,3 @@ cephadm을 비활성화하여 모든 오케스트레이션 작업을 중지합�
 ```
 $ ./cephadm rm-cluster --force --zap-osds --fsid <fsid>
 ```
-
-sudo cephadm bootstrap --mon-ip 172.25.0.46 --allow-fqdn-hostname --ssh-user ubuntu

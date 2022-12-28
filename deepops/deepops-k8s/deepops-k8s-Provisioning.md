@@ -179,7 +179,7 @@ kubectl get 명령어로 설치 결과를 확인합니다.
 ```
 $ kubectl get nodes -o wide
 NAME    STATUS   ROLES    AGE     VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME
-node1   Ready    master   2m55s   v1.18.9   172.25.0.81   <none>        Ubuntu 20.04.4 LTS   5.15.0-41-generic   docker://19.3.12
+node1   Ready    master   2m55s   v1.18.9   10.0.0.2      <none>        Ubuntu 20.04.4 LTS   5.15.0-41-generic   docker://19.3.12
 ```
 
 ## ETC. known Issue

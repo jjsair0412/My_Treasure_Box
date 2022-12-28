@@ -27,7 +27,7 @@ deepops에선 kubernetes cluster를 구성할 때 kubespray를 사용하기 때�
 ```
 $ kubectl get nodes -o wide
 NAME     STATUS   ROLES                  AGE     VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME
-mgmt01   Ready    control-plane,master   8m26s   v1.21.6   172.25.0.8    <none>        Ubuntu 20.04.4 LTS   5.15.0-41-generic   docker://20.10.8
+mgmt01   Ready    control-plane,master   8m26s   v1.21.6   10.0.0.2      <none>        Ubuntu 20.04.4 LTS   5.15.0-41-generic   docker://20.10.8
 ```
 
 추가할 worker node에는 ssh 접근이 가능해야 하기 때문에 , 이전에 생성해두었던 id_rsa.pub key를 추가할 노드의 ```~/.ssh/authorized_keys``` 에 복사&붙여넣기 합니다.
@@ -103,6 +103,6 @@ kubectl 명령어로 노드가 정상적으로 붙었는지 확인합니다.
 ```bash
 $ kubectl get nodes -o wide
 NAME     STATUS   ROLES                  AGE     VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME
-mgmt01   Ready    control-plane,master   109m    v1.21.6   172.25.0.8    <none>        Ubuntu 20.04.4 LTS   5.15.0-41-generic   docker://20.10.8
-mgmt02   Ready    <none>                 4m41s   v1.21.6   172.25.0.73   <none>        Ubuntu 20.04.4 LTS   5.15.0-41-generic   docker://20.10.8
+mgmt01   Ready    control-plane,master   109m    v1.21.6   10.0.0.2      <none>        Ubuntu 20.04.4 LTS   5.15.0-41-generic   docker://20.10.8
+mgmt02   Ready    <none>                 4m41s   v1.21.6   10.0.0.3      <none>        Ubuntu 20.04.4 LTS   5.15.0-41-generic   docker://20.10.8
 ```
