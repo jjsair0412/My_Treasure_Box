@@ -139,10 +139,10 @@ deepops_gpu_operator_enabled: false
 ```
 
 ## 2. ansible playbook 실행
-ploybooks의 k8s-cluster.yml로 ansible을 실행합니다.
+kubespray의 upgrade playbook으로 실행시킵니다.
 
 ```bash 
-$ (env) ubuntu@jjs: $ ansible-playbook -l k8s-cluster playbooks/k8s-cluster.yml --limit=node1,node2
+$ (env) ubuntu@jjs: $ ansible-playbook -l k8s-cluster ~/deepops/playbooks/k8s-cluster.yml --limit=node1,node2
 ```
 
 
@@ -154,4 +154,40 @@ $ kubectl get nodes -o wide
 NAME     STATUS   ROLES                  AGE    VERSION   INTERNAL-IP    EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME
 mgmt01   Ready    control-plane,master   113m   v1.21.6   10.0.0.2       <none>        Ubuntu 20.04.4 LTS   5.15.0-41-generic   containerd://1.4.9
 mgmt02   Ready    <none>                 112m   v1.21.6   10.0.0.2       <none>        Ubuntu 20.04.4 LTS   5.15.0-41-generic   containerd://1.4.9
+```
+
+## ETC 
+### troubleshooting 
+calico pod에서 9099포트 이미 사용한다고 crashloopbackoff 에러낫을 경우
+
+바인딩 되어있는 9099포트 kill 한다.
+
+```bash 
+$sudo netstat -lntp | grep 9099
+tcp        0      0 127.0.0.1:9099          0.0.0.0:*               LISTEN      129776/calico-node  
+
+$sudo kill -9 129776
+```
+
+calico pod 정상상태 확인
+
+```bash
+$kubectl get pods -n kube-system
+NAME                                         READY   STATUS    RESTARTS   AGE
+calico-kube-controllers-7c5b64bf96-rxfvg     1/1     Running   0          68m
+calico-node-dpl9x                            1/1     Running   0          2m29s
+calico-node-wkwft                            1/1     Running   0          2m29s
+coredns-657959df74-dgvdn                     1/1     Running   0          68m
+coredns-657959df74-mzr7j                     1/1     Running   0          68m
+dns-autoscaler-b5c786945-jp8zt               1/1     Running   0          68m
+kube-apiserver-node01                        1/1     Running   2          83m
+kube-controller-manager-node01               1/1     Running   1          83m
+kube-proxy-4h4s6                             1/1     Running   0          67m
+kube-proxy-hdwtk                             1/1     Running   0          67m
+kube-scheduler-node01                        1/1     Running   1          83m
+kubernetes-dashboard-758cb8b4db-2lvw6        1/1     Running   0          68m
+kubernetes-metrics-scraper-6844f9956-k7vvb   1/1     Running   0          68m
+nginx-proxy-node02                           1/1     Running   1          83m
+nodelocaldns-9d6l6                           1/1     Running   0          83m
+nodelocaldns-tcpvg                           1/1     Running   0          83m
 ```

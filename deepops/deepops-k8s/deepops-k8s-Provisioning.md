@@ -41,6 +41,7 @@ Python 3.10.4
 $ sudo yum install git -y
 ```
 
+
 ## 02. deepops 구성
 deepops의 github를 clone합니다.
 
@@ -100,6 +101,16 @@ $ source /opt/deepops/env/bin/activate
 $ (env) ubuntu@jjs:~/deepops $ 
 ```
 
+pip markupsafe version 2.0.1로 downgrade
+
+```bash
+$ (env) ubuntu@jjs:~/deepops $ pip install markupsafe==2.0.1
+Collecting markupsafe==2.0.1
+  Downloading MarkupSafe-2.0.1-cp38-cp38-manylinux2010_x86_64.whl (30 kB)
+Installing collected packages: markupsafe
+Successfully installed markupsafe-2.0.1
+```
+
 ansible firewall을 설치하여 galaxy roles들이 추가될 수 있도록 합니다.
 
 ```bash
@@ -110,7 +121,7 @@ ansible firewall을 설치하여 galaxy roles들이 추가될 수 있도록 합�
 
 
 ```bash
-./setup.sh
+./scripts/setup.sh
 ```
 
 구성 완료시 나오는 output은 다음과 같습니다.
