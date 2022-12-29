@@ -1,6 +1,15 @@
 # deepos-k8s-cluster 구축 방안
 해당 문서는 deepops를 통해 K8S를 배포하는 방안에 대해 기술합니다.
 
+## Hardware Requirements
+deepops의 공식 문서에서 제시하는 vm 최소 사양은 다음과 같습니다.
+
+Total: 8 vCPU, 22 GB RAM, 96 GB Storage
+
+- virtual-login01: 2 vCPU, 2GB RAM and 32GB Storage
+- virtual-mgmt01: 4 vCPU, 4GB RAM and 32GB Storage
+- virtual-gpu01: 2 vCPU, 16GB RAM and 32GB Storage
+
 ## Prerequirement
 kube-vela의 MLOps 기능을 사용하기 위해서 k8s version은 20.01 이하여야만 합니다.
 
