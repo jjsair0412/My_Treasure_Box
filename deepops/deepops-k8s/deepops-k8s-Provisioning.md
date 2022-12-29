@@ -7,6 +7,7 @@ kube-vela의 MLOps 기능을 사용하기 위해서 k8s version은 20.01 이하�
 따라서 deepops의 20.10 version 으로 구축합니다.
 
 20.10은 k8s 버전이 v1.18.9 버전으로 설치됩니다.
+
 **설치 환경**
 | os | 사양 | k8s version | deepops version | container runtime |
 |--|--|--|--|--|
@@ -117,6 +118,8 @@ localhost | CHANGED => {
 *** Setup complete ***
 To use Ansible, run: source /opt/deepops/env/bin/activate
 ```
+
+**complete가 출력되고 난 이후에 source 명령어를 한번 더 입력해야 에러가 출력되지 않습니다 !!**
 
 ## 03. K8S cluster 구성
 ### 3.0 ssh key 생성
