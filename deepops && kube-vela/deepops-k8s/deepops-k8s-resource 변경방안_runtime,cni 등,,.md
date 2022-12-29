@@ -140,10 +140,12 @@ deepops_gpu_operator_enabled: false
 
 ## 2. ansible playbook 실행
 kubespray change runtime playbook을 통해서 ansible을 실행합니다.
-- [change-runtime-playbook.yml]()
+
+custom playbook이기때문에 deepops/playbooks 경로에 넣어줍니다.
+- [change-runtime-playbook.yml](https://github.com/jjsair0412/kubernetes_info/blob/main/deepops%20%26%26%20kube-vela/deepops-k8s/change-runtime-playbook.yml)
 
 ```bash 
-$ (env) ubuntu@jjs: $ ansible-playbook -l k8s-cluster ~/deepops/playbooks/k8s-cluster.yml --limit=node1,node2
+$ (env) ubuntu@jjs: $ ansible-playbook -l k8s-cluster ~/deepops/playbooks/change-runtime-playbook.yml
 ```
 
 
