@@ -1,0 +1,65 @@
+# Install python required for Ansible
+- include: bootstrap/bootstrap-python.yml
+  tags:
+    - bootstrap
+
+
+# Make sure Kubespray submodule is correct
+- hosts: all
+  gather_facts: false
+  tasks:
+    - name: Set facts when not using docker container runtime (default)
+      set_fact:
+        deepops_gpu_operator_enabled: true
+        etcd_deployment_type: host
+      when:
+        - container_manager is defined
+        - container_manager != "docker"
+    - name: Set facts when using Docker container runtime
+      set_fact:
+        etcd_deployment_type: docker
+        gpu_operator_default_runtime: "docker"
+      when:
+        - container_manager is defined
+        - container_manager == "docker"
+  vars:
+    ansible_become: no
+    ansible_connection: local
+  tags:
+    - local
+
+
+# Set up a local cluster container registry
+- include: container/standalone-container-registry.yml hostlist=kube-master
+  when: kube_enable_container_registry|default(true)
+
+# Un-hold container runtime packages on Ubuntu
+# In some cases, container runtime packages can be in the 'held' state, preventing
+# them from being removed and causing the install of the containerd runtime to fail
+- hosts: all
+  gather_facts: true
+  tasks:
+    - name: un-hold container runtime packages on Ubuntu
+      dpkg_selections:
+        name: "{{ item }}"
+        selection: purge
+      with_items:
+        - docker-ce
+        - docker-ce-cli
+        - docker-ce-rootless-extras
+        - containerd.io
+      when:
+        - container_manager is defined and container_manager != "docker"
+        - ansible_distribution == "Ubuntu"
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+
+
+# upgrade Kubernetes
+# for configuration, see: config/group_vars/k8s-cluster.yml
+- include: ../submodules/kubespray/upgrade-cluster.yml
+  tags:
+    - k8s
+  # vars:
+  #   # override deprecated dockerproject repo; old docker repo broken as of 03.04.2020
+  #   dockerproject_rh_repo_base_url: 'https://download.docker.com/linux/centos/7/$basearch/stable'
+  #   dockerproject_rh_repo_gpgkey: 'https://download.docker.com/linux/centos/gpg'

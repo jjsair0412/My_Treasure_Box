@@ -139,7 +139,8 @@ deepops_gpu_operator_enabled: false
 ```
 
 ## 2. ansible playbook 실행
-kubespray의 upgrade playbook으로 실행시킵니다.
+kubespray change runtime playbook을 통해서 ansible을 실행합니다.
+- [change-runtime-playbook.yml]()
 
 ```bash 
 $ (env) ubuntu@jjs: $ ansible-playbook -l k8s-cluster ~/deepops/playbooks/k8s-cluster.yml --limit=node1,node2
