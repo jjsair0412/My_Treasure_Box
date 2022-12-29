@@ -53,6 +53,8 @@ deepops의 하위버전 (22.01 이하) 들에서는 containerd 관련 설정이 
 
 그러나 현재 구성되어있는 deepops의 version이 22.01 이기 때문에 , containerd 관련 설정을 ansible script에 추가해야 합니다.
 
+**만약 deepops version이 22.01 이상이라면 , container manager만 containerd로 변경시키면 됩니다.**
+
 ### 1.1 ~/deepops/playbooks/k8s-cluster.yml 수정
 deepops의 k8s-cluster.yaml은 파일이 두개가 잇는데 , 둘다 수정해야 합니다.
 
