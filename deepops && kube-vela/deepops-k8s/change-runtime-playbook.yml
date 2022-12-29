@@ -54,12 +54,16 @@
   environment: "{{proxy_env if proxy_env is defined else {}}}"
 
 
-# upgrade Kubernetes
-# for configuration, see: config/group_vars/k8s-cluster.yml
-- include: ../submodules/kubespray/upgrade-cluster.yml
-  tags:
-    - k8s
-  # vars:
-  #   # override deprecated dockerproject repo; old docker repo broken as of 03.04.2020
-  #   dockerproject_rh_repo_base_url: 'https://download.docker.com/linux/centos/7/$basearch/stable'
-  #   dockerproject_rh_repo_gpgkey: 'https://download.docker.com/linux/centos/gpg'
+
+# etcd 업그레이드 여기서 진행하는듯 ? 
+# upgrade-cluster.yml playbook에서 따옴
+# /submodules/kubespray/roles/container-engine/ 폴더 deepops roles로 이동하여 테스트 필요
+- name: Upgrade container engine on non-cluster nodes
+  hosts: etcd:calico_rr:!k8s_cluster
+  gather_facts: False
+  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
+  environment: "{{ proxy_disable_env }}"
+  serial: "{{ serial | default('20%') }}"
+  roles:
+    - { role: kubespray-defaults }
+    - { role: container-engine, tags: "container-engine", when: deploy_container_engine|default(true) }
