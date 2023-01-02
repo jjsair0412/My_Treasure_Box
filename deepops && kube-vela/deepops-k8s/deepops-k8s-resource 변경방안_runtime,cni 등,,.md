@@ -67,38 +67,18 @@ $ vi ~/deepops/playbooks/k8s-cluster.yml
 
 아래는 기존 k8s-cluster.yml에선 container runtime을 선택할 수있는 부분이 없습니다. 
 따라서 hosts: all 파일에 추가해 주어야 합니다.
-```yaml
-# Install 'sshpass' program for: https://github.com/ansible/ansible/issues/56629
-- hosts: all
-  gather_facts: true
-  tasks:
-    - name: install epel
-      package:
-        name: epel-release
-        state: present
-      when: ansible_os_family == "RedHat"
-    - name: install sshpass
-      package:
-        name: sshpass
-        state: present
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
-  tags:
-    - bootstrap
-```
 
-아래와 같이 container runtime 변경 기능을 추가합니다.
-- crio일 경우 , tasks를 하나 더 생성해두면 될 것 같습니다. ( 테스트 필요 )
+파일 맨 위에 추가합니다.
 ```yaml
-# Make sure Kubespray submodule is correct
+$ vi ~/deepops/playbooks/k8s-cluster.yml
+---
+# Kubernetes Cluster Playbook
+
+# Set facts depending on container runtime
+# Use GPU operator when container runtime is not docker
+# etcd_deployment_type must be `host` when container_manager is not `docker`
 - hosts: all
-  gather_facts: false
   tasks:
-    - name: make sure kubespray is at the correct version
-      command: git submodule update --init
-      args:
-        chdir: "{{ playbook_dir | dirname }}"
-      delegate_to: localhost
-      run_once: true
     - name: Set facts when not using docker container runtime (default)
       set_fact:
         deepops_gpu_operator_enabled: true
@@ -113,20 +93,15 @@ $ vi ~/deepops/playbooks/k8s-cluster.yml
       when:
         - container_manager is defined
         - container_manager == "docker"
-  vars:
-    ansible_become: no
-    ansible_connection: local
-  tags:
-    - local
+...
 ```
 
-### 1.2 ~/deepops/config/group_vars/k8s-cluster.yml 수정
-container runtime을 변경할 수 있도록 input option을 추가합니다.
+### 1.2 group_vars 수정
+group_vars에 container runtime input option을 추가합니다.
 
-이후 container runtime을 변경시키고 싶다면, 해당 파일에서 containerd를 docker로 변경하거나 , tasks에 crio를 추가하여 crio로 변경해 주면 됩니다.
-
-```bash 
+```yaml
 $ vi ~/deepops/config/group_vars/k8s-cluster.yml
+...
 # see: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-storage/flexvolume.md
 kubelet_flexvolumes_plugins_dir: /usr/libexec/kubernetes/kubelet-plugins/volume/exec
 
@@ -136,7 +111,10 @@ container_manager: containerd
 # Provide option to use GPU Operator instead of setting up NVIDIA driver and
 # Docker configuration.
 deepops_gpu_operator_enabled: false
+...
 ```
+
+container_manager 옵션에 docker가 오느냐 , crio가 오느냐 , containerd가 오느냐에 따라서 runtime이 변경되게 됩니다.
 
 ## 2. ansible playbook 실행
 kubespray change runtime playbook을 통해서 ansible을 실행합니다.

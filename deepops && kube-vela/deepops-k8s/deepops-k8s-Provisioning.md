@@ -197,7 +197,65 @@ ansible_user=deepops #ssh 접속 가능 계정
 ansible_ssh_private_key_file='~/.ssh/id_rsa' # key file path (pub)
 ```
 
-## 3.2 K8S Cluster 구성
+## 3.2 container runtime 구성
+설치 대상이 되는 deepops version 22.01은 container runtime설정이 docker가 default 입니다.
+
+따라서 ansible 구성을 조금 변경시켜주고 , containerd로 변경시켜주어야 합니다.
+
+### 3.2.1 ectd deploy설정 추가
+k8s-cluster에 etcd deploy 설정 변경가능 부분을 추가합니다.
+
+containerd는 etcd_deploy 옵션이 host이여야만 합니다.
+
+파일 맨 위에 추가합니다.
+```yaml
+$ vi ~/deepops/playbooks/k8s-cluster.yml
+---
+# Kubernetes Cluster Playbook
+
+# Set facts depending on container runtime
+# Use GPU operator when container runtime is not docker
+# etcd_deployment_type must be `host` when container_manager is not `docker`
+- hosts: all
+  tasks:
+    - name: Set facts when not using docker container runtime (default)
+      set_fact:
+        deepops_gpu_operator_enabled: true
+        etcd_deployment_type: host
+      when:
+        - container_manager is defined
+        - container_manager != "docker"
+    - name: Set facts when using Docker container runtime
+      set_fact:
+        etcd_deployment_type: docker
+        gpu_operator_default_runtime: "docker"
+      when:
+        - container_manager is defined
+        - container_manager == "docker"
+...
+```
+
+### 3.2.2 group_vars 수정
+group_vars에 container runtime input option을 추가합니다.
+
+```yaml
+$ vi ~/deepops/config/group_vars/k8s-cluster.yml
+...
+# see: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-storage/flexvolume.md
+kubelet_flexvolumes_plugins_dir: /usr/libexec/kubernetes/kubelet-plugins/volume/exec
+
+# container_manager option을 추가합니다.
+container_manager: containerd 
+
+# Provide option to use GPU Operator instead of setting up NVIDIA driver and
+# Docker configuration.
+deepops_gpu_operator_enabled: false
+...
+```
+
+container_manager 옵션에 docker가 오느냐 , crio가 오느냐 , containerd가 오느냐에 따라서 runtime이 변경되게 됩니다.
+
+## 3.3 K8S Cluster 구성
 ansible을 통해 만들어둔 inventory 기반으로 cluster를 구성합니다.
 
 ```
