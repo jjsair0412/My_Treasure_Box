@@ -127,19 +127,31 @@ ansible firewall을 설치하여 galaxy roles들이 추가될 수 있도록 합�
 구성 완료시 나오는 output은 다음과 같습니다.
 
 ```bash
+Configuration directory '/home/ubuntu/deepops/scripts/../config' exists, not overwriting
 Updating Ansible Galaxy roles...
-[WARNING]: No inventory was parsed, only implicit localhost is available
-localhost | CHANGED => {
-    "backup": "/home/ubuntu/.bashrc.23834.2022-12-28@16:11:40~",
-    "changed": true,
-    "msg": "line added"
-}
+
+PLAY [Ansible Ad-Hoc] *****************************************************************************
+
+TASK [lineinfile] *********************************************************************************
+changed: [localhost]
+
+PLAY RECAP ****************************************************************************************
+localhost                  : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
 
 *** Setup complete ***
-To use Ansible, run: source /opt/deepops/env/bin/activate
+```
+
+exit 명령어로 해당 환경에서 빠져나옵니다.
+```bash
+$ exit
 ```
 
 **complete가 출력되고 난 이후에 source 명령어를 한번 더 입력해야 에러가 출력되지 않습니다 !!**
+
+```bash
+$ source /opt/deepops/env/bin/activate
+```
 
 ## 03. K8S cluster 구성
 ### 3.0 ssh key 생성
