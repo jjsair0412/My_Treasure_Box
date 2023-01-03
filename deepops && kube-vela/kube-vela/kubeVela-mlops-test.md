@@ -48,7 +48,7 @@ spec:
     properties:
       image: fogdong/train-color:v1
       framework: tensorflow
-      storage:
+      storage: # storageclass 정보 입력 가능 ? 테스트 필요
         - name: "my-pvc"
           mountPath: "/model"
   
@@ -82,7 +82,7 @@ spec:
     properties:
       image: fogdong/color-serving:v1
       # Use LoadBalancer to expose external addresses for easy to access
-      exposeType: NodePort 
+      exposeType: NodePort # NodePort로 접근정보 open
       env:
         - name: URL
           # The address of the model serving
