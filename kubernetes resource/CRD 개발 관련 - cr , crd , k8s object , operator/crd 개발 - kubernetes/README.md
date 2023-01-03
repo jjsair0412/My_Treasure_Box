@@ -420,8 +420,234 @@ $ tree
 
 
 
-#### 3.1.3 custom controller 생성
-- 참고 문서 : https://www.programcreek.com/java-api-examples/?api=io.kubernetes.client.openapi.apis.CoreV1Api
-- crd 생성하기 참고 블로그 : https://refactorfirst.com/create-kubernetes-custom-resource-definition-crd
-- 예제 코드 모여있는곳 : https://github.com/kubernetes-client/java/tree/master/examples
-- AppsV1API RestAPI 및 각 메서드 별 설명 : https://github.com/kubernetes-client/java/blob/master/kubernetes/docs/AppsV1Api.md
+### 3.2 Kubernetes Custom Controller 생성
+model이 생성되었다면 , 해당 model을 통해 실제 코드를 작성합니다.
+
+해당 문서는 controller를 생성하기 위해서 spring boot를 사용했습니다.
+
+각 컴포넌트들의 재사용을 용이하게 하기 위해서 컴포넌트들을 Bean 객체로 등록하여 사용합니다.
+
+**참고 문서**
+- [CoreV1Api Java Examples](https://www.programcreek.com/java-api-examples/?api=io.kubernetes.client.openapi.apis.CoreV1Api)
+- [crd 생성하기 참고 문서](https://refactorfirst.com/java-spring-boot-kubernetes-controller)
+- [Kubernetes Clients manifest example](https://github.com/kubernetes-client/java/tree/master/examples)
+- [AppsV1API RestAPI 및 각 메서드 별 설명](https://github.com/kubernetes-client/java/blob/master/kubernetes/docs/AppsV1Api.md)
+
+[**실제 코드**](https://github.com/jjsair0412/kubernetes_info/tree/main/kubernetes%20resource/CRD%20%EA%B0%9C%EB%B0%9C%20%EA%B4%80%EB%A0%A8%20-%20cr%20%2C%20crd%20%2C%20k8s%20object%20%2C%20operator/crd%20%EA%B0%9C%EB%B0%9C%20-%20kubernetes/custom-controller-code)
+
+
+#### 3.2.0 작업 전 환경설정
+먼저 K8S API server의 접근을 enable 시켜야합니다.
+
+kube proxy 명령어를 통해서 open시킬 수 있지만, 차후 인증-인가 작업을 통해 유저를 생성하여 해당 유저로 API Server로 통신하게끔 작업 할 예정입니다.
+- [k8s apiserver와 통신하기 관련 블로그](https://coffeewhale.com/apiserver)
+- [apiserver 통신 관련 공식문서](https://kubernetes.io/ko/docs/tasks/administer-cluster/access-cluster-api/)
+
+#### 3.2.1 구성 요소
+controller에는 필수 요소가 4가지 들어가야 합니다.
+
+- reconciler 
+    - reconciler는 CRD instance가 변경되는 요청을 처리하기 위해 사용합니다.
+    변경 사항으로 무언가를 할 수 있도록 CRD 인스턴스를 생성, 업데이트 또는 삭제할 때 호출됩니다.
+- Shared Index Informer
+   - controller는 새로운 CRD instancer가 CRUD작업을 감시하며 Kubernetes Cluster API와 지속적으로 연결상태를 유지 할 필요가 없기 때문에 해당 구성요소는 cache와 비슷하게 동작합니다.
+- APIClient
+   - Kubernetes Cluster의 API server와 통신하기 위해서 사용됩니다.
+- CRD Model
+   - model class들을 쉽게 생성하고 이용하기 위해 필요합니다. 전에 도커로 만들어둔 파일입니다.
+
+각 구성 요소의 실제 코드는 다음과 같습니다.
+
+**1. reconciler**
+```java
+    // Resources 객체를 reconcier에서 사용하기에 Bean 객체로 등록
+    @Bean
+    Resources resources(){
+        return new Resources();
+    }
+
+    // AppsV1Api가 k8s api server에 request를 보내어 k8s resource 관리 수행
+    @Bean
+    Reconciler reconciler(SharedIndexInformer<V1Helloworld> shareIndexInformer,
+            AppsV1Api appsV1Api) {
+        return request -> {
+            String key = request.getNamespace() + "/" + request.getName();
+            
+            V1Helloworld resourceInstance = shareIndexInformer
+                    .getIndexer()
+                    .getByKey(key);
+
+            
+            if (resourceInstance != null) {
+                V1Deployment v1Deployment = resources().createDeployment(resourceInstance);
+                System.out.println("Creating resource deployment...");
+
+                try {
+                    appsV1Api.createNamespacedDeployment(
+                            request.getNamespace(),
+                            v1Deployment,
+                            "true",
+                            null,
+                            "",
+                            "");
+                } catch (ApiException e) {
+                    createErrorCode("createNamespacedDeployment",e);
+                    System.out.println("Creating resource failed");
+                    if (e.getCode() == 409) { // 생성되어있다면 409 에러 발생 . 생성되어있는데 다시한번 resourceInstance가 들어왔다는건 update
+                        
+                        System.out.println("Updating resource...");
+                        try {
+                            appsV1Api.replaceNamespacedDeployment(
+                                    request.getName(),
+                                    request.getNamespace(),
+                                    v1Deployment,
+                                    null,
+                                    null,
+                                    "",
+                                    "");
+                            
+                        } catch (ApiException ex) {
+                            createErrorCode("replaceNamespacedDeployment",ex);
+                            throw new RuntimeException(ex);
+                        }
+                    } else {
+                        throw new RuntimeException(e);
+                    }
+                    
+                }
+                return new Result(false);
+            }else{
+                System.out.println("delete deployment resource..."); // delete는 k8s에서 메타데이터로 리소스들을 관리하기 때문에 , crd로 생성시켜준 이름과 resource 이름이 동일하다면 만들지 않아도 k8s resource가 삭제 된다.
+            }
+            return new Result(false);
+
+        };
+    }
+```
+
+
+**2. Shared Index Informer**
+
+Shared Index Informer는 SharedInformerFactory를 사용하고 , SharedInformerFactory는 ApiClient를 파라미터로 받습니다.
+
+따라서 SharedInformerFactory를 먼저 Bean 객체로만들어 둡니다.
+
+```java
+    @Bean
+    SharedInformerFactory sharedInformerFactory(ApiClient apiClient){
+        return new SharedInformerFactory(apiClient);
+    }
+
+
+    @Bean
+    SharedIndexInformer<V1Helloworld> sharedIndexInformer(SharedInformerFactory sharedInformerFactory,
+            ApiClient apiClient) {
+        System.out.println("hello im sharedIndexInformer method");
+        GenericKubernetesApi<V1Helloworld, V1HelloworldList> api = new GenericKubernetesApi<>(V1Helloworld.class,
+                V1HelloworldList.class,
+                "jjsair0412.example.com", // CRD Group
+                "v1", // CRD version
+                "helloworlds", // CRD Plural name
+                apiClient);
+        return sharedInformerFactory.sharedIndexInformerFor(api, V1Helloworld.class, 0);
+    }
+```
+
+**3. APIClient**
+```java
+    @Bean
+    ApiClient myApiClient() throws IOException {
+      ApiClient apiClient = new ApiClient();
+      System.out.println("basepath is + "+ apiClient.getBasePath());
+      return apiClient.setHttpClient(
+          apiClient.getHttpClient().newBuilder().readTimeout(Duration.ZERO).build());
+    }
+```
+
+**4. K8S Cluster와 통신하는 AppsV1Api**
+```java
+    // AppsV1Api로 kube api server와 통신 . v1api bean required Bean.
+    @Bean
+    AppsV1Api appsV1Api(ApiClient apiClient) {
+        apiClient.setBasePath("http://127.0.0.1:" + 8001); 
+        // apiClient.setDebugging(true); // kube api server와 통신시 debugging option 설정
+        System.out.println("final basepath is + "+ apiClient.getBasePath());
+        return new AppsV1Api(apiClient);
+    }
+```
+
+**5. resource 설정 부분**
+api server에 던질 resource는 메서드의 getter.setter로 정의할 수 있습니다.
+
+```java
+    public V1Deployment createDeployment(V1Helloworld resourceInstance) {
+        V1Deployment deploymentSet = new V1Deployment();
+        V1DeploymentSpec deploymentSpec = new V1DeploymentSpec();
+        String applanguageInfo = resourceInstance.getSpec().getLanguage().toString();
+
+        deploymentSpec.template(podTemplate(resourceInstance, applanguageInfo)); // pod template 들어감
+        deploymentSpec.replicas(resourceInstance.getSpec().getReplicas());
+
+        deploymentSet.setMetadata( 
+                new V1ObjectMeta() 
+                        .name(resourceInstance.getMetadata().getName())
+                        .labels( // deployment lable 지정
+                                Map.of(
+                                        "app", applanguageInfo,
+                                        "message", resourceInstance.getSpec().getMessage()
+                                    )
+                                )
+                    );
+
+        deploymentSpec.selector(new V1LabelSelector() // deployment  pod selector 지정
+                        .matchLabels(
+                        Map.of(
+                                "app", applanguageInfo,
+                                "message", resourceInstance.getSpec().getMessage()
+                            )
+                        )
+                        
+                    );
+
+        deploymentSet.setSpec(deploymentSpec);
+        
+        System.out.println("deployment spec init com");
+        return deploymentSet;
+    }
+
+    // deployment pod template 생성
+    private static V1PodTemplateSpec podTemplate(V1Helloworld resourceInstance, String applanguageInfo) {
+        System.out.println("hello im V1PodTemplate");
+        V1ObjectMeta podMeta = new V1ObjectMeta();
+        V1PodTemplateSpec podTemplateSpec = new V1PodTemplateSpec();
+
+        List<V1Container> podContainers = new ArrayList<V1Container>();
+        
+
+        podContainers.add(0,createContainers(resourceInstance));
+
+        podMeta.labels( // pod label 지정 ( required )
+                Map.of(
+                        "app", applanguageInfo,
+                        "message", resourceInstance.getSpec().getMessage()
+                    )
+                );
+
+        podMeta.setName("hello" + "-" + UUID.randomUUID()); // pod name 지정 ( required )
+
+        podTemplateSpec.setMetadata(podMeta);
+        podTemplateSpec.spec(new V1PodSpec().containers(podContainers)); 
+
+
+        return podTemplateSpec;
+    }
+
+        // pod container 정보 생성
+    private static V1Container createContainers(V1Helloworld resourceInstance){
+        V1Container container = new V1Container();
+        container.setImage(resourceInstance.getSpec().getImage());
+        container.setName(resourceInstance.getSpec().getAppId());
+        
+        return container;
+    }
+```
