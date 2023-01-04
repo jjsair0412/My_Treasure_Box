@@ -82,7 +82,7 @@ $ kubectl get all -n vela-system
 velaUX에서 application이 running 상태인지 확인합니다.
 
 
-## 3. Model Training
+## 3. Model Training && model serving
 테스트를 위해 회색 이미지를 컬러 이미지로 바꿔주는 TensorFlow framework을 사용해서 model training을 진행합니다.
 
 테스트에 활용된 color tensorflow git 주소는 다음과 같습니다.
@@ -175,3 +175,89 @@ spec:
         - port: 3333
           expose: true
 ```
+
+## 4. 결과 확인
+demo-training pod가 Running인지 확인합니다.
+
+```bash
+$ kubectl get all -n ml
+NAME                         READY   STATUS    RESTARTS   AGE
+pod/demo-training-worker-0   1/1     Running   0          5m57s
+
+NAME                             TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE
+service/demo-training-worker-0   ClusterIP   None         <none>        2222/TCP   5m57s
+```
+
+model-training 결과 로그를 확인합니다.
+
+```bash
+$ kubectl logs demo-training-worker-0 -n ml
+...
+645/1000
+1/1 [==============================] - 0s 302ms/step - loss: 5.6606e-04
+Epoch 646/1000
+1/1 [==============================] - 0s 271ms/step - loss: 6.1996e-04
+Epoch 647/1000
+1/1 [==============================] - 0s 274ms/step - loss: 6.4991e-04
+Epoch 648/1000
+1/1 [==============================] - 0s 279ms/step - loss: 6.4020e-04
+Epoch 649/1000
+1/1 [==============================] - 0s 247ms/step - loss: 5.9702e-04
+Epoch 650/1000
+1/1 [==============================] - 0s 282ms/step - loss: 5.4590e-04
+Epoch 651/1000
+1/1 [==============================] - 0s 353ms/step - loss: 5.1635e-04
+Epoch 652/1000
+```
+
+완료에는 5분정도 시간이 소요됩니다.
+
+vela ls 명령어로 배포한 training-serving application의 components 상태를 확인합니다.
+- demo-serving , demo-rest-serving status 확인
+
+```bash
+$ vela ls -n ml
+APP                     COMPONENT               TYPE            TRAITS  PHASE           HEALTHY         STATUS          CREATED-TIME                 
+training-serving        demo-training           model-training          runningWorkflow unhealthy       Job Running     2023-01-04 04:01:13 +0000 UTC
+├─                      demo-serving            model-serving           runningWorkflow                                 2023-01-04 04:01:13 +0000 UTC
+└─                      demo-rest-serving       webservice              runningWorkflow                                 2023-01-04 04:01:13 +0000 UTC
+```
+
+조금 더 기다리면 , 모든 components들의 STATUS가 READY로 변경됩니다.
+
+```bash
+ vela ls -n ml
+APP                     COMPONENT               TYPE            TRAITS  PHASE   HEALTHY STATUS          CREATED-TIME                 
+training-serving        demo-training           model-training          running healthy Job Succeeded   2023-01-04 04:01:13 +0000 UTC
+├─                      demo-serving            model-serving           running healthy Available       2023-01-04 04:01:13 +0000 UTC
+└─                      demo-rest-serving       webservice              running healthy Ready:1/1       2023-01-04 04:01:13 +0000 UTC
+```
+
+application의 service endpoint를 vela명령어로 확인합니다.
+
+```bash
+$ vela status training-serving --endpoint -n ml
+Please access training-serving from the following endpoints:
++---------+-------------------+--------------------------------+---------------------------------------------------+-------+
+| CLUSTER |     COMPONENT     |    REF(KIND/NAMESPACE/NAME)    |                     ENDPOINT                      | INNER |
++---------+-------------------+--------------------------------+---------------------------------------------------+-------+
+| local   | demo-serving      | Service/vela-system/ambassador | http://172.25.0.117:30073/seldon/ml/demo-serving  | false |
+| local   | demo-serving      | Service/vela-system/ambassador | https://172.25.0.117:31404/seldon/ml/demo-serving | false |
+| local   | demo-rest-serving | Service/ml/demo-rest-serving   | 172.25.0.117:31754                                | false |
++---------+-------------------+--------------------------------+---------------------------------------------------+-------+
+```
+
+demo-rest-serving을 통해 이미지를 request 받습니다.
+
+아래의 graywoman image를 사용합니다.
+- 경로 : ./Tensorflow-image/gray_woman.png
+
+![gray_woman][gray_woman]
+
+[gray_woman]:./Tensorflow-image/gray_woman.png
+
+해당 이미지 요청 후 컬러 이미지가 출력되는것을 확인할 수 있습니다.
+
+![test][test]
+
+[test]:./Tensorflow-image/test.png
