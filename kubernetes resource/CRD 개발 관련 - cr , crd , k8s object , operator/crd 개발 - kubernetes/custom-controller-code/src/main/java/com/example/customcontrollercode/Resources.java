@@ -13,6 +13,8 @@ import io.kubernetes.client.openapi.models.V1LabelSelector;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.openapi.models.V1PodSpec;
 import io.kubernetes.client.openapi.models.V1PodTemplateSpec;
+import io.kubernetes.client.openapi.models.V1Service;
+import io.kubernetes.client.openapi.models.V1ServiceSpec;
 
 public class Resources {
 
@@ -86,6 +88,16 @@ public class Resources {
         container.setName(resourceInstance.getSpec().getAppId());
         
         return container;
+    }
+
+    private static V1Service creatService(V1Helloworld resourceInstance){
+        V1Service service = new V1Service();
+        V1ServiceSpec serviceSpec = new V1ServiceSpec();
+
+        serviceSpec.setType("NodePort");
+
+        service.setSpec(serviceSpec);
+        return service;
     }
 
 }
