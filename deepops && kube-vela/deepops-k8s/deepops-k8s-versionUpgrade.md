@@ -128,6 +128,14 @@ mgmt01   Ready    control-plane,master   155m   v1.22.0
 mgmt02   Ready    <none>                 50m    v1.22.0
 ```
 
+만약 deepops version이 22.01 이하 버전이라 container runteim을 임의로 docker에서 containerd로 변경시켜 주었다면 , 아래와 같이 etcd deploytype을 ansible 명령어에 환경변수로 너어주어야 합니다.
+
+```bash
+# etcd deploy type 지정
+$ ansible-playbook -l k8s-cluster submodules/kubespray/upgrade-cluster.yml -e kube_version=v1.22.0 -e upgrade_cluster_setup=true -e etcd_deployment_type=host --limit=node1,node2
+```
+
+
 ## 3. upgarde 결과 확인
 kubectl get 명령어로 버전이 정상적으로 업그레이드 되었는지 확인합니다.
 
