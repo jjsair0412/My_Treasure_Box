@@ -145,3 +145,12 @@ NAME     STATUS   ROLES                  AGE    VERSION
 mgmt01   Ready    control-plane,master   155m   v1.22.0
 mgmt02   Ready    <none>                 50m    v1.22.0
 ```
+
+## ETC
+kubespray는 kubeadm을 기반으로 하기 때문에 , major version upgrade시 1단계씩만 가능합니다.
+
+만약 1.20에서 1.22로 더블 업그레이드를 수행하면 , 아래와 같은 에러로그와 함께 버전 업그레이드가 수행되지 않습니다.
+
+```bash
+- Specified version to upgrade to "v1.22.0" is too high; kubeadm can upgrade only 1 minor version at a time
+```
