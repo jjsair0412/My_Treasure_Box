@@ -1,0 +1,2 @@
+# AWS-Basic-info.md
+해당 repository는 Udemy 강의인 [【한글자막】 AWS Certified Solutions Architect Associate 시험합격!](https://www.udemy.com/course/best-aws-certified-solutions-architect-associate/) 를 듣고 정리한 내용을 작성해둔 repository 입니다.
