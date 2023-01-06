@@ -116,3 +116,37 @@ AWS에선 아래 MFA device들을 지원한다.
 4. ***Hardware Key Fob MFA Device for AWS GovCloud (US)***
 	- 물리 장치
 	- SurePassID사의 key pod
+
+## IAM Role
+특정한 AWS Service들은 사용자가 AWS에 로그인한 후 해당 계정에서 실행해야 한다.
+- ex) EC2
+
+따라서 **해당 특정 service들에게도 권한을 부여해야 하는데, 이때 사용되는것이 IAM Role 이다.**
+
+IAM Role은 User가 사용하도록 만들어진 것이 아니라 , AWS Service가 사용하도록 만들어진 것이다.
+
+**예를 들어** , AWS EC2 인스턴스를 생성하고 , 해당 인스턴스가 AWS에 특정 service로 어떤 작업을 진행하려고 한다면 , EC2 인스턴스는 접근 규칙이 필요하다.
+
+이때 IAM Role을 만들어 EC2와 묶어서 , 작업을 진행할 Service에 접근한다.
+
+IAM Role에서 해당 서비스를 허용한다면 , 접근이 가능할것이고 허용하지 않는다면 접근할 수 없을 것 이다.
+
+
+## IAM Security Tools
+**1. IAM Credentials Reports (account-level)**
+- 보고서에 계정에 있는 사용자와 다양한 자격증명의 상태를 포함합니다.
+
+**2. IAM Access Advisor (user-level)**
+- 사용자에게 부여된 서비스의 권한과 해당 서비스에 사용자가 마지막으로 엑세스한 시간을 확인할 수 있습니다.
+
+
+## IAM Guidelines & Best Practices
+1. root account는 AWS account를 setup할때 말고는 사용하지 않아야 한다.
+2. 하나의 IAM user는 하나의 물리적인 사람이어야 한다.
+3. user를 group에 넣어서 group 수준에서 보안을 지켜야 한다.
+4. 강력한 비밀번호 정책을 사용해야 한다.
+5. MFA를 사용하여 해커들에게 계정을 지켜야 한다.
+6. AWS Service에 권한을 부여할 때 마다 IAM Role를 생성해야 한다.
+7. CLI나 SDK로 Access할 때는 Access key를 사용해야 한다.
+8. 계정 권한을 감사할 때는 ,IAM Security tools를 사용해야 한다.
+9. IAM User와 IAM Access key는 절대로 공유해선 안된다.
