@@ -1,8 +1,8 @@
 # IAM
 ## IAM ?
 계정을 만들면 , root 권한이 자동으로 부여됨-   user별 관리 서비스 접근 권한 부여 서비스이다.
--   Global sservice이기에 리전에 영향을 받지 않는다.
-    -   user끼리 group을 지을 수 있다.
+-   Global service이기에 리전에 영향을 받지 않는다.
+    -   user끼리 group을 지정할 수 있다.
     -   한 user는 여러 group에 존재할 수 있다.
     -   group이 없는 user도 가능하다. ( 추천되지 않음 )
 	    - group이 없는 user에게는 inline 정책만을 부여할 수 있다.
