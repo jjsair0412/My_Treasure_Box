@@ -147,6 +147,6 @@ IAM Role에서 해당 서비스를 허용한다면 , 접근이 가능할것이�
 4. 강력한 비밀번호 정책을 사용해야 한다.
 5. MFA를 사용하여 해커들에게 계정을 지켜야 한다.
 6. AWS Service에 권한을 부여할 때 마다 IAM Role를 생성해야 한다.
-7. CLI나 SDK로 Access할 때는 Access key를 사용해야 한다.
+7. CLI나 SDK로 코딩하여 aws로 Access할 때는 Access key를 사용해야 한다.
 8. 계정 권한을 감사할 때는 ,IAM Security tools를 사용해야 한다.
 9. IAM User와 IAM Access key는 절대로 공유해선 안된다.
