@@ -29,5 +29,166 @@ ASG (auto-scaling group)를 통해서 서비스를 확장할 수 있다.
     - 인스턴스를 구성하기 위한 Bootstrap script
 
 ## EC2 User Data
-EC2 User 
-     
+EC2 User data는 EC2 Instance를 실행할 때, 특정 작업을 부트스트랩하여 인스턴스를 실행할 수 있다.
+
+스크립트는 단 한번만 실행되며 , Root user에서 진행되게 된다.
+- bootstrap ? : 부팅 작업을 자동화 한다.
+    - update
+    - install software
+    - 일반적 파일을 인터넷에서 다운로드
+
+    등 ..
+
+EC2 USER Data는 EC2 Instance가 실행될 떄 단 한번만 실행되는 스크립트를 정의할 수 있다.
+
+만약 아래와 같이 스크립트를 정의한다면 ,EC2 Instance가 실행될 때 apt-get update를 실행한 뒤 , httpd servie를 설치하고 실행할 것이다.
+
+그리고 index.html파일에 hellow world from ~ 이 적힐 것이다.
+
+```bash
+#!/bin/bash
+# Use this for your user data (script from top to bottom)
+# install httpd (Linux 2 version)
+yum update -y
+yum install -y httpd
+systemctl start httpd
+systemctl enable httpd
+echo "<h1>Hello World from $(hostname -f)</h1>" > /var/www/html/index.html
+```
+
+## EC2 Instance Type
+- [EC2 Instance Type 종류](https://aws.amazon.com/ko/ec2/instance-types/)
+
+위 URL을 따라가면 , 다양한 EC2의 Instance Type들이 있고 사용 목적에 따라 어떤 Instance를 사용할지 정할 수 있다.
+
+AWS에서 EC2 Instance type 명명 규칙은은 다음과 같다.
+
+만약 m5.2xlarge라는 Instance가 있다면
+- m : instance class
+범용의 인스턴스라는 뜻이다.
+- 5 : instance의 세대를 의미한다.
+- 2xlarge : instance의 크기를 의미한다. 크기가 클수록 더 많은 메모리와 CPU를 가지게 된다.
+
+따라서 위 url에서 instance type들을 확인할 수 있다.
+
+
+### EC2 Instance class 종류
+- 범용
+- 컴퓨팅 최적화
+- 메모리 최적화
+- 가속화된 컴퓨팅
+- 스토리지 최적화
+- HPC 최적화
+
+EC2 Instance의 비용 및 사양 비교할 때 좋은 사이트
+- https://instances.vantage.sh/
+
+## Security Group
+aws에서 네트워크 보안을 수행하는 애다.
+
+EC2에서는 트래픽을 조절하는데 , EC2에 출입이 가능한 대역과 나가는 그룹을 설정할 수 있다.
+
+IP를 지정할 수 도 있고 , security group끼리 묶을 수 도 있다.
+
+EC2 인스턴스의 방화벽이다.
+- port 허용
+- ipv4 또는 ipv6의 ip 범위 지정 가능
+- inbound network 지정
+- outbound network 지정
+
+### Security Group에서 알아야 할 점들
+1. 하나의 보안 그룹을 여러 인스턴스에 연결할 수 있다.
+2. VPC 결합으로 통제되어 있기에 VPC마다 생성해 주어야 한다. ( 리전별로 공유 x )
+3. EC2 외부에 존재한다. -> EC2에서 확인할 수 없다.
+4. SSH를 위해 security group을 별도로 분리하는게 좋다.
+5. Timeout이 생긴다면 , Security Group이 잘못된것이다. 그러나 connection refused가 생기면 security group은 뚫린거다.
+6. 기본적으로 outbound는 모두 뚫려있다.
+
+
+
+### Classic Ports to know ( saa 시험을 위해 알아야 할 ports 번호들 )
+- 22 = SSH (Secure Shell) - log into a Linux instance
+- 21 = FTP (File Transfer Protocol) – upload files into a file share
+- 22 = SFTP (Secure File Transfer Protocol) – upload files using SSH
+- 80 = HTTP – access unsecured websites
+- 443 = HTTPS – access secured websites
+- 3389 = RDP (Remote Desktop Protocol) – log into a Windows instance
+
+## EC2 IAM Role
+iam role을 지정한 후 , EC2에 등록하게 되면 aws 자격 증명을 제공할 수 있다.
+
+예를 들어 DemoIamRole이라는 Iam Role이 있다고 하자.
+DemoIamRole에는 aws Iam ReadOnly policy가 정의되어 있다.
+
+이때 해당 iam role을 EC2에 지정하게 되면
+ec2 instance에 ssh 연결 후 아래 aws 명령을 통해 iam list를 read하면 결과가 출력된다.
+```bash
+$ aws iam list-users
+```
+
+## EC2 Instance Options
+1. **On-Demand Instance**
+
+    예측 가능한 가격을 가진 단기 워크로드용 인스턴스
+
+    사용한만큼 비용을 지불함.
+    - 1분지난뒤 1초당 비용 나오기 시작함.
+
+    사용해제 , 중지 , 시작이 자유로움
+
+    연속적 단기 워크로드에 적합함.
+
+2. **Reserved Instance**
+
+    예약 인스턴스. 약속된 기간 ( 1년 또는 3년 )동안 사용될 때 사용하는 인스턴스.
+    최소 1년으로 지정해야 함.
+    type은 세가지가 있다.
+    - Reserved Instance : 긴 워크로드에 사용되는 기본적인 예약 인스턴스
+    - convertible Reserved Instance : instance type을 유연하게 바꿀 수 있음
+    - Scheduled Reserved Instance : batch job처럼 특정 기간 ( 매주 목요일 , 매주 월요일 3시에서 6시 등 ) 을 지정해서 사용하는 인스턴스
+
+    온디멘드에 비해 75% 절약 가능
+
+    54%가 최저 할인
+
+    aws에 이러한 ec2를 몇년동안 쓸거야 라고 하고 먼저 돈내는거라 할인율 높음.
+    선결제 , 부분 선결제 , 매달 요금지불 세가지옵션 가능.
+
+    애플리케이션이 안정된 상태로 있어야하는 DB같은곳에 적합
+
+3. Spot Instance
+
+    저렴한 단기 워크로드용 인스턴스. 저렴하지만 손실 가능성이 있고 신뢰성이 낮다.
+
+    할인율이 가장 높은 Instance
+
+    스팟 가격은 점진적으로 변화하는데 , 내가 낼 비용보다 낮아지면 서버가 멈춤.
+
+    따라서 인스턴스가 언제든 중지될 수 있으니 이러한 상황이라도 괜찮은 프로그램을 쓸 때 적합함.
+
+4.  Dedicated Hosts
+
+    물리 서버 전체를 예약하고 인스턴스 배치를 제어함.
+
+    AWS IDC 내부의 물리 서버자체를 예약하는것이다.
+    
+    3년동안 사용해야함. 전체 서버를 사용하니 비용이 올라간다.
+
+    IDC 자체를 빌리니까 다른사람은 그곳을 못쓴다.
+
+    라이센스같은 문제가 있을 경우 , 클라우드를 못쓰니까 요걸 써서 aws idc 서버 자체를 빌린다.
+
+5. Dedicated Instance
+
+    Host와 동일하게 물리 IDC를 사용하지만 , 얘는 Instance별로 사용된다.
+
+## EC2 Spot Instance
+작동 방식은 다음과 같다.
+
+어떤 스팟 인스턴스에 대해 지불할 의향이 있는 비용을 지정한 후 , 그 가격보다 낮은동안 사용한다.
+
+시간당 지정비용은 바뀔수 있으며 , 내가 지정한 가격이 해당 가격보다 높아지면 2분동안 유예 기간을 준다. 
+- 인스턴스 종료하거나 인스턴스를 중지해서 스팟 비용이 내가 지정한 가격보다 낮아질 때 다시 인스턴스를 실행할 수 있다.
+
+spot instance를 종료하기 위해선 , spot request를 종료하여 instance 실행 요청을 aws에 보내지 않도록 하고 , spot instance를 종료해야 한다.
+
