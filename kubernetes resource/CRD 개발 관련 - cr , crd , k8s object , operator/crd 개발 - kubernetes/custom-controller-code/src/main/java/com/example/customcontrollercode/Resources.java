@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.example.customcontrollercode.CrCrdModel.V1Helloworld;
+
+import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.openapi.models.V1Container;
 import io.kubernetes.client.openapi.models.V1Deployment;
 import io.kubernetes.client.openapi.models.V1DeploymentSpec;
@@ -14,6 +16,7 @@ import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.openapi.models.V1PodSpec;
 import io.kubernetes.client.openapi.models.V1PodTemplateSpec;
 import io.kubernetes.client.openapi.models.V1Service;
+import io.kubernetes.client.openapi.models.V1ServicePort;
 import io.kubernetes.client.openapi.models.V1ServiceSpec;
 
 public class Resources {
@@ -90,11 +93,26 @@ public class Resources {
         return container;
     }
 
-    private static V1Service creatService(V1Helloworld resourceInstance){
+    // deployment service 생성
+    public V1Service creatService(V1Helloworld resourceInstance){
         V1Service service = new V1Service();
         V1ServiceSpec serviceSpec = new V1ServiceSpec();
+        V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
+        V1ServicePort firstPort = new V1ServicePort();
 
-        serviceSpec.setType("NodePort");
+        firstPort.setName("http");
+        firstPort.setTargetPort(new IntOrString(80));
+        firstPort.setPort(80);
+        
+        ArrayList<V1ServicePort> ports = new ArrayList<>();
+        ports.add(firstPort);
+
+        v1ObjectMeta.setName(resourceInstance.getMetadata().getName());
+
+        serviceSpec.selector(createDeployment(resourceInstance).getMetadata().getLabels());
+        serviceSpec.type("NodePort");
+        serviceSpec.ports(ports);
+        service.setMetadata(v1ObjectMeta);
 
         service.setSpec(serviceSpec);
         return service;
