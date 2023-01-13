@@ -344,3 +344,27 @@ spec:
           key: sleep-interval 
           optional: true # jjs-config가 없어도 해당 container 실행됨
 ```
+
+## 7. configmap의 모든 항목을 한 번에 env로 전달하는 방법
+env 속성 대신에 envFrom 필드를 사용하면 , configmap의 모든 항목을 한 번에 env로 전달할 수 있습니다.
+
+만약 jjs-confg라는 이름의 configmap에 foo , bar , foo-bar 세가지 key가 존재했을 때 , 아래와 같이 설정하면 됩니다.
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jjs-configmap
+spec:
+  containers:
+  - image: jjsair0412/fortune:env
+    envFrom:
+    - prefix: CONFIG_
+      name: INTERVAL
+      valueFrom: 
+        configMapKeyRef:
+          name: jjs-config
+```
+위와 같이 설정하면 , **foo , bar key가 CONFIG_foo , CONFIG_bar 의 이름으로 컨테이너 환경 변수로 들어간다.**
+
+**이때 foo-bar는 환경변수로 존재하지 않는데 , 중간에 - 는 올바른 환경변수 이름이 아니기에 환경변수로 존재하지 않는다.**
