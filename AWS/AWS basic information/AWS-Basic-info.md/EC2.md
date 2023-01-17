@@ -192,3 +192,62 @@ $ aws iam list-users
 
 spot instance를 종료하기 위해선 , spot request를 종료하여 instance 실행 요청을 aws에 보내지 않도록 하고 , spot instance를 종료해야 한다.
 
+
+## EC2 public ip and Elastic IP address
+EC2 instance를 정지햇다가 다시 실행하면 , public ip가 변경된다.
+
+Elastic IP를 사용하면 변경되지 않는다 .
+- Elastic IP는 기본적으로 계정당 5개를 허용한다.
+
+또한 Elastic IP는 EC2 Instance에 연결되어 있지 않다면 요금이 부과된다.
+- 연결되어 있는 상태더라도 EC2 Instance가 running상태가 아니라면, 요금이 부과된다.
+
+## EC2 배치 그룹 ( EC2 Placement Group )
+EC2 Placement Group은 EC2 Instance가 aws 인프라에 배치되는 방식을 컨트롤하기 위해 사용한다.
+
+배치그룹을 사용하면 AWS 하드웨어와 직접 상호 작용은 하지 않지만 , EC2 Instance가 어떻게 배치되기를 원하는지 aws에 요청할 수 있다.
+
+배치 그룹을 사용하기 위해서 , EC2 Instance를 실행할 때 세부 정보에서 미리 설정으로 생성해둔 EC2 Placement Group 을 선택하기만 하면 된다.
+
+### EC2 배치 그룹 ( EC2 Placement Group ) 의 종류
+1. cluster
+    - 단일 AZ 내에서 지연 시간이 짧은 하드웨어 설정 .
+    - high performance , high risk
+    - 모든 인스턴스가 동일한 하드웨어 랙에 존재함 . 
+      동일한 하드웨어와 같은 AZ에 존재함 .
+      latency가 제일 낮음 .
+      그러나 하드웨어 랙에 에러가 나면 모든 EC2 인스턴스가 고장남 .
+    - 네트워크 성능이 제일 좋아서 , 빅데이터 작업이나 짧은 지연시간 ( latency )가 필요할 때 사용 .
+2. spread ( 분산 배치 그룹 )
+    - EC2 인스턴스가 다른 하드웨어에 분산되어 배치 .
+    - AZ 당 인스턴스가 최대 7개까지만 가질 수 있음 .
+    - 크리티컬 application인 경우 적합 .
+    - 실패 위험을 최소화함.
+      모든 EC2 인스턴스가 다른 하드웨어에 존재함 .
+      여러 AZ에 걸쳐 잇으니까 실패 위험이 낮음..
+      그러나 배치 그룹의 개수가 7개로 제한되는 단점이 있음. ( 7개 )
+3. Partition ( 분할 배치 그룹 )
+    - 인스턴스 분산
+    - 여러 파티션에 인스턴스가 분산되어 있는데 , 서로 다른 하드웨어 랙에 존재함 
+      따라서 에러 확률이 낮음 .
+    - 수백개의 EC2 인스턴스를 통해 확장 가능
+    - Hadoop , Cassandra , kafka application 수행 가능
+    - 여러 하드웨어 랙에 존재하여 실패 확률이 낮으며 , az당 7개가 있을수 있어서 설정을 통해 수백개의 인스턴스를 얻을 수 있음.
+
+
+## EC2 Hibernate mode
+EC2 인스턴스를 중지하면 디스크 데이터는 그대로 유지된다.
+
+그러나 삭제하면 다 삭제된다.
+
+EC2 인스턴스를 시작하면 , os를 키고 , user data 스크립트를 수행하고 , 시작하는데까지 시간이 다소 걸린다.
+
+Hibernate 인스턴스는 ..
+- RAM에 잇는 메모리 데이터는 남아 있는다. 따라서 더 빠르게 시작된다.
+- RAM data는 root EBS 볼륨에 저장되기에 EBS 볼륨 크기가 커야한다.
+    - 다시 시작될때 RAM data가 EBS에 덤프되어 있다가 , 다시 시작할 때 EBS에 있는 덤프 데이터를 가지고와서 시작된다.
+- 또한 root EBS 볼륨이 암호화되어있는지 확인해야 한다.
+    - EC2 인스턴스를 생성할 때 EBS volume의 Encrypted 옵션을 Encrypted 모드로 변경해야 한다.
+    default로 암호화 모드는 꺼져있다.
+
+Hibernate mode는 60일까지 사용이 가능하다.
