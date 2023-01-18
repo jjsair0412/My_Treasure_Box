@@ -368,3 +368,151 @@ spec:
 위와 같이 설정하면 , **foo , bar key가 CONFIG_foo , CONFIG_bar 의 이름으로 컨테이너 환경 변수로 들어간다.**
 
 **이때 foo-bar는 환경변수로 존재하지 않는데 , 중간에 - 는 올바른 환경변수 이름이 아니기에 환경변수로 존재하지 않는다.**
+
+## 8. Dockerfile CMD값으로 configmap value를 전달하는 방법
+컨피그맵 항목을 환경변수로 초기화 한 뒤 , args로 전달할 수 있습니다.
+
+아래와 같은 도커파일로 만들어진 이미지가 있을 때 , CMD값으로 configmap value를 전달하는 방법입니다.
+```Dockerfile
+FROM ubuntu:latest
+
+RUN apt-get update ; apt-get -y install fortune
+ADD fortuneloop.sh /bin/fortuneloop.sh
+
+ENTRYPOINT ["/bin/fortuneloop.sh"]
+CMD ["10"]
+```
+
+configmap을 생성합니다.
+```yaml
+$ cat jjs-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jjs-config
+data:
+  sleep-interval: "25"
+```
+
+jjs-config라는 configmap의 sleep-interval key에 value를 CMD에 대입합니다.
+- 결과적으로 25가 CMD에 대입됩니다.
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jjs-configmap
+spec:
+  containers:
+  - image: jjsair0412/fortune:args
+    env:
+    - name: INTERVAL
+      valueFrom: 
+        configMapKeyRef:
+          name: jjs-config
+          key: sleep-interval
+    args: ["$(INTERVAL)"] # sleep-interval 의 value를 Dockerfile CMD에 대입
+```
+
+## 9. 볼륨 안에 있는 configmap 항목을 사용하는 방법
+configmap에는 nginx.conf파일과 sleep-interval 값이 들어가있는 파일 두개가 들어가 있습니다.
+
+```bash
+$ kubectl get cm
+NAME               DATA   AGE
+jjs-cm             2      21m
+...
+```
+
+pod의 volumes로 configmap을 지정한 이후 , nginx image를 사용하는 web-server container에서 volumeMounts option으로 nginx 설정 파일이 들어가는 위치에 config 이름을 가지는 volume을 마운트 시켜줍니다.
+
+emptyDir 옵션으로 html-generator에서 /var/htdocs에 파일을 생성시켜주는데, web-server 컨테이너의 /usr/share/nginx/html 폴더와 생성된 파일을 공유합니다.
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fortune-configmap-volume
+spec:
+  containers:
+  - image: jjsair0412/fortune:env
+    env:
+    - name: INTERVAL
+      valueFrom:
+        configMapKeyRef:
+          name: jjs-cm
+          key: sleep-interval
+    name: html-generator
+    volumeMounts:
+    - name: html
+      mountPath: /var/htdocs
+  - image: nginx:alpine
+    name: web-server
+    volumeMounts:
+    - name: html
+      mountPath: /usr/share/nginx/html
+      readOnly: true
+    - name: config
+      mountPath: /etc/nginx/conf.d
+      readOnly: true
+    - name: config
+      mountPath: /tmp/whole-fortune-config-volume
+      readOnly: true
+    ports:
+      - containerPort: 80
+        name: http
+        protocol: TCP
+  volumes:
+  - name: html
+    emptyDir: {}
+  - name: config
+    configMap:
+      name: jjs-cm
+```
+
+configmap 특정 필드만 볼륨에 노출 시킬 수 도 있습니다.
+- ```spec.volumes.name.configmap.items``` 필드를 사용하면 됩니다.
+- 사용 시 , path 필드로 저장될 파일 이름을 지정해 주어야 합니다.
+- my-nginx-config.conf key value 값은 gzip.conf 이름으로 저장됩니다.
+
+```yaml
+...
+  volumes:
+  - name: html
+    emptyDir: {}
+  - name: config
+    configMap:
+      name: jjs-cm
+      items:
+      - key: my-nginx-config.conf
+        path: gzip.conf # my-nginx-config.conf 항목 값이 지정된 파일이름으로 저장됨
+```
+
+***결과***
+- conf.d 디렉터리에 gzip.conf 이름으로 저장된 것을 확인할 수 있다.
+```bash
+$ kubectl exec fortune-configmap-volume-with-items -c web-server ls /etc/nginx/conf.d
+gzip.conf
+```
+
+### 9.1 volmueMount의 한계과 극복 방안
+**리눅스 파일시스템에서 , 비어있지 않은 디렉터리에 어떤 폴더를 mount 시키면 , 기존에 있는 파일은 접근할 수 없고 , mount한 파일만 볼 수 있습니다.**
+
+따라서 위의 예제에서도 , nginx에서 default로 만들어진 conf파일은 확인할 수 없습니다.
+
+***만약 , /etc 와 같은 디렉터리에 파일을 mount 시킨다면 , 기존 /etc 폴더안에 파일에 모두 접근할 수 없기 때문에 , 크리티컬한 문제가 생길 수 있습니다.***
+
+따라서 아래 방안으로 , **디렉터리 안에 있는 파일을 숨기지 않고 , configmap 항목을 마운트시킬 수 있습니다.**
+- 전체 볼륨을 마운트 하는 대신 , volumeMount의 subPath 속성으로 파일이나 디렉터리 하나를 볼륨에 마운트시킬 수 있습니다.
+- **그러나 해당 방법은 파일 업데이트와 관련하여 큰 결함을 가지고 있기에 , 권장되지 않습니다.**
+
+```yaml
+...
+spec:
+  containers:
+  - image: some/image
+    volumeMounts:
+    - name: myvol
+      mountPath: /etc/someconfig.conf
+      subPath: myconfig.conf
+...
+```
