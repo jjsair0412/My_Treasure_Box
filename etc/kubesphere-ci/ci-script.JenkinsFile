@@ -1,0 +1,80 @@
+pipeline {
+  agent {
+    kubernetes {
+      label 'mypod'
+      yaml '''
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: gradle
+    image: gradle
+    command: [\'cat\']
+    tty: true
+    volumeMounts:
+    - mountPath: /var/run/docker.sock
+      name: docker-volume
+    - mountPath: /usr/bin/docker
+      name: docker-volume-d
+  volumes:
+  - name: docker-volume
+    hostPath:
+      path: /var/run/docker.sock
+  - name: docker-volume-d
+    hostPath:
+      path: /usr/bin/docker
+'''
+    }
+  }
+  stages {
+    stage('Checkout SCM') {
+      agent none
+      steps {
+        git(url: 'https://github.com/jjsair0412/sample-code.git', changelog: true, poll: false, branch: 'main')
+        sh 'ls -al'
+      }
+    }
+    stage('gradle Build') {
+      agent none
+      steps {
+        container('gradle'){
+          sh '''
+          cd sign_in_api
+          
+          pwd
+          
+          ls -al
+          
+          gradle clean build
+          
+          '''
+        }
+      }
+    }
+    stage('docker Build') {
+      agent none
+      steps {
+        container('gradle') {
+          dir('sign_in_api') {
+            sh 'docker --version'
+            sh 'ls -al'
+            sh 'cat Dockerfile'
+            sh 'docker build -f Dockerfile -t $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER .'
+          }
+        }
+      }
+    }
+    stage('Push') {
+      steps {
+        container('gradle') {
+          withCredentials([usernamePassword(credentialsId : 'dockerhub-id' ,passwordVariable : 'DOCKER_PASSWORD' ,usernameVariable : 'DOCKER_USERNAME' ,)]) {
+            sh '''echo "$DOCKER_PASSWORD" | docker login docker.io -u "$DOCKER_USERNAME" --password-stdin
+'''
+            sh '''docker push $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
+'''
+          }
+        }
+      }
+    }
+  }
+}
