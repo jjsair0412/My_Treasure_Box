@@ -516,3 +516,28 @@ spec:
       subPath: myconfig.conf
 ...
 ```
+## 10. configmap 권한
+configmap 볼륨은 기본적으로 모든 파일 권한을 644로 설정 됩니다.
+
+defaultMode 태그를 통해서 권한을 변경할 수 있습니다.
+```yaml
+...
+  volumes:
+  - name: config
+    configMap:
+      name: jjs-cm
+      defaultMode: "6600" #파일 권한 -rw-rw-----으로 설정
+```
+
+## 11. application 설정 업데이트
+configmap의 resource를 edit하여 업데이트 하면 , pod를 재 시작하지 않더라도 pod의 configmap 리소스가 업데이트 됩니다.
+
+**주의**
+- 시간이 오래걸립니다. ( 최대 1분 )
+- 시간이 오래걸리기에 , 만약 application이 설정을 다시 읽는 기능을 지원하지 않는다면 , configmap 볼륨의 파일이 모든 인스턴스에게 동기적으로 업데이트 시켜주지 않기 때문에 , 데이터 불변성을 지킬 수 없습니다.
+
+**원리**
+k8s pod는 configmap 볼륨의 리소스들을 심볼릭 링크로 가르키고 있습니다.
+
+configmap의 리소스를 변경하게 된다면 , 새로운 폴더를 만들고 , 모든 파일을 덮어씌운다음 , 심볼릭 링크가 새로운 폴더를 가르키면서 모든 파일을 효과적으로 변경 합니다.
+
