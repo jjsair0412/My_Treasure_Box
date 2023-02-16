@@ -90,7 +90,8 @@ persistence:
 ```
 ### 2.5 helm install 
 - helm으로 harbor를 설치합니다.
-- externalURL는 외부에서 harbor로 접근하는 url을 말하는 것이며 , 두 가지 ingress는 install을 진행했을 경우 생성되는 ingress의 domain을 변경 시켜주는 옵션입니다.
+- **externalURL는 외부에서 harbor로 접근하는 url을 말하는 것이며 , 두 가지 ingress는 install을 진행했을 경우 생성되는 ingress의 domain을 변경 시켜주는 옵션입니다.**
+- values.yaml에 직접 변경해서 upgrade하여도 문제가 없습니다.
 ```
 $ helm upgrade --install harbor . -n harbor \
 --set expose.ingress.hosts.core=harbor.xxx.xxxxx.xyz \
