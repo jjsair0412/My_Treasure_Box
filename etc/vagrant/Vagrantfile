@@ -7,19 +7,32 @@ echo "Updating packages..."
 sudo apt-get update -y
 
 echo "start install containerd"
-sudo mkdir -p /etc/apt/keyrings
+cat <<EOF | sudo tee /etc/modules-load.d/containerd.conf
+overlay
+br_netfilter
+EOF
 
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo modprobe overlay
+sudo modprobe br_netfilter
 
-echo   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+cat <<EOF | sudo tee /etc/sysctl.d/99-kubernetes-cri.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.ipv4.ip_forward                 = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+EOF
 
-sudo apt-get update -y
-sudo apt-get install containerd.io -y
+sudo sysctl --system
 
-echo "containerd start ! .."
-sudo systemctl start containerd
-sudo systemctl status containerd
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt update -y
+sudo apt install -y containerd.io
+sudo mkdir -p /etc/containerd
+containerd config default | sudo tee /etc/containerd/config.toml
+
+echo "start containerd"
+sudo systemctl restart containerd
+sudo systemctl enable containerd
 
 SCRIPT
 
