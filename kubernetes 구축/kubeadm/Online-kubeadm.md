@@ -1,5 +1,8 @@
 # Kubernetes with kubeadm
 - kubeadm을 활용하여 kubernetes를 설치한다.
+
+- kubeadm 1.26 버전 ( 20230310 기준 ) 이 latest 인데 , 얘가 docker를 지원하지 않는다.
+- 또한 containerd도 1.6.12-1 버전을 설치해야만 한다.
 ## 기본 패키지 설치 및 방화벽 해제
 ```bash
 sudo apt-get update
@@ -9,6 +12,41 @@ sudo systemctl stop firewalld
 sudo systemctl disable firewalld
 
 ```
+## containerd install
+kubeadm 1.26버전을 설치하기 위해선 아래 명령어로 containerd 1.6.12-1 을 설치해야 한다.
+```bash
+echo "Updating packages..."
+sudo apt-get update -y
+
+echo "start install containerd"
+cat <<EOF | sudo tee /etc/modules-load.d/containerd.conf
+overlay
+br_netfilter
+EOF
+
+sudo modprobe overlay
+sudo modprobe br_netfilter
+
+cat <<EOF | sudo tee /etc/sysctl.d/99-kubernetes-cri.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.ipv4.ip_forward                 = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+EOF
+
+sudo sysctl --system
+
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt update -y
+sudo apt install -y containerd.io
+sudo mkdir -p /etc/containerd
+containerd config default | sudo tee /etc/containerd/config.toml
+
+echo "start containerd"
+sudo systemctl restart containerd
+sudo systemctl enable containerd
+```
+
 ## Docker install
 - 도커는 master node ( control plane ) , worker node 모두 가지고 있어야 한다.
 - 아래 명령어 작성하여 도커 다운로드
