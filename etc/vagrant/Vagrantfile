@@ -5,6 +5,7 @@
 $installcontainerruntime = <<-SCRIPT
 echo "Updating packages..."
 sudo apt-get update -y
+sudo apt-get install net-tools
 
 echo "start install containerd"
 cat <<EOF | sudo tee /etc/modules-load.d/containerd.conf
@@ -76,26 +77,35 @@ sudo systemctl enable kubelet
 SCRIPT
 
 $masterConfig = <<-SCRIPT
+$OUPUT_FILE=/home/vagrant/join/join_command.sh
+rm -rf /vagrant/join/join.sh
 echo 'init start ..'
-sudo kubeadm init
+sudo kubeadm init --apiserver-advertise-address=192.168.50.10
 
 echo 'token create ..'
-sudo kubeadm token create --print-join-command > /home/vagrant/join_command.sh
-chmod +x /home/vagrant/join_command.sh
+mkdir join
+sudo kubeadm token create --print-join-command > /home/vagrant/join/join_command.sh
+
+chmod +x /home/vagrant/join/join_command.sh
 
 echo 'print join command file location ..'
-pwd
 ls
+chmod +x $OUTPUT_FILE
 
 mkdir -p $HOME/.kube
 sudo cp /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 kubectl get nodes
+
+# Install Calico Network Plugin
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/tigera-operator.yaml
+
 SCRIPT
 
-$workerConfig = <<-SCRIPT
 
+$workerConfig = <<-SCRIPT
+/home/vagrant/join/join_command.sh
 SCRIPT
 
 Vagrant.configure("2") do |config|
@@ -104,6 +114,8 @@ Vagrant.configure("2") do |config|
   config.vm.define "master" do |master| # | | 내부는 alias, 첫글자는 대문자가 올 수 없다.
     master.vm.box = "ubuntu/focal64"
     master.vm.host_name = "master"
+    master.vm.network "public_network", ip: "192.168.50.10"
+    master.vm.synced_folder "./join", "/home/vagrant/join"
     master.vm.provider :virtualbox do |masterSpec|
       masterSpec.memory = 4096
       masterSpec.cpus = 4
@@ -117,12 +129,15 @@ Vagrant.configure("2") do |config|
     config.vm.define "worker-#{n}" do |worker|
       worker.vm.box = "ubuntu/focal64"
       worker.vm.host_name = "worker-#{n}"
+      worker.vm.network "public_network", ip: "192.168.50.1#{n}"
+      worker.vm.synced_folder "./join", "/home/vagrant/join"
       worker.vm.provider :virtualbox do |workerSpec|
         workerSpec.memory = 4096
         workerSpec.cpus = 4
       end
       worker.vm.provision "shell", inline: $installcontainerruntime
       worker.vm.provision "shell", inline: $installkube
+      worker.vm.provision "shell", inline: $workerConfig
     end
 
 
