@@ -13,7 +13,6 @@ chmod +x /home/vagrant/join/join_command.sh
 
 echo 'print join command file location ..'
 ls
-chmod +x $OUTPUT_FILE
 
 mkdir -p $HOME/.kube
 sudo cp /etc/kubernetes/admin.conf $HOME/.kube/config
