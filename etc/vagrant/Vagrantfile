@@ -3,7 +3,7 @@
 
 Vagrant.configure("2") do |config|
 
-  config.vm.boot_timeout = 600
+  config.vm.boot_timeout = 1000
   config.vm.define "master" do |master| # | | 내부는 alias, 첫글자는 대문자가 올 수 없다.
     master.vm.box = "ubuntu/focal64"
     master.vm.host_name = "master"

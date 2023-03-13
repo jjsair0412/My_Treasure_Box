@@ -20,4 +20,7 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 kubectl get nodes
 
 # Install Calico Network Plugin
-kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/tigera-operator.yaml
+# kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/tigera-operator.yaml
+curl https://docs.projectcalico.org/archive/v3.8/manifests/calico.yaml -O
+
+kubectl apply -f calico.yaml
