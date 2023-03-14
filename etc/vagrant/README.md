@@ -20,7 +20,7 @@ worker.vm.synced_folder "./join", "/home/vagrant/join"
 |name | version| 
 |--|--|
 |kubeadm |1.26.2 |
-|container runtime |containerd |
+|container runtime |containerd://1.6.18 |
 
 ### 0.1 minimum requirements
 |name |requirements | 
