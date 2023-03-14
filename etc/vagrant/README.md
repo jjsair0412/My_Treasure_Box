@@ -7,7 +7,7 @@ vagrantfile 원본은 해당 디렉터리에 존재합니다.
 - vagrant 
 - virtual box 
 - host os : window
-    - host os가 linux일 경우 , Vagrantfile의 synced_folder 경로 수정 필요
+    - host os가 linux일 경우 , 아래처럼 Vagrantfile의 synced_folder 경로 수정 필요
 ```Vagrantfile
 ...
 #host_경로 , vm내부 경로 순서
@@ -19,7 +19,7 @@ worker.vm.synced_folder "./join", "/home/vagrant/join"
 
 |name | version| 
 |--|--|
-|k8s cluster |1.26 |
+|kubeadm |1.26.2 |
 |container runtime |containerd |
 
 ### 0.1 minimum requirements
@@ -31,7 +31,8 @@ worker.vm.synced_folder "./join", "/home/vagrant/join"
 최소 요구사항이 안된다면 , Vagrantfile의 cpu , memory값 수정하여 반영
 
 ## 1. usecase
-worker join 명령어가 떨어지는 join directory 생성
+worker join 명령어가 떨어지는 join directory 로컬에 생성 
+- 꼭 Vagrantfile이 위치한 공간이어야 함
 ```bash
 mkdir ./join
 ```
