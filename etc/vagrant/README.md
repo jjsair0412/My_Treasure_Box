@@ -10,7 +10,10 @@ vagrantfile 원본은 해당 디렉터리에 존재합니다.
     - host os가 linux일 경우 , Vagrantfile의 synced_folder 경로 수정 필요
 ```Vagrantfile
 ...
+#host_경로 , vm내부 경로 순서
 master.vm.synced_folder "./join", "/home/vagrant/join"
+...
+worker.vm.synced_folder "./join", "/home/vagrant/join"
 ...
 ```
 
@@ -56,3 +59,13 @@ Vagrantfile 변경 시 반영 명령어
 vagrant reload
 ```
 
+vagrant vm ssh 접근 명령어
+```bash
+#usecase
+vagrant ssh 'hostname'
+
+#실 사용 예
+vagrant ssh master
+vagrant ssh worker-1
+vagrant ssh worker-2
+```
