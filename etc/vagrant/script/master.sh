@@ -4,7 +4,7 @@ echo 'init start ..'
 sudo kubeadm init --apiserver-advertise-address=192.168.50.10 --pod-network-cidr=192.168.0.0/16
 
 echo 'token create ..'
-rm -rf /join/join_command.sh
+rm -rf /home/vagrant/join/join_command.sh
 sudo kubeadm token create --print-join-command > /home/vagrant/join/join_command.sh
 
 chmod +x /home/vagrant/join/join_command.sh
