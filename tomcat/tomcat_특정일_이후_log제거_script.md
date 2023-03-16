@@ -8,7 +8,7 @@ crontab에 등록하여 사용합니다.
 ```script
 #!/bin/bash
 
-TOMCAT_LOG=/data/logs
+TOMCAT_LOG=/data/logs/catalina.out.*
 DATE='date +%Y_%m_%d'
 find $TOMCAT_LOG -mtime +10 -type f -exec rm -f {} \;
 echo instance log delete comm
