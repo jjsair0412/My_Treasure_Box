@@ -45,6 +45,10 @@ vi tomcat_logrotate
 - rotate : 로그 파일은 50개만큼 저장된 다음 제거되거나 메일로 보내질 수 있음
 - dateext : 로테이트로 인해 생성된 파일에 날짜를 부여
 
+위 설정으로 logrotate를 수행하면 ,
+- /data/logs/instance_jjs/ 경로의 catalina.out 파일을 매일 검사하며 , 해당 파일 용량이 50K를 넘고 (true) , 하루가 지나면 (true) , 해당 파일을 날짜를 부여한 이름으로 백업하면서
+gzip 압축하여 저장 후 새로운 파일 catalina.out을 생성합니다. 
+
 ## 2. logrotate 수행
 아래 명령어로 logrotate를 반영합니다.
 
