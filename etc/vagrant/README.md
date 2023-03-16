@@ -41,6 +41,7 @@ Vagrant.configure("2") do |config|
 end
 ...
 ```
+- [vagrant port-forward 공식문서](https://developer.hashicorp.com/vagrant/docs/networking/forwarded_ports)
 
 ## 1. usecase
 worker join 명령어가 떨어지는 join directory 로컬에 생성 
