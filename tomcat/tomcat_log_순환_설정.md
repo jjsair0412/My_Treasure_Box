@@ -29,6 +29,7 @@ vi tomcat_logrotate
     compress
     size 50K
     rotate 50
+    dateext
 }
 ```
 
@@ -42,7 +43,7 @@ vi tomcat_logrotate
 - compress : 지나간 로그 파일을 gzip으로 압축
 - size : 로그파일의 크기가 50k를 넘으면 순환. 단위 K, M 사용이 가능
 - rotate : 로그 파일은 50개만큼 저장된 다음 제거되거나 메일로 보내질 수 있음
-
+- dateext : 로테이트로 인해 생성된 파일에 날짜를 부여
 
 ## 2. logrotate 수행
 아래 명령어로 logrotate를 반영합니다.
