@@ -30,6 +30,18 @@ worker.vm.synced_folder "./join", "/home/vagrant/join"
 
 최소 요구사항이 안된다면 , Vagrantfile의 cpu , memory값 수정하여 반영
 
+### 0.2 port-forward option
+80:8080 default로 설정해 둠.
+
+k8s cluster ingress nodeport 설정에 따라 변경
+```Vagrantfile
+...
+Vagrant.configure("2") do |config|
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+end
+...
+```
+
 ## 1. usecase
 worker join 명령어가 떨어지는 join directory 로컬에 생성 
 - 꼭 Vagrantfile이 위치한 공간이어야 함
