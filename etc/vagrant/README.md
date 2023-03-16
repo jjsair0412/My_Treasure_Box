@@ -31,7 +31,7 @@ worker.vm.synced_folder "./join", "/home/vagrant/join"
 최소 요구사항이 안된다면 , Vagrantfile의 cpu , memory값 수정하여 반영
 
 ### 0.2 port-forward option
-80:8080 default로 설정해 둠.
+Default로 local : 80 -> vm 8080 으로 설정해 두었음.
 
 k8s cluster ingress nodeport 설정에 따라 변경
 ```Vagrantfile
