@@ -103,6 +103,7 @@ $ helm upgrade --install --kubeconfig=$KUBE_CONFIG  nfs . \
 --set nfs.path=/share \ # mount 경로
 -n nfs \ 
 -f values.yaml
+```
 
 - 설치 이후 , 모든 worker 및 master 노드에 nfs-common을 apt-get 및 yum으로 설치해야만 합니다.
   - nfs 추가 패키지 설치하지 않으면 마운트 안됨
@@ -112,6 +113,8 @@ apt-get install nfs-common
 yum install nfs-utils
 ```
 
+설치결과 확인
+```
 $ kubectl get all -n nfs
 NAME                                                  READY   STATUS    RESTARTS   AGE
 pod/nfs-subdir-external-provisioner-9bdcb4bb6-mgx68   1/1     Running   0          3m17s
