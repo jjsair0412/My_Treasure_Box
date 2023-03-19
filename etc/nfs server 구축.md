@@ -98,7 +98,7 @@ kind: PodSecurityPolicy
 #### 4.2 nfs-client provisioner 설치
 - helm chart로 nfs-client provisioner를 설치합니다. [chart](https://artifacthub.io/packages/helm/kvaps/nfs-server-provisioner)
 ```
-$ helm upgrade --install --kubeconfig=$KUBE_CONFIG  nfs-subdir-external-provisioner . \
+$ helm upgrade --install --kubeconfig=$KUBE_CONFIG  nfs . \
 --set nfs.server=10.xxx.xxx.xxx \ # nfs server 주소
 --set nfs.path=/share \ # mount 경로
 -n nfs \ 
