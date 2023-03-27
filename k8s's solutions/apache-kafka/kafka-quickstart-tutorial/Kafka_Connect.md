@@ -2,7 +2,7 @@
 ## 0. **precondition**
 해당 문서 예제를 진행하기 전에 , 꼭 상위 디렉토리의 [**Kafka_기본_사용방법**](../kafka-quickstart-tutorial/kafka_%EA%B8%B0%EB%B3%B8_%EC%82%AC%EC%9A%A9%EB%B0%A9%EB%B2%95.md)을 진행한 뒤에 실습합니다.
 
-## 1. Kafka Connect를 사용하여 이벤트 스트림으로 데이터 가져오기
+## 1. Kafka Connect를 사용하여 이벤트 스트림으로 데이터 가져오기 - 이론
 카프카는 프로듀서와 컨슈머를 통해 데이터 파이프라인을 만들 수 있습니다.
 
 예를 들어 A서버의 DB에 저장한 데이터를 Kafka Producer/Consumer를 통해 B서버의 DB로도 보낼 수 있다. 
@@ -19,6 +19,28 @@ Kafka Connect를 사용하면 , 외부 시스템에서 Kafka로 , 또는 Kafka�
 [test-2]:./images/test-2.PNG
 - Kafka Connect 파이프라인 아키텍처.
 - 출처 : https://cjw-awdsd.tistory.com/53
+
+위 아키텍쳐에서 , 각 구성요소는 다음을 의미합니다.
+1. Connect
+- connector를 동작하게하는 프로세서(서버)
+2. Connector
+- Data Source(DB)의 데이터를 처리하는 소스가 들어있는 jar파일
+3. Source Connector
+- data source에 담긴 데이터를 topic에 담는 역할(Producer)을 하는 connector
+4. Sink Connector
+- topic에 담긴 데이터를 특정 data source로 보내는 역할(Consumer 역할)을 하는 connector
+
+
+Kafka Connect는 REST API로 Connector를 등록 및 사용할 수 있습니다.
+
+또한 Connect는 단일 모드(Standalone) 와 분산모드 (Distributed)로 이루어져 있습니다.
+1. 단일 모드(Standalone)
+- 하나의 Connect만 사용하는 모드
+
+2. 분산 모드(Distributed)
+- 여러개의 Connect를 한개의 클러스트로 묶어서 사용하는 모드.
+  특정 Connect가 장애가 발생해도 나머지 Connect가 대신 처리하도록 함
+
 
 ### 1.1 jar파일 가져오기
 해당 튜토리얼에서는 Kafka Connect를 jar파일로 가져와서 사용합니다.
