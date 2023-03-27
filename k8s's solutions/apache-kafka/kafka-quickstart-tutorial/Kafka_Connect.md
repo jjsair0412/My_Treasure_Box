@@ -2,6 +2,10 @@
 ## 0. **precondition**
 해당 문서 예제를 진행하기 전에 , 꼭 상위 디렉토리의 [**Kafka_기본_사용방법**](../kafka-quickstart-tutorial/kafka_%EA%B8%B0%EB%B3%B8_%EC%82%AC%EC%9A%A9%EB%B0%A9%EB%B2%95.md)을 진행한 뒤에 실습합니다.
 
+튜토리얼 예제는 다음 공식 docs와 블로그를 참고하여 진행하였습니다.
+- https://cjw-awdsd.tistory.com/53
+- 공식 docs : https://kafka.apache.org/quickstart#quickstart_kafkaconnect
+
 ## 1. Kafka Connect를 사용하여 이벤트 스트림으로 데이터 가져오기 - 이론
 카프카는 프로듀서와 컨슈머를 통해 데이터 파이프라인을 만들 수 있습니다.
 
