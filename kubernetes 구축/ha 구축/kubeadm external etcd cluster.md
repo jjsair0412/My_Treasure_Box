@@ -820,7 +820,7 @@ cni를 아래 명령어중 하나 선택하여 설치합니다.
 
 ```bash
 # calico 설치 
-$ kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+$ kubectl apply -f https://docs.projectcalico.org/archive/v3.25/manifests/calico.yaml
 
 # weavenet 설치
 $ kubectl apply -f "<https://cloud.weave.works/k8s/net?k8s-version=$>(kubectl version | base64 | tr -d '\\n')"
