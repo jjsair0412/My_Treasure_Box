@@ -20,7 +20,7 @@ Kafka Connect를 사용하면 , 외부 시스템에서 Kafka로 , 또는 Kafka�
 - Kafka Connect 파이프라인 아키텍처.
 - 출처 : https://cjw-awdsd.tistory.com/53
 
-### 7.1 jar파일 가져오기
+### 1.1 jar파일 가져오기
 해당 튜토리얼에서는 Kafka Connect를 jar파일로 가져와서 사용합니다.
 
 따라서 아래 경로에 있는 connect-standlone.properties 파일에 , connect-file-3.4.0.jar 파일 경로를 지정해주어야 합니다.
