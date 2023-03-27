@@ -28,7 +28,10 @@ $ java -version
 
 설치된 jdk를 java home path로 설정합니다.
 
-ubuntu 전체 유저에 설정해야하기 때문에 bashrc에 export를 넣어줍니다.
+ubuntu 전체 유저 ( root 제외 ) 에 해당 환경변수를 등록해야 하기 때문에 /etc/profile에 넣어줍니다.
+- 만약 root user도 적용하고 싶다면  , /root/.bashrc 에 export명령어를 등록합니다.
+- login user (ubuntu에 ssh 연결 , id paswd 입력 연결) 는 기본적으로 /etc/profile 설정을 가지고 로그인합니다.
+- 그러나 root user는 , profile이 아닌 /root/.bashrc를 갖고 올라와서 로그인 합니다. 
 
 ```bash
 # profile
