@@ -209,7 +209,7 @@ cni 설치
 
 ```bash
 # calico 설치 
-$ kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+$ kubectl apply -f https://docs.projectcalico.org/archive/v3.25/manifests/calico.yaml
 
 # weavenet 설치
 $ kubectl apply -f "<https://cloud.weave.works/k8s/net?k8s-version=$>(kubectl version | base64 | tr -d '\\n')"
