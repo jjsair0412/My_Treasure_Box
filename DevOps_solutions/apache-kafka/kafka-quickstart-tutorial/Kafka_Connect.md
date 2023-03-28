@@ -6,6 +6,79 @@
 - https://cjw-awdsd.tistory.com/53
 - 공식 docs : https://kafka.apache.org/quickstart#quickstart_kafkaconnect
 
+## 0.1 MySQL 설치
+해당 실습 예제는 MySQL을 사용하기 때문에 , linux 시스템으로 MySQL을 설치합니다.
+```bash
+# mysql-server 설치
+$ sudo apt-get install mysql-server -y
+
+# MySQL 3306 포트 open
+$ sudo ufw allow mysql
+
+# MySQL 실행
+$ sudo systemctl start mysql
+$ sudo systemctl enable mysql
+
+# MySQL status 확인
+$ systemctl status mysql
+● mysql.service - MySQL Community Server
+     Loaded: loaded (/lib/systemd/system/mysql.service; enabled; vendor preset: enabled)     
+     Active: active (running) since Tue 2023-03-28 05:10:34 UTC; 44min ago
+   Main PID: 16261 (mysqld)
+     Status: "Server is operational"
+      Tasks: 39 (limit: 4677)
+     Memory: 362.3M
+     CGroup: /system.slice/mysql.service
+             └─16261 /usr/sbin/mysqld
+```
+
+설치가 완료됐다면 , MySQL에 접속하여 Default schema와 users table을 생성합니다.
+```bash
+# MySQL 접속
+$ sudo /usr/bin/mysql -u root -p
+mysql>
+...
+```
+
+test schema 생성 및 test schema user 생성
+```bash
+mysql> CREATE SCHEMA test;
+
+mysql> CREATE TABLE test.users (
+       id INT PRIMARY KEY AUTO_INCREMENT,
+       name VARCHAR(20)
+      );
+```
+
+test schema 및 users table이 정상 생성됐는지 확인합니다.
+```bash
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
+| test               |
++--------------------+
+5 rows in set (0.00 sec)
+...
+
+mysql> use test
+Database changed
+
+...
+mysql> show tables;
++----------------+
+| Tables_in_test |
++----------------+
+| users          |
++----------------+
+1 row in set (0.00 sec)
+```
+
+
 ## 1. Kafka Connect를 사용하여 이벤트 스트림으로 데이터 가져오기 - 이론
 카프카는 프로듀서와 컨슈머를 통해 데이터 파이프라인을 만들 수 있습니다.
 
@@ -44,7 +117,6 @@ Kafka Connect는 REST API로 Connector를 등록 및 사용할 수 있습니다.
 2. 분산 모드(Distributed)
 - 여러개의 Connect를 한개의 클러스트로 묶어서 사용하는 모드.
   특정 Connect가 장애가 발생해도 나머지 Connect가 대신 처리하도록 함
-
 
 ### 1.1 jar파일 가져오기
 해당 튜토리얼에서는 Kafka Connect를 jar파일로 가져와서 사용합니다.
