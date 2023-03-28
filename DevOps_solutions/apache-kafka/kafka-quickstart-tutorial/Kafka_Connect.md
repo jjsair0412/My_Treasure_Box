@@ -118,8 +118,20 @@ Kafka Connect는 REST API로 Connector를 등록 및 사용할 수 있습니다.
 - 여러개의 Connect를 한개의 클러스트로 묶어서 사용하는 모드.
   특정 Connect가 장애가 발생해도 나머지 Connect가 대신 처리하도록 함
 
-### 1.1 jar파일 가져오기
+## 2. 실습
+### 2.1 kafka 설치 및 실행
+- [**Kafka_기본_사용방법**](../kafka-quickstart-tutorial/kafka_%EA%B8%B0%EB%B3%B8_%EC%82%AC%EC%9A%A9%EB%B0%A9%EB%B2%95.md)
+
+위 문서를 참고하여 Kafka를 설치하고 , 주키퍼와 카프카를 실행합니다.
+
+### 2.1 Kafka Connect 설치
+connector를 동작하게하는 프로세서(서버)인 Connect를 설치합니다.
+
 해당 튜토리얼에서는 Kafka Connect를 jar파일로 가져와서 사용합니다.
+- 만약 없다면 , 아래 링크를 wget하여 connect를 받아오고 path에 입력합니다.
+```
+$ wget https://packages.confluent.io/archieve/6.1/confluent-community-6.1.0.tar.gz
+```
 
 따라서 아래 경로에 있는 connect-standlone.properties 파일에 , connect-file-3.4.0.jar 파일 경로를 지정해주어야 합니다.
 ```bash
