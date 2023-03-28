@@ -1,7 +1,10 @@
 #!/bin/sh
 echo "Updating packages..."
 sudo apt-get update -y
-sudo apt-get install net-tools
+sudo apt-get install -y openssh-server curl vim tree net-tools
+
+sudo systemctl stop firewalld 
+sudo systemctl disable firewalld
 
 echo "start install containerd"
 cat <<EOF | sudo tee /etc/modules-load.d/containerd.conf
