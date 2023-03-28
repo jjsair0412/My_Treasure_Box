@@ -153,3 +153,40 @@ $ cat ~/kafka/kafka_2.13-3.4.0/config/connect-standalone.properties
 plugin.path=~/kafka_2.13-3.4.0/libs/connect-file-3.4.0.jar
 ```
 
+경로 지정 후 , connect-distributed.sh 로 connect를 실행합니다.
+```bash
+# usecase
+./bin/connect-distributed.sh ~/kafka/kafka_2.13-3.4.0/config/connect-distributed.properties
+
+# 백그라운드 실행 옵션 -d 추가본 명령어
+./bin/connect-distributed.sh -d ~/kafka/kafka_2.13-3.4.0/config/connect-distributed.properties
+```
+
+잘 실행됐다면 , 다음 토픽 리스트 명령어를 실행했을 때, 다음 topic이 생성된 것을 확인할 수 있습니다.
+```bash
+$ ./bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
+__consumer_offsets
+connect-configs
+connect-offsets
+connect-status
+```
+
+### 2.2 Kafka Connector 설치
+confluent.io 사이트에서 connect를 설치합니다.
+
+confluent 공식 docs 사이트를 참고해서 , confluent hub client를 사용해 설치하거나 , zip 파일을 wget으로 가져와서 설치합니다.
+- docs : https://docs.confluent.io/5.5.1/connect/kafka-connect-jdbc/index.html#jdbc-connector-source-and-sink-for-cp
+
+해당 문서에선 Confluent Hub를 tarball로 가지고와서 confluent hub client를 설치한 이후 , connect를 설치합니다.
+- tarball 설치 가이드 : https://docs.confluent.io/kafka-connectors/self-managed/confluent-hub/client.html#linux
+
+```bash
+# wget
+$ wget http://client.hub.confluent.io/confluent-hub-client-latest.tar.gz
+
+# unzip
+$ tar -xvf confluent-hub-client-latest.tar.gz
+
+# bin 디렉토리로 실행파일 옮기기
+$ sudo cp bin/confluent-hub /bin
+```
