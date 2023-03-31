@@ -23,13 +23,16 @@ vi tomcat_logrotate
 /data/logs/instance_jjs/catalina.out {
     su tomcat tomcat
     copytruncate
+    rotate
     daily
+    rotate 3
     missingok
     notifempty
     compress
     size 50K
     rotate 50
     dateext
+    dateyesterday
 }
 ```
 
@@ -44,10 +47,11 @@ vi tomcat_logrotate
 - size : 로그파일의 크기가 50k를 넘으면 순환. 단위 K, M 사용이 가능
 - rotate : 로그 파일은 50개만큼 저장된 다음 제거되거나 메일로 보내질 수 있음
 - dateext : 로테이트로 인해 생성된 파일에 날짜를 부여
+- dateyesterday : dateext와 같이 사용하며 , 로테이트가 돈 날짜가 아니라 , 그 바로 전일로 날짜 출력
+- rotate : 이전 로그파일을 몇개까지 갖고있을지를 설정 > **해당 옵션이 없다면 , 이전 로그를 삭제해버립니다.**
 
 위 설정으로 logrotate를 수행하면 ,
-- /data/logs/instance_jjs/ 경로의 catalina.out 파일을 매일 검사하며 , 해당 파일 용량이 50K를 넘고 (true) , 하루가 지나면 (true) , 해당 파일을 날짜를 부여한 이름으로 백업하면서
-gzip 압축하여 저장 후 새로운 파일 catalina.out을 생성합니다. 
+***/- data/logs/instance_jjs/ 경로의 catalina.out 파일을 매일 검사하며 , 해당 파일 용량이 50K를 넘고 (true) , 하루가 지나면 (true) , 해당 파일을 날짜를 부여한 이름으로 백업하면서 gzip 압축하여 저장 후 새로운 파일 catalina.out을 생성하는데 , 해당 gz은 3개까지만 보관합니다***
 
 ## 2. logrotate 수행
 아래 명령어로 logrotate를 반영합니다.
