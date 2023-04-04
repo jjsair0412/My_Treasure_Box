@@ -1,7 +1,7 @@
 # kubernetes_info
 ![header](https://capsule-render.vercel.app/api?type=waving&color=auto&height=300&section=header&text=👋%20Welcome%20to%20K8S%20INFOMATION%20!&fontSize=50&animation=fadeIn&fontAlignY=38)
 
-## If this document was helpful to you, please give it a star !! ★
+## ***☆ If this document was helpful to you, please give it a star !! ★***
 
 ## storageClass local provisioner information
 Local volumes do not currently support dynamic provisioning, however a StorageClass should still be created to delay volume binding until Pod scheduling.
