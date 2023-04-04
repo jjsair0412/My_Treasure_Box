@@ -1,4 +1,4 @@
-# In_public_cloud_Tomcat_session_clustering
+# In_public_cloud_Tomcat_session_clustering - 작성중 .. 테스트 완료되면 작성 완료할 예정
 ## Precondition
 해당 문서는 public cloud 환경에서 Tomcat Session Clustering을 하는 방안에 대해 기술한 문서입니다.
 
@@ -19,9 +19,11 @@
 
 그러나 public cloud에선 네트워크 성능을 위해서 Broadcast 및 multicast를 지원하지 않기 때문에, , 문제가 생깁니다.
 
-Tomcat 내부 인스턴스들끼리 member join이 되었다 하더라도 , multicast로 세션을 공유하지 못하기에 정적 IP와 backupmanager를 사용해야 합니다.
+Tomcat 내부 인스턴스들끼리 member join이 되었다 하더라도 , multicast로 세션을 공유하지 못하기에 정적 IP로 멤버를 추가시켜주어야 합니다.
 
-## 2. server.xml 구성
+## 2. 서버 구성도
+
+## 3. server.xml 구성
 
 
-### 2.1 1번 vm
+### 3.1 1번 vm
