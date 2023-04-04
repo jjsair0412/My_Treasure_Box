@@ -1,11 +1,3 @@
-# Tomcat Session Clustering with Redis
-## Precondition
-해당 문서는 Redis 서버를 통해서 Tomcat Session clustering을 구현하는 방안에 대해 기술한 문서입니다.
-
-## Testing Environment
-Vagrant를 통해 3개 노드로 구성하였습니다.
-
-```Ruby
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
@@ -38,4 +30,3 @@ Vagrant.configure("2") do |config|
       end
     end
   end
-```
