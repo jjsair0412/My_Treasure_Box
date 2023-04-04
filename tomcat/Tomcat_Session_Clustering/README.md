@@ -11,7 +11,7 @@
 ### 구성 환경
 ![image_1][image_1]
 
-[image_1]:./images/image_1
+[image_1]:./images/image_1.png
 
 frontend에서 nginx가 Reverse proxy를 통해서 80포트와 backend tomcat 3대의 8080포트로 포트 포워딩 해 주는 구성입니다.
 - tomcat이 docker container로 올라가는 구성이기 때문에 , 8080포트가 겹치더라도 문제가 없지만, docker 또는 k8s 환경이 아니라면 포트가 달라져야만 할 것입니다.
