@@ -255,3 +255,58 @@ confluentinc-kafka-connect-jdbc  worker.properties
 $ cat worker.properties 
 plugin.path = /home/vagrant/connect
 ```
+
+설치한 connect의 lib 경로에 가면 , 다양한 DB 커넥터 라이브러리들이 존재하는것을 볼 수 있습니다.
+
+```bash
+$ cd ~/confluentinc-kafka-connect-jdbc/lib
+
+$ ls -al -h
+total 21M
+drwxrwxr-x 2 vagrant vagrant  4.0K Apr  5 07:37 .
+drwxrwxr-x 6 vagrant vagrant  4.0K Apr  5 07:37 ..
+-rw-rw-r-- 1 vagrant vagrant  210K Apr  5 07:37 checker-qual-3.5.0.jar
+-rw-rw-r-- 1 vagrant vagrant   17K Apr  5 07:37 common-utils-6.0.0.jar
+-rw-rw-r-- 1 vagrant vagrant  311K Apr  5 07:37 jtds-1.3.1.jar
+-rw-rw-r-- 1 vagrant vagrant  270K Apr  5 07:37 kafka-connect-jdbc-10.6.4.jar
+-rw-rw-r-- 1 vagrant vagrant  1.3M Apr  5 07:37 mssql-jdbc-8.4.1.jre8.jar
+-rw-rw-r-- 1 vagrant vagrant  4.2M Apr  5 07:37 ojdbc8-19.7.0.0.jar
+-rw-rw-r-- 1 vagrant vagrant  5.1K Apr  5 07:37 ojdbc8-production-19.7.0.0.pom
+-rw-rw-r-- 1 vagrant vagrant  153K Apr  5 07:37 ons-19.7.0.0.jar
+-rw-rw-r-- 1 vagrant vagrant  304K Apr  5 07:37 oraclepki-19.7.0.0.jar
+-rw-rw-r-- 1 vagrant vagrant  1.6M Apr  5 07:37 orai18n-19.7.0.0.jar
+-rw-rw-r-- 1 vagrant vagrant  206K Apr  5 07:37 osdt_cert-19.7.0.0.jar
+-rw-rw-r-- 1 vagrant vagrant  305K Apr  5 07:37 osdt_core-19.7.0.0.jar
+-rw-rw-r-- 1 vagrant vagrant 1022K Apr  5 07:37 postgresql-42.4.3.jar
+-rw-rw-r-- 1 vagrant vagrant   32K Apr  5 07:37 simplefan-19.7.0.0.jar
+-rw-rw-r-- 1 vagrant vagrant   41K Apr  5 07:37 slf4j-api-1.7.36.jar
+-rw-rw-r-- 1 vagrant vagrant  6.8M Apr  5 07:37 sqlite-jdbc-3.25.2.jar
+-rw-rw-r-- 1 vagrant vagrant  1.7M Apr  5 07:37 ucp-19.7.0.0.jar
+-rw-rw-r-- 1 vagrant vagrant  259K Apr  5 07:37 xdb-19.7.0.0.jar
+-rw-rw-r-- 1 vagrant vagrant  1.9M Apr  5 07:37 xmlparserv2-19.7.0.0.jar
+```
+
+그리고 해당 lib 파일 경로를 , kafka의 connect-distributed.properties plugin 경로로 추가 합니다.
+```bash
+$ vi ~/kafka/kafka_2.13-3.4.0/config/connect-distributed.properties
+...
+plugin.path=/home/vagrant/connect/confluentinc-kafka-connect-jdbc/lib
+```
+
+### 2.3 Connector 설치 - Mysql Connector 설치
+Connector에서 Mysql을 사용하기 위해 Mysql의 Connector를 설치 합니다.
+- [공식 설치 링크](https://dev.mysql.com/downloads/connector/j/)
+
+mysql이 설치된 vm os version은 ubuntu 20.04를 사용하기에 , 해당 버전에 맞는 커넥터를 설치합니다.
+
+홈페이지에서 링크 따라간다음 No thanks, 링크를 wget으로 deb파일 설치합니다.
+```bash
+$ wget ~
+
+$ ls
+mysql-connector-j_8.0.32-1ubuntu20.04_all.deb
+
+# deb파일 dpkg
+$ sudo dpkg -i mysql-connector-j_8.0.32-1ubuntu20.04_all.deb
+```
+
