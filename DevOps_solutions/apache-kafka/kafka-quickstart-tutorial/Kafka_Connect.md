@@ -171,7 +171,7 @@ connect-offsets
 connect-status
 ```
 
-### 2.2 Kafka Connector 설치
+### 2.2 Kafka JDBC Connector 설치
 confluent.io 사이트에서 connect를 설치합니다.
 
 confluent 공식 docs 사이트를 참고해서 , confluent hub client를 사용해 설치하거나 , zip 파일을 wget으로 가져와서 설치합니다.
@@ -187,6 +187,71 @@ $ wget http://client.hub.confluent.io/confluent-hub-client-latest.tar.gz
 # unzip
 $ tar -xvf confluent-hub-client-latest.tar.gz
 
-# bin 디렉토리로 실행파일 옮기기
-$ sudo cp bin/confluent-hub /bin
+# unzip 결과 확인
+$ ls
+bin  confluent-hub-client-latest.tar.gz  etc  share
+```
+
+confluent-hub tar파일을 압축 해제한 디렉토리 경로를 profile이나 bashrc에 export로 등록해 줍니다.
+
+해당 문서는 root를 제외한 유저에게 등록하기 위해서 , profile에 등록합니다.
+```bash
+$ vi /etc/profile
+...
+export CONFLUENT_HOME=/home/vagrant/confluenthub
+export PATH="$PATH:$CONFLUENT_HOME/bin"
+
+# 등록
+$ source /etc/profile
+
+# 설치 확인
+$ confluent-hub 
+usage: confluent-hub <command> [ <args> ]
+
+Commands are:
+    help      Display help information
+    install   install a component from either Confluent Hub or from a local file
+
+See 'confluent-hub help <command>' for more information on a specific command.
+```
+
+이상태로 설치 진행하면 다음과 같은 에러가 발생합니다.
+```bash
+Unable to detect Confluent Platform installation. Specify --component-dir and --worker-configs explicitly. 
+```
+
+따라서 component-dir 와 worker-configs를 생성시켜준 뒤 경로를 명시해주어야 합니다.
+- worker.properties는 빈 파일 입니다.
+```bash
+# component-dir 생성
+$ mkdir connect
+
+# worker-configs 생성
+$ cd connect
+$ cat worker.properties
+```
+
+설치한 confluent-hub와 만들어준 compoent dir , worker-config로 connector를 설치합니다.
+- component dir, worker-config는 파일 경로를 명시해 주면 됩니다.
+
+**해당 문서를 작성하는 시점에는 latest를 설치합니다.**
+
+```bash
+# latest 설치
+$ confluent-hub install confluentinc/kafka-connect-jdbc:latest --component-dir ~/connect --worker-configs ~/connect/worker.properties
+
+# version 명시 설치
+$ confluent-hub install confluentinc/kafka-connect-jdbc:5.5.1 --component-dir ~/connect --worker-configs ~/connect/worker.properties
+```
+
+component dir 경로에 connect와 , worker-config파일에 설치된 파일 경로가 자동으로 기입된 것을 확인할 수 있습니다.
+```bash
+$ pwd
+~/connect
+
+$ ls
+confluentinc-kafka-connect-jdbc  worker.properties
+
+$ cat worker.properties 
+plugin.path = /home/vagrant/connect
 ```
