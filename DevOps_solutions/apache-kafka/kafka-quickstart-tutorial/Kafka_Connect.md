@@ -77,7 +77,13 @@ mysql> show tables;
 +----------------+
 1 row in set (0.00 sec)
 ```
+root@localhost로 접근해야 하기 때문에 , root 계정의 비밀번호를 설정합니다.
+```bash
+mysql> alter user 'root'@'localhost' identified by '<비번입력>';
 
+# 실 수행 명령어
+mysql> alter user 'root'@'localhost' identified by '1234';
+```
 
 ## 1. Kafka Connect를 사용하여 이벤트 스트림으로 데이터 가져오기 - 이론
 카프카는 프로듀서와 컨슈머를 통해 데이터 파이프라인을 만들 수 있습니다.
@@ -336,12 +342,33 @@ $ wget ~
 
 $ ls
 mysql-connector-j_8.0.32-1ubuntu20.04_all.deb
+```
+이후 해당 deb파일을 압축해제해서 , 아래 경로로 이동 후 jar파일을 확인합니다.
 
+```bash
 # deb파일 dpkg
-$ sudo dpkg -i mysql-connector-j_8.0.32-1ubuntu20.04_all.deb
+$ dpkg -x mysql-connector-j_8.0.32-1ubuntu20.04_all.deb  . 
 
-# apt-get update
-$ sudo apt-get update
+# .jar 위치로 이동
+$ cd ~/mysql-connector/usr/share/java
+
+# connector jar파일 확인
+$ ls
+mysql-connector-j-8.0.32.jar
+```
+
+그리고 나온 mysql-connector-j-8.0.32.jar 파일을  connector에 등록해야하기 때문에, kafka 디렉토리의 lib 안에 넣습니다.
+```bash
+cp /home/vagrant/mysql-connector/usr/share/java/mysql-connector-j-8.0.32.jar  ~/kafka/kafka_2.13-3.4.0/libs
+```
+
+connect-distributed를 재 실행 합니다.
+```bash
+# usecase
+./bin/connect-distributed.sh ~/kafka/kafka_2.13-3.4.0/config/connect-distributed.properties
+
+# 백그라운드 실행 옵션 -d 추가본 명령어
+./bin/connect-distributed.sh -d ~/kafka/kafka_2.13-3.4.0/config/connect-distributed.properties
 ```
 
 ### 2.4 Connector 생성
@@ -356,7 +383,7 @@ $ cat mySourceConnect.json
         "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
         "connection.url": "jdbc:mysql://127.0.0.1:3306/test",
         "connection.user":"root",
-        "connection.password":" ",
+        "connection.password":"1234",
         "mode":"incrementing",
         "incrementing.column.name" : "id",
         "table.whitelist" : "users",
@@ -398,4 +425,41 @@ curl -X POST -H "content-Type:application/json" http://localhost:8083/connectors
 ```bash
 $ curl  -X GET  http://127.0.0.1:8083/connectors
 ["jjs-source-connect"]
+```
+
+### 2.5 DB 데이터 insert
+이제 mysql DB에 데이터를 INSERT 시킵시다.
+```bash
+mysql> use test;
+
+# users 테이블 있는지 확인
+mysql> show tables;
+
+```
+
+```bash
+# 토픽 생성됬는지 확인
+$ ./bin/kafka-topics.sh --list --bootstrap-server localhost:9092
+```
+
+
+### 2.6 Sink Connector 생성
+생성된 토픽을 받을 대상 DB의 Sink Connector를 생성합니다.
+
+이 문서는 local mysql -> local mysql 이기 때문에 , 그냥 로컬에서 진행하고 커넥터도 동일합니다.
+```json
+{
+    "name": "jjs-pksink-connect-three",
+    "config": {
+        "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+        "connection.url": "jdbc:mysql://localhost:3306/test",
+        "connection.user":"root",
+        "connection.password":"1234",
+        "auto.create":"true",
+        "auto.evolve":"true",
+        "delete.enabled":"false",
+        "tasks.max":"1",
+        "topics":"example_topic_users"
+    }
+}
 ```
