@@ -371,6 +371,11 @@ connect-distributed를 재 실행 합니다.
 ./bin/connect-distributed.sh -d ~/kafka/kafka_2.13-3.4.0/config/connect-distributed.properties
 ```
 
+지금까지 설정한 플러그인이 모두 정상 등록되었는지 확인합니다.
+```bash
+curl -X GET curl 127.0.0.1:8083/connector-plugins
+```
+
 ### 2.4 Connector 생성
 Source Connector를 json 형식으로 만든 다음. 해당 json을 Connector 포트인 8083번에 post를 날려서 생성해 줍니다.
 
