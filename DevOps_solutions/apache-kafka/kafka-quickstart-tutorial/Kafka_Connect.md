@@ -293,6 +293,37 @@ $ vi ~/kafka/kafka_2.13-3.4.0/config/connect-distributed.properties
 plugin.path=/home/vagrant/connect/confluentinc-kafka-connect-jdbc/lib
 ```
 
+connect-distributed를 재 실행 합니다.
+```bash
+# usecase
+./bin/connect-distributed.sh ~/kafka/kafka_2.13-3.4.0/config/connect-distributed.properties
+
+# 백그라운드 실행 옵션 -d 추가본 명령어
+./bin/connect-distributed.sh -d ~/kafka/kafka_2.13-3.4.0/config/connect-distributed.properties
+```
+
+토픽 생성 확인
+```bash
+$ ./kafka-topics.sh --bootstrap-server localhost:9092 
+--list
+__consumer_offsets
+connect-configs
+connect-offsets
+connect-status
+...
+```
+
+커넥터가 잘 실행중인지 8083번 포트로 GET요청을 날려서 확인해봅니다.
+```bash
+$ curl -X GET  http://127.0.0.1:8083/connectors
+[]
+```
+
+커넥터는 실행중인데 , Source Connector가 없습니다.
+
+Source Connector는 MySQL Connector를 구성한 이후 생성합니다.
+
+
 ### 2.3 Connector 설치 - Mysql Connector 설치
 Connector에서 Mysql을 사용하기 위해 Mysql의 Connector를 설치 합니다.
 - [공식 설치 링크](https://dev.mysql.com/downloads/connector/j/)
@@ -308,5 +339,63 @@ mysql-connector-j_8.0.32-1ubuntu20.04_all.deb
 
 # deb파일 dpkg
 $ sudo dpkg -i mysql-connector-j_8.0.32-1ubuntu20.04_all.deb
+
+# apt-get update
+$ sudo apt-get update
 ```
 
+### 2.4 Connector 생성
+Source Connector를 json 형식으로 만든 다음. 해당 json을 Connector 포트인 8083번에 post를 날려서 생성해 줍니다.
+
+먼저, Source Connector 명세를 가진 json을 생성합니다.
+```json
+$ cat mySourceConnect.json
+{
+    "name": "jjs-source-connect",
+    "config": {
+        "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+        "connection.url": "jdbc:mysql://127.0.0.1:3306/test",
+        "connection.user":"root",
+        "connection.password":" ",
+        "mode":"incrementing",
+        "incrementing.column.name" : "id",
+        "table.whitelist" : "users",
+        "topic.prefix" : "example_topic_",
+        "tasks.max" : "1"
+    }
+}
+```
+
+각 필드에대한 설명은 다음과 같습니다.
+- **name** : Source Connector 이름
+- **connector.class** : 커넥터 종류(JdbcSourceConnector 사용)
+- **connection.url** : jdbc기 때문에 , DB 접근정보 입력
+- **connection.user** : DB 접근 계정
+- **connection.password** : DB 접근 계정 비밀번호 . (여긴 비번없어서 공백)
+- **mode** : 테이블에 데이터가 추가됐을 때 데이터를 polling 하는 방식의 종류 선언 (모드 종류는 아래)
+  - bulk : 데이터를 폴링할 때 마다 전체 테이블을 복사
+  - incrementing : 특정 컬럼의 중가분만 감지되며, 기존 행의 수정과 삭제는 감지되지 않음
+  - incrementing.column.name : incrementing 모드에서 새 행을 감지하는 데 사용할 컬럼명
+  - timestamp : timestamp형 컬럼일 경우, 새 행과 수정된 행을 감지함
+  - timestamp.column.name : timestamp 모드에서 COALESCE SQL 함수를 사용하여 새 행 또는 수정된 행을 감지
+  - timestamp+incrementing : 위의 두 컬럼을 모두 사용하는 옵션
+
+- **incrementing.column.name** : incrementing mode일 때 자동 증가 column 이름
+- **table.whitelist** :  데이터를 변경을 감지할 table 이름
+- **config.topic.prefix** : kafka 토픽에 저장될 이름 형식 지정. 위 같은경우 whitelist를 뒤에 붙여 example_topic_users에 데이터가 들어감
+- **tasks.max** : 커넥터에 대한 작업자 수
+
+***자세한 속성은 다음 공식문서 확인***
+- https://docs.confluent.io/kafka-connectors/jdbc/current/sink-connector/sink_config_options.html#writes
+ 
+
+생성한 명세를 8083 포트로 post 요청 보내서 Connector를 생성합니다.
+```bash
+curl -X POST -H "content-Type:application/json" http://localhost:8083/connectors -d @mySourceConnect.json
+```
+
+정상적으로 생성된 것을 확인합니다.
+```bash
+$ curl  -X GET  http://127.0.0.1:8083/connectors
+["jjs-source-connect"]
+```
