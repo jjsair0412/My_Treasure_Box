@@ -1,0 +1,35 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.boot_timeout = 1000
+  config.vm.define "kafka" do |kafka| # | | 내부는 alias, 첫글자는 대문자가 올 수 없다.
+
+    kafka.vm.box = "ubuntu/focal64"
+    kafka.vm.host_name = "master"
+    kafka.vm.network "private_network", ip: "192.168.50.10"
+    kafka.vm.network "forwarded_port", guest: 9092, host: 9092 # broker port
+    kafka.vm.network "forwarded_port", guest: 8083, host: 8083 # connector port
+    kafka.vm.network "forwarded_port", guest: 2888, host: 2888 # zookeeper port
+    kafka.vm.provider :virtualbox do |kafkaSpec|
+      kafkaSpec.memory = 4096
+      kafkaSpec.cpus = 4
+    end
+  end
+
+  (1..2).each do |n|
+    config.vm.define "db-#{n}" do |db|
+      db.vm.box = "ubuntu/focal64"
+      db.vm.host_name = "db-#{n}"
+      db.vm.network "private_network", ip: "192.168.50.1#{n}"
+      kafka.vm.network "forwarded_port", guest: 8083, host: 8083 # connector port
+      kafka.vm.network "forwarded_port", guest: 3306, host: 3306 # MySQL port
+      db.vm.provider :virtualbox do |dbSpec|
+        dbSpec.memory = 4096
+        dbSpec.cpus = 4
+      end
+    end
+
+
+  end
+end
