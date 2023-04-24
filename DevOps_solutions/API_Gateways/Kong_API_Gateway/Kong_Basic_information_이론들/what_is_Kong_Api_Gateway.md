@@ -2,6 +2,7 @@
 해당 문서는 Kong Gateway를 공부한 내용을 작성한 문서입니다.
 
 기초 설치방안 및 사용방안 또한 해당 디렉터리에 위치합니다.
+
 ## 이론
 ### Kong API Gateway란 ?
 콩 게이트웨이는 , MSA 및 분산 아키텍처에 최적화된 하이브리드 및 멀티 클라우드용으로 만들어진 API Gateway 입니다.
@@ -42,19 +43,6 @@ nginx를 기반으로 하기 때문에 , nginx ingress의 기본 기능인 역�
 Kong은 api gateway기 때문에 , k8s ingress컨트롤러를 제공합니다.
 
 k8s 위에 helm으로 Kong을 배포하고 , 사용하는 방안과 , 기본 베어메탈 환경에서 Kong을 사용하는 방안 두가지 모두 문서화할 예정입니다.
-
-### Kong API Gateway의 주요 기능
-#### 1. 서비스 라우팅
-Kong API Gateway는 기본적으로 **서비스**와 **라우팅** 이라는 계념을 사용합니다.
-
-![Kong_service_and_Route][Kong_service_and_Route]
-
-[Kong_service_and_Route]:./images/Kong_service_and_Route.png
-
-**서비스**는 Kong Gateway에서 가지고있는 기본 URL 입니다.
-
-
-
 
 ### Kong API Gateway 설치 방안
 콩은 설치방법이 두가지로 나뉩니다.
