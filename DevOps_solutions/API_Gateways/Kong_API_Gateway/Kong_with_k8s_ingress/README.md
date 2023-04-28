@@ -41,3 +41,8 @@ $ ls
 CHANGELOG.md  Chart.lock  Chart.yaml  FAQs.md  README.md  UPGRADE.md  charts  ci  crds  example-values  templates  values.yaml
 ```
 
+kong api gateway 관리용 namespace를 생성합니다.
+```bash
+$ kubectl create ns kong 
+```
+
