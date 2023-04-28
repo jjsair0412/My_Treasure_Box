@@ -46,3 +46,32 @@ kong api gateway 관리용 namespace를 생성합니다.
 $ kubectl create ns kong 
 ```
 
+helm upgrade 명령어로 kong api gateway를 설치합니다.
+
+kong의 values.yaml에 아무런 설정을 두지 않았기 때문에 , LoadBalancer type으로 설치됩니다.
+- LB type은 NodePort의 확장이기에 , 클라우드 환경이 아니라 앞단 LB가 프로비저닝되지 않더라도 크게 문제되지 않습니다.
+```bash
+$ helm upgrade --install kong . -n kong
+
+# 설치결과 확인
+$ kubectl get all -n kong
+NAME                             READY   STATUS    RESTARTS   AGE
+pod/kong-kong-5cf79c5854-2nfbv   2/2     Running   0          3h1m
+
+NAME                                   TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+service/kong-kong-proxy                LoadBalancer   10.111.68.160   <pending>     80:30682/TCP,443:30431/TCP   3h1m
+service/kong-kong-validation-webhook   ClusterIP      10.97.213.43    <none>        443/TCP                      3h1m
+
+
+NAME                        READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/kong-kong   1/1     1            1           3h1m
+
+NAME                                   DESIRED   CURRENT   READY   AGE
+replicaset.apps/kong-kong-5cf79c5854   1         1         1       3h1m
+```
+
+80:30682/TCP , 443:30431/TCP 포트로 curl 명령어를 날려보면 , Kong에 아직 route가 등록되지 않아 다음과 같은 출력을 확인할 수 있습니다.
+```bash
+$ curl 127.0.0.1:30682
+{"message":"no Route matched with those values"}
+```
