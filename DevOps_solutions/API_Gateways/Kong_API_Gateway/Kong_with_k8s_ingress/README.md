@@ -202,31 +202,41 @@ spec:
 " | kubectl apply -f 
 ```
 
+### 3.3 Ingress Controller 생성하기
 Kubernetes ingress controller는 기본적으로 IngressClass 및 GatewayClass를 인식하기 때문에 , Ingress를 생성할 때 ingressClassName을 명시해주면 해당 Ingress를 사용하게 됩니다.
 
+만약 SSL 인증서를 등록하기 위해선 , nginx ingress와 동일하게 spec.tls 칸에 추가해주면 됩니다.
+
+Kong에서 지원하는 Annotation 종류는 다음 문서에 자세히 작성되어 있습니다.
+- [공식 Docs Anntation List](https://docs.konghq.com/kubernetes-ingress-controller/latest/references/annotations/)
 아래는 test ingress 전문
-```bash
-echo "
+```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: echo
   annotations:
-    konghq.com/strip-path: 'true'
+    konghq.com/strip-path: 'true'  # Ingress 리소스에 정의된 경로를 제거한 다음 요청을 업스트림 서비스로 전달
 spec:
-  ingressClassName: kong
+  ingressClassName: kong # ingressClassName , Kong
   rules:
-  - host: kong.example
+  - host: kong.example # Domain Name
     http:
       paths:
-      - path: /echo
+      - path: /echo # route
         pathType: ImplementationSpecific
         backend:
           service:
-            name: echo
+            name: echo # service_name
             port:
-              number: 1027
-" | kubectl apply -f -
+              number: 1027 # service_port
+  tls:
+  - hosts: 
+    - Kong.example
+    secretName : tls_secret_name
+
+# apply 
+kubectl apply -f -
 ```
 
 그대로 복사해서 배포합니다.
