@@ -254,3 +254,153 @@ Running on Pod echo-74d47cc5d9-qfpwv.
 In namespace default.
 With IP address 192.168.226.66.
 ```
+
+## 4. plugin 사용해보기
+Kong Ingress Controller에서 plugin을 사용해 봅니다.
+
+Kong은 plugin을 service별로 등록할 수 도 있고 , ingress자체에 등록할 수 도 있습니다.
+
+Kong은 plugin을 등록할 때 annotation으로 ingress나 service에 기입하여 등록하게 됩니다.
+
+또한 plugin은 KongPlugin이라는 K8S Kind로 관리하게 됩니다.
+
+KongPlugin은 yaml파일로 관리할 수 있기 때문에 직관적으로 plugin을 설정할 수 있습니다.
+
+Kong Plugin과 Kong ingress및 service는 같은 namespace에 존재하지 않아도 설정됩니다.
+
+Kong의 plugin hub에서 다양한 플러그인들을 확인할 수 있으며 , 개별 사용법또한 자세히 작성되어 있습니다.
+- [Kong Plugin Hub](https://docs.konghq.com/hub/)
+
+### 4.1 ingress에 plugin 설정
+correlation-id라는 plugin을 echo ingress에 설정해 보겠습니다.
+
+```yaml
+$ cat p_ingrses.yaml
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: request-id # KongPlugin name
+config: # plugin config 등록
+  header_name: my-request-id 
+  echo_downstream: true
+plugin: correlation-id # 사용할 plugin 이름 등록
+```
+
+apply하여 배포합니다.
+
+```bash
+$ kubectl apply -f p_ingrses.yaml
+```
+
+echo ingress에 해당 plugin을 annotation으로 명시해줍니다.
+```bash
+$ kubectl annotate ingress echo konghq.com/plugins=request-id
+```
+등록이 정상적으로 완료되었습니다.
+Ingress 또는 HTTPRoute 와 일치하는 요청에는 echo이제 my-request-id요청 헤더 업스트림과 응답 헤더 다운스트림 모두에 고유 ID가 있는 헤더가 포함됩니다.
+
+### 4.2 service에 plugin 설정
+Kong은 서비스 자체에 plugin을 설정할 수 있습니다.
+
+따라서 ingress route별로 설정하지 않아도 , 해당 서비스를 거치기만하는 애들에게 모두 plugin을 먹일 수 있습니다.
+
+속도제한 plugin인 rate-limiting plugin을 echo service에 등록해봅니다.
+- 동일하게 service annotation에 기입만 해주면 됩니다.
+
+KongPlugin 리소스를 먼저 yaml로 생성합니다.
+
+```yaml
+$ cat p_svc.yaml
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: rl-by-ip
+config: # plugin 설정값 들어감
+  minute: 5 # rate-minute 5로 설정
+  limit_by: ip
+  policy: local
+plugin: rate-limiting # plugin 이름
+```
+
+apply하여 배포합니다.
+
+```bash
+$ kubectl apply -f p_svc.yaml
+```
+
+echo service에 해당 KongPlugin 리소스 name을 가진 annotation을 추가합니다.
+```bash
+$ kubectl annotate service echo konghq.com/plugins=rl-by-ip
+```
+
+curl 명령어로 테스트 해보면 , RateLimit 값이 5로 등록된것을 확인할 수 있습니다.
+```bash
+$ curl -i http://kong.example:31876/echo
+HTTP/1.1 200 OK
+Content-Type: text/plain; charset=utf-8
+Content-Length: 138
+Connection: keep-alive
+RateLimit-Reset: 59
+X-RateLimit-Limit-Minute: 5
+X-RateLimit-Remaining-Minute: 4
+RateLimit-Limit: 5
+RateLimit-Remaining: 4
+Date: Mon, 01 May 2023 08:46:00 GMT
+my-request-id: df1fa08e-ecff-4f1f-a841-ced2ac10868b#16
+X-Kong-Upstream-Latency: 2
+X-Kong-Proxy-Latency: 0
+Via: kong/3.2.2
+
+Welcome, you are connected to node worker-1.
+Running on Pod echo-74d47cc5d9-qfpwv.
+In namespace default.
+With IP address 192.168.226.66.
+```
+
+**신기한점은 , KongPlugin 리소스를 변경시켜서 apply를 다시 하기만 하면 , 그걸 알아채서 바로 상태가 변경된다는 점 입니다.**
+- 바로 반영됩니다.
+
+rate값을 500으로 바꾸고 apply시켜보겠습니다.
+
+```yaml
+$ cat p_svc.yaml
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: rl-by-ip
+config: # plugin 설정값 들어감
+  minute: 500 # rate-minute 500으로 재설정
+  limit_by: ip
+  policy: local
+plugin: rate-limiting # plugin 이름
+```
+
+apply하여 재 배포합니다.
+
+```bash
+$ kubectl apply -f p_svc.yaml
+kongplugin.configuration.konghq.com/rl-by-ip configured
+```
+
+curl 명령어로 확인해보면 ,, 500으로 값이 바로 반영된것을 확인할 수 있습니다.
+```bash
+$ curl -i http://kong.example:31876/echo
+HTTP/1.1 503 Service Temporarily Unavailable
+Date: Mon, 01 May 2023 08:48:57 GMT
+Content-Type: application/json; charset=utf-8
+Connection: keep-alive
+RateLimit-Reset: 3
+X-RateLimit-Limit-Minute: 500
+X-RateLimit-Remaining-Minute: 496
+RateLimit-Limit: 500
+RateLimit-Remaining: 496
+Content-Length: 58
+my-request-id: df1fa08e-ecff-4f1f-a841-ced2ac10868b#20
+X-Kong-Response-Latency: 0
+Server: kong/3.2.2
+
+Welcome, you are connected to node worker-1.
+Running on Pod echo-74d47cc5d9-qfpwv.
+In namespace default.
+With IP address 192.168.226.66.
+```
