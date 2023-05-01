@@ -2,6 +2,9 @@
 해당 문서는 Kong gateway를 k8s의 ingress 로 사용하는 방안에 대해 기술합니다.
 
 설치는 helm chart를 통해 진행합니다.
+
+Kong ingress 테스트 내용은 다음 Docs를 참조하였습니다.
+- [Get_Start_Kong_ingress_controller](https://docs.konghq.com/kubernetes-ingress-controller/2.9.x/guides/getting-started/)
 ## Precondition
 - 설치 환경
 
@@ -46,6 +49,16 @@ kong api gateway 관리용 namespace를 생성합니다.
 $ kubectl create ns kong 
 ```
 
+proxy의 service type을 NodePort로 변경하는것 또한 가능합니다.
+```bash
+# Specify Kong proxy service configuration
+proxy:
+  # Enable creating a Kubernetes service for the proxy
+  enabled: true
+  type: NodePort # default로 LoadBalancer 등록되어있음
+  loadBalancerClass
+```
+
 helm upgrade 명령어로 kong api gateway를 설치합니다.
 
 kong의 values.yaml에 아무런 설정을 두지 않았기 때문에 , LoadBalancer type으로 설치됩니다.
@@ -70,8 +83,164 @@ NAME                                   DESIRED   CURRENT   READY   AGE
 replicaset.apps/kong-kong-5cf79c5854   1         1         1       3h1m
 ```
 
-80:30682/TCP , 443:30431/TCP 포트로 curl 명령어를 날려보면 , Kong에 아직 route가 등록되지 않아 다음과 같은 출력을 확인할 수 있습니다.
+배포가 완료되면 , 아래와 같은 출력결과를 확인할 수 있습니다.
+
+Kong의 LB proxy IP 및 포트를 다음 명령어들로 지정해줌으로써 외부 LB와 연동합니다.
+- 현재는 베어메탈 환경이기 때문에 , 그냥 놔두고 NodePort처럼 사용합니다.
+```bash
+...
+To connect to Kong, please execute the following commands:
+
+HOST=$(kubectl get svc --namespace kong kong-kong-proxy -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+PORT=$(kubectl get svc --namespace kong kong-kong-proxy -o jsonpath='{.spec.ports[0].port}')
+export PROXY_IP=${HOST}:${PORT}
+curl $PROXY_IP
+...
+```
+
+80:30682/TCP , 443:30431/TCP 포트로 curl 명령어를 날려보면 , Kong에 아직 route가 등록되지 않아서 request를 proxy할 경로를 모르기에 다음과 같은 response를 확인할 수 있습니다.
 ```bash
 $ curl 127.0.0.1:30682
 {"message":"no Route matched with those values"}
+```
+
+## 3. API Gateway 사용해보기
+### 3.1 Test Pod Deploy
+Kong Docs에서 있는 간단한 HTTP APP으로 테스트 합니다.
+
+그대로 echo 명령어를 복사하여 배포합니다.
+App 전문 yaml
+```bash
+echo "
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: echo
+  name: echo
+spec:
+  ports:
+  - port: 1025
+    name: tcp
+    protocol: TCP
+    targetPort: 1025
+  - port: 1026
+    name: udp
+    protocol: TCP
+    targetPort: 1026
+  - port: 1027
+    name: http
+    protocol: TCP
+    targetPort: 1027
+  selector:
+    app: echo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: echo
+  name: echo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echo
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: echo
+    spec:
+      containers:
+      - image: kong/go-echo:latest
+        name: echo
+        ports:
+        - containerPort: 1027
+        env:
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+        resources: {}
+" | kubectl apply -f -
+```
+
+### 3.2 구성 그룹 만들기
+ingress와 Gateway API controller는 경로구성을 알 수 있도록 가르키는 구성 집합이 필요합니다.
+
+이를 통해서 하나의 클러스터에서 여러 컨트롤러가 있을 수 있기 때문에 , 각 서비스별 경로를 생성하기 전, **해당 경로들을 묶을 class configuration을 생성해야 합니다.**
+
+그러나 helm chart로 Kong을 배포하였을 때는 기본적으로 같이 배포되기 때문에 , 이 과정을 생략할 수 있습니다.
+```bash
+# helm chart로 배포시 ingressClass를 확인해보면 잇는것을 확인할 수 있음.
+$ kubectl get ingressClass
+NAME   CONTROLLER                            PARAMETERS   AGE
+kong   ingress-controllers.konghq.com/kong   <none>       11m
+
+# yaml로 따로따로 배포했을 경우 , 아래 명령어로 ingressClass를 만들어 주어야 한다.
+echo "
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: kong
+spec:
+  controller: ingress-controllers.konghq.com/kong
+" | kubectl apply -f 
+```
+
+Kubernetes ingress controller는 기본적으로 IngressClass 및 GatewayClass를 인식하기 때문에 , Ingress를 생성할 때 ingressClassName을 명시해주면 해당 Ingress를 사용하게 됩니다.
+
+아래는 test ingress 전문
+```bash
+echo "
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: echo
+  annotations:
+    konghq.com/strip-path: 'true'
+spec:
+  ingressClassName: kong
+  rules:
+  - host: kong.example
+    http:
+      paths:
+      - path: /echo
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: echo
+            port:
+              number: 1027
+" | kubectl apply -f -
+```
+
+그대로 복사해서 배포합니다.
+```bash
+$  kubectl get ing -A
+NAMESPACE   NAME   CLASS   HOSTS          ADDRESS       PORTS   AGE
+default     echo   kong    kong.example   10.104.73.3   80      7s
+```
+
+etc/hosts파일에 proxyIP kong.example을 등록한 뒤 , proxy port를 달아서 /echo route로 들어가봅니다.
+```bash
+$ curl kong.example:30682/echo
+Welcome, you are connected to node worker-1.
+Running on Pod echo-74d47cc5d9-qfpwv.
+In namespace default.
+With IP address 192.168.226.66.
 ```
