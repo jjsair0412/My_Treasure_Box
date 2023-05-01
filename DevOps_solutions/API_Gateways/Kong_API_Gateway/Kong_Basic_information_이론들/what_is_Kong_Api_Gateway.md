@@ -49,3 +49,23 @@ k8s 위에 helm으로 Kong을 배포하고 , 사용하는 방안과 , 기본 베
 1. cloud-hosted with Kong Konnect
 2. on-premises
 
+## Kong DB less vs DB mode
+Kong Gateway는 plugin , route , service와 같은 엔티티들을 저장하기 위해서 , DB가 필요합니다.
+- Kong Gateway는 kong.conf 파일을 통해 DB 및 다양한 설정 정보를 지정합니다.
+
+그러나 Kong Gateway는 DB 없이 실행하는 DB-less 모드 또한 지원합니다.
+
+Kong의 DB-less 모드는  Kong 1.1 이후 버전에서 Declarative Config 와 함께 사용 가능하며, 이는 YAML 또는 JSON file 에 설정 정보를 저장하여 사용하는 방식 입니다.
+
+DB-less 모드의 이점은 다음과 같습니다.
+- 종속성 감소
+    - Back end DB를 관리할 필요가 없어지기 때문에 편리합니다. -> 리소스 절약 가능
+- CI/CD 자동화
+    - Kong 설정파일 자체를 Yaml이나 json 한곳에서 사용함으로써 배포 파이프라인을 자동화할 수 있습니다.
+
+단점은 다음과 같습니다.
+- DB 의존적 Plugin 사용 불가
+- RESTful API를 통해 Kong Cluster를 관리할 수 있는 Admin API 사용 불가
+    - 읽기 전용으로만 사용이 가능합니다.
+- Kong 설정 파일을 변경하려면 conf를 수정한 후 재 배포해야 합니다.
+
