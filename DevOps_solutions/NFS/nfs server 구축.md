@@ -2,13 +2,26 @@
 # NFS 서버 설정 방안
 - 해당 문서는 centos7 os에서 nfs 서버를 설정하는 방법에 대해 설명합니다.
 ## 1. install package
-- 아래 명령어를 통해서 NFS 서버를 설치합니다.
-```
+- 먼저 , 실제 nas를 가지고있는 베어메탈 서버에 아래 명령어로 nfs-server를 설치합니다.
+```bash
+# centos 일 경우
 $ yum -y install nfs-utills
+
+# ubuntu일 경우
+$ sudo apt-get install nfs-kernel-server
+```
+
+- 만약 k8s cluster에 nfs-client-provisioner로 sc를 nfs로 등록하려 할 때는 , 모든 worker node에 nfs-common을 설치해 주어야 합니다.
+```bash
+# centos일 경우
+$ yum -y install nfs-common
+
+# ubuntu일 경우
+$ sudo apt-get install nfs-common -y
 ```
 ## 2. use nfs server
 - systemctl 명령어로 nfs-server를 켜줍니다. start , stop , restart 명령어 모두 허용됩니다.
-```
+```bash
 # nfs-server enable
 $ systemctl enable nfs-server
 
@@ -18,7 +31,7 @@ $ systemctl start nfs-server
 - root 계정으로 진행합니다.
 - 첫번째로 공유폴더 지정 리스트를 생성해야 합니다.
   /etc/exports 라는 파일을 생성해서 , 리스트를 작성합니다.
-```
+```bash
 $ sudo su
 
 $ cat /etc/exports
@@ -98,6 +111,10 @@ kind: PodSecurityPolicy
 #### 4.2 nfs-client provisioner 설치
 - helm chart로 nfs-client provisioner를 설치합니다. [chart](https://artifacthub.io/packages/helm/kvaps/nfs-server-provisioner)
 ```
+# nfs provisioner 이름 그대로 다 repo명을 하면 , pull할때 이름길어서 에러납니다.
+$ helm repo add nfs-pro https://kubernetes-sigs.github.io/nfs-ganesha-server-and-external-provisioner/
+$ helm repo update
+
 $ helm upgrade --install --kubeconfig=$KUBE_CONFIG  nfs . \
 --set nfs.server=10.xxx.xxx.xxx \ # nfs server 주소
 --set nfs.path=/share \ # mount 경로
@@ -108,9 +125,9 @@ $ helm upgrade --install --kubeconfig=$KUBE_CONFIG  nfs . \
 - 설치 이후 , 모든 worker 및 master 노드에 nfs-common을 apt-get 및 yum으로 설치해야만 합니다.
   - nfs 추가 패키지 설치하지 않으면 마운트 안됨
 ```bash
-apt-get install nfs-common 
+$ apt-get install nfs-common 
 
-yum install nfs-utils
+$ yum install nfs-utils
 ```
 
 설치결과 확인
