@@ -5,7 +5,7 @@
 -   Helm chart를 이용한 argocd 설치
 -   참고 링크
     -   [argocd docs](https://argo-cd.readthedocs.io/en/stable/)
-    -   [argocd Helm Chart](https://github.com/argoproj/argo-helm/tree/master/charts/argo-cd)
+    -   [argocd Helm Chart](https://github.com/argoproj/argo-helm.git)
    
 ## 2. ArgoCD 설치
 ### 2.1 namespace 설정
@@ -26,137 +26,45 @@ $ helm repo update
 ```
 $ helm pull argo/argo-cd --untar
 ```
-- 특정 node에 배포하기 위해 affinity 설정
-- 원하는 옵션으로 바꿔서 설정해주면 된다.
-```
-$ cat affinity-values.yaml
-controller:
-  affinity:
-    ...
-  nodeSelector:
-    ...
 
+### 2.2 Helm ArgoCD Chart 설치
+installCRDs를 false로 두고 , 차트 외부에 CRD를 설치합니다.
 
-dex:
-  affinity:
-    ...
-  nodeSelector:
-    ...
-
-repoServer:
-  affinity:
-    ...
-  nodeSelector:
-    ...
-
-server:
-  affinity:
-    ...
-  nodeSelector:
-    ...
-
-
-applicationSet:
-  affinity:
-    ...
-  nodeSelector:
-    ... 
-
-notifications:
-  affinity:
-    ...
-  nodeSelector:
-    ...
-
-
-redis:
-  affinity:
-    ...
-  nodeSelector:
-    ... 
-
-```
-- 폐쇄망 구성 및 private registry에서 image를 받아올 경우 , 아래 속성들을 변경시켜 준다.
-```
-$ cat private-values.yaml
-global:
-  image:
-    repository: 10.xxx.xxx:5000
-    tag: v2.4.0
-
-dex:
-  initImage:
-    repository: 10.xxx.xxx:5000/quay.io/argoproj/argocd
-    tag: v2.4.0
-  image:
-    repository: 10.xxx.xxx:5000/ghcr.io/dexidp/dex
-    tag: v2.30.2
-
-controller:
-  image:
-    repository: 10.xxx.xxx:5000/quay.io/argoproj/argocd
-    tag: v2.4.0
-
-applicationSet:
-  image:
-    repository: 10.xxx.xxx:5000/quay.io/argoproj/argocd
-    tag: v2.4.0
-
-repoServer:
-  image:
-    repository: 10.xxx.xxx:5000/quay.io/argoproj/argocd
-    tag: v2.4.0
-
-server:
-  image:
-    repository: 10.xxx.xxx:5000/quay.io/argoproj/argocd
-    tag: v2.4.0
-
-redis:
-  image:
-    repository: 10.xxx.xxx:5000/redis
-    tag: 7.0.0-alpine
-
-notifications:
-  image:
-    repository: 10.xxx.xxx:5000/quay.io/argoproj/argocd
-    tag: v2.4.0
-```
-```
-global:
-  image:
-    repository: harbor.jinseong.leedh.xyz/argo/quay.io/argoproj/argocd
-    tag: v2.4.0
-
-dex:
-  image:
-    repository: harbor.jinseong.leedh.xyz/argo/ghcr.io/dexidp/dex
-    tag: v2.30.2
-
-
-redis:
-  image:
-    repository: harbor.jinseong.leedh.xyz/argo/redis
-    tag: 7.0.0-alpine
-
-```
-
-### 2.3 Helm ArgoCD Chart 설치
-```
+```bash
 $ helm upgrade --install argocd . \
 --namespace=argo \
---set controller.logLevel="info" \
---set server.logLevel="info" \
---set repoServer.logLevel="info" \
---set server.replicas=2 \
---set server.ingress.https=true \
---set repoServer.replicas=2 \
+--set dex.logLevel="info" \
+--set notifications.logLevel="info" \
 --set controller.enableStatefulSet=true \
 --set installCRDs=false \
--f values.yaml,affinity-values.yaml
+-f values.yaml
 ```
 
-### 2.4 ArgoCD ingress 설정
+차트 외부 CRD 설치
+```bash
+kubectl apply -k "https://github.com/argoproj/argo-cd/manifests/crds?ref=<appVersion>"
+
+# Eg. version v2.4.9
+kubectl apply -k "https://github.com/argoproj/argo-cd/manifests/crds?ref=v2.4.9"
+```
+
+아래와 같은 output을 확인할 수 있습니다.
+```bash
+...
+1. kubectl port-forward service/argocd-server -n argo 8080:443
+
+    and then open the browser on http://localhost:8080 and accept the certificate
+
+2. enable ingress in the values file `server.ingress.enabled` and either
+      - Add the annotation for ssl passthrough: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-1-ssl-passthrough
+      - Set the `configs.params."server.insecure"` in the values file and terminate SSL at your ingress: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-2-multiple-ingress-objects-and-hosts
+
+After reaching the UI the first time you can login with username: admin and the random password generated during the installation. You can find the password by running:
+
+kubectl -n argo get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d # default password
+```
+
+### 2.3 ArgoCD ingress 설정
 -   Https Ingress 용 TLS 인증서 생성
 - TLS 인증서를 생성하지 않아도 무관하다. -> 실습할때만
 
