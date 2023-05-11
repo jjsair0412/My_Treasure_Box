@@ -148,3 +148,44 @@ LB는 모든 ip에 대해 (0.0.0.0/0) 80 . 443으로 접근 가능 , ec2에서�
 - EC2 인스턴스 등 LB뒤에있는애가 중지됐을때 , 정상 작동하기까지 LB가 기다리는 시간을 의미한다.
 - 기본값은 5분 , 600초이며 , 1~3,600 초 사이로 등록할 수 있다.
 
+## ASG ( Auto Scaling Group )
+- 요청많아지면 ec2 서버 scale out (ec2 add) 이나 scale in (ec2 remove) 를 자동화하는것이 ASG 이다.
+- 최소 / 희망 / 최대 ec2 개수를 지정할 수 있다.
+    - 최대 용량보다 낮고 희망보다 높은값을 주면 , 최대 용량만큼 ec2가 생성된다.
+- ASG에 속한 LB는 늘어나거나 줄어들어도 LB와 연결된다.
+- 인스턴스 헬스체크 하여 비정상이면 다시만들어준다.
+
+### 1. ASG 생성 방법
+- Launch Template을 생성해야 한다. 아래와 같은 정보가 기입됨.
+- ec2를 생성할때와 거의 유사함
+    - AMI + Instance Type
+    - EC2 User Data
+    - EBS Volume
+    - Security Group
+    - SSH Key Pair
+    - IAM Roles for your EC2 Instance
+    - Network + Subnets information
+    - Load Balanacer information
+    - 등 ..
+- min size , max size , 초기용량 지정해야 함
+- 스케일링 정책또한 지정해야 함
+- CloudWatch 알람과 연동해서 스케일 정책을 자동 생성하여 스케일아웃되거나 인되는 행동을 발생시킬 수 있음
+    - ASG cpu 사용량과 같은 metric 등을 기반으로 알람 발생 
+
+### 2. Auto Scaling Groups 스케일링 정책들 -  Dynamic Scaling Polices 
+- 1. Target Tracking Scaling
+    - 가장쉬움
+    - 예를들어 , 모든 ec2가 특정 수치의 40%대에 유지될수 있도록 함.
+- 2. Simple / Step Scaling
+    - cloudwatch 알람 설정 후 , 전체 ASG에 대한 cpu사용률을 감시해서 ,. 70% 이상되면 2개 추가해라 등의 상세설정 가능 
+- 3. Scheduled Actions
+    - 특정 순간에 ASG 최소 용량을 늘리거나 줄일 수 있게끔 예약하는 기능
+    - 10시부터 12시 사이 ASG 최소 용량을 3개로 늘려줘 등 가능
+
+### 3. Auto Scaling Groups 스케일링 정책들 -  Predictive Scaling
+- Predictive Scaling
+    - 로드를 보고 다음 스케일링 예측하여 해당 예측을 기반으로 스케일링 정책 생성
+
+### 4. Scaling Cooldwon
+- 스케일링 작업이 끝날 때 마다 5분 혹은 300초의 쉬는시간을 갖는것
+- 휴식시간에는 ec2가 생성되거나 제거될 수 없음
