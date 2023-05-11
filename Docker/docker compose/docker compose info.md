@@ -168,3 +168,38 @@ services:
 ```
 - docker compose는 docker처럼 docker network를 설정할 필요 가 없습니다.
 - 그냥 compose up 명령어를 사용하면 , network설정이 자동으로 설정됩니다.
+
+### docker compose 외부 .env 사용하기
+- docker compose 파일에서 , 가변값들을 외부에 지정하면서 올릴 수 있습니다.
+- .env파일을 docker-compose와 동일 path에 생성한 뒤 , 아래처럼 지정합니다.
+
+```.env
+$ cat .env
+PASSWD=pw1234
+exportPort=1111
+```
+
+```yaml
+version: "3.7"
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: my-pg
+    ports:
+      - '${exportPort}:5432'
+    environment:
+      - POSTGRES_PASSWORD=${PASSWD}
+```
+
+```bash
+$ docker-compose  --project-name pg -f .\docker-compose.yml up
+```
+
+- exportPort가 .env에 지정한 값인 1111로 변경
+- PASSWD가 .env에 지정한 값인 pw1234로 변경
+
+- 추가로 , --env-file 옵션을 이용해서 up 할 때 .특정 env를 지정해 줄 수 있습니다.
+```bash
+$ docker-compose  --project-name pg -f .\docker-compose.yml --env-file ./.env up
+```
