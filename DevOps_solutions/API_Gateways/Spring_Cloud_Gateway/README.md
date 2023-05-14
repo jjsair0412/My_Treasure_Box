@@ -1,9 +1,6 @@
 # Spring Cloud Gateway
 해당 문서는 Spring Cloud Gateway에 대해 이론적인 내용을 정리해둔 문서입니다.
 
-Spring cloud Gateway를 사용한 Project Code는 아래 링크에 위치합니다.
-- [Spring_Cloud_Gateway를 활용한 실시간 메세지 처리 APP](https://github.com/jjsair0412/Realtime_Messaging_Service_PROJ)
-
 Spring Cloud Gateway를 테스트한 코드는 아래 링크에 위치합니다.
 - [Spring_Cloud_Gateway_TEST_CODE](./SpringCloudGateway_TEST/)
 
