@@ -5,7 +5,7 @@ Spring cloud Gateway를 사용한 Project Code는 아래 링크에 위치합니�
 - [Spring_Cloud_Gateway를 활용한 실시간 메세지 처리 APP](https://github.com/jjsair0412/Realtime_Messaging_Service_PROJ)
 
 Spring Cloud Gateway를 테스트한 코드는 아래 링크에 위치합니다.
-- [Spring_Cloud_Gateway_TEST_CODE](./remind_project/)
+- [Spring_Cloud_Gateway_TEST_CODE](./SpringCloudGateway_TEST/)
 
 ## Overview
 Spring cloud gateway는 MSA 환경에서 사용하는 API Gateway중 하나 입니다.
@@ -141,3 +141,7 @@ public class Router {
 }
 
 ```
+## ETC
+또한 리다이렉트 된 페이지에서 . 특정 경로로 REDIRECT 시키면 , SCG 프로젝트의 도메인의 경로로 갑니다.
+
+따라서 , SCG에서 route를 더 생성해주어야 합니다.
