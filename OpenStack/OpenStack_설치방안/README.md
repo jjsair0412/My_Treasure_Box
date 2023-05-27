@@ -35,7 +35,8 @@
 | cpu | 12 |
 
 
-## install KeyStone
+## Install KeyStone
 - [KeyStone_설치_방안](./KeyStone.md)
 
-## 
+## Install Glance
+- [Glance_설치_방안](./Glance.md)

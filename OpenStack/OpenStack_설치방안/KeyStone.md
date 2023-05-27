@@ -2,6 +2,11 @@
 - [Yoga_전체환경_KeyStone_설치방안_docs](https://docs.openstack.org/keystone/yoga/install/)
 - [Yoga_ubuntu_KeyStone_설치방안_docs](https://docs.openstack.org/keystone/yoga/install/index-ubuntu.html)
 
+## ENV
+- endpoint API : http://controller:5000
+- Domain : controller
+- Port : 5000 
+
 ## ETC
 에러발생시 keystone의 로그파일 경로는 apache2 로그파일 경로와 동일합니다.
 - conf파일 등이 바뀔경우 , bootstrap을 다시 진행하면 됩니다.
@@ -88,7 +93,7 @@ mysql>
 ```
 
 - keystone 데이터베이스 생성 및 데이터베이스 액세스 권한 부여
-    - keystone
+    - keystone 계정에 적절한 비밀번호를 지정합니다. **해당 문서는 가이드이기에 1234로 설정**
 ```bash
 # keystone 이름의 데이터베이스 생성
 mysql> CREATE DATABASE keystone;
@@ -164,7 +169,7 @@ $ pwd
 [database]에서 아까 설치했던 MYSQL 액세스를 구성합니다.
 ```conf
 [database]
-# ...
+# keystone 데이터베이스 password 입력
 connection = mysql+pymysql://keystone:KEYSTONE_DBPASS@controller/keystone
 
 # 실 사용 명령어
@@ -355,9 +360,7 @@ An Example Domain을 생성해 봅시다.
 1. 도메인 생성
     - --os-password 에는 bootstrap 시 설정한 비밀번호를 입력합니다.
 ```bash
-$ openstack --os-auth-url http://controller:5000/v3 \
-  --os-project-domain-name Default --os-user-domain-name Default \
-  --os-project-name admin --os-username admin token issue
+$ openstack domain create --description "An Example Domain" example 
 
 # 실사용 명령어
 $ openstack domain create --description "An Example Domain" example \
