@@ -5,24 +5,37 @@
 - **Yoga** version으로 설치합니다.
     - [OpenStack_docs](https://docs.openstack.org/install-guide/openstack-services.html)
 
-설치대상 서비스는 다음과 같습니다.
-- 자세한 설명은 아래 링크에 있습니다.
-- [Openstack_이론](/OpenStack/%EC%9D%B4%EB%A1%A0/README.md)
+설치대상 프로젝트는 다음과 같습니다.
+- 각 프로젝트별 자세한 설명은 아래 링크에 있습니다.
+    - [Openstack_이론](/OpenStack/%EC%9D%B4%EB%A1%A0/README.md)
+- **각 프로젝트는 유기적으로 동작하기 때문에 , 설치 순번을 꼭 지켜야만 합니다.**
 
-|name | Explanation| ETC |
+|Name | Explanation| 설치 순번 |
 |--|--|--|
-|keystone | 인증 서비스||
-|glance | 이미지관리 서비스 ||
-|placement | 가상머신 컨테이너 인스턴스 배치 서비스 ||
-|nova | 컴퓨팅 리소스 관리 서비스 ||
-|neutron | neutron installation for Yoga||
-|horizon | horizon installation for Yoga||
-|cinder | cinder installation for Yoga||
+|KeyStone | 인증 인가 및 OpenStack 전체 RBAC관리 프로젝트|1|
+|Glance | 가상머신 이미지 및 도커 이미지 관리 프로젝트 |2|
+|Placement | 가상머신 컨테이너 인스턴스 배치 프로젝트 |3|
+|Nova | 컴퓨팅 리소스 관리 프로젝트 |4|
+|Neutron | 가상 네트워크 관리 프로젝트|5|
+|Horizon | OpenStack dashboard 프로젝트|6|
+|Cinder | 블록 스토리지 연동 프로젝트|7|
+
+### 설치시 주의 사항
+- **각 프로젝트는 유기적으로 동작하기 때문에 , 설치 순번을 꼭 지켜야만 합니다.**
+- **각 프로젝트를 설치할 때 , 설치할 환경이 suse linux인지 , centos인지, ubuntu인지 꼭 확인하고 각 환경에 맞는 설치방안을 따라야 합니다. (다다름)**
 
 ## 설치 환경
-|name | version| 
+- vagrant를 통해 VM을 설치하고 , 고 위에 OpenStack을 설치합니다.
+- ubuntu 위에 설치합니다.
+
+|name | 버전 및 용량| 
 |--|--|
 | ubuntu | 20.04 |
+| memory | 16,384 |
+| cpu | 12 |
 
-## Yoga 버전
-2016년 10월 6일출시되고 , 
+
+## install KeyStone
+- [KeyStone_설치_방안](./KeyStone.md)
+
+## 
