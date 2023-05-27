@@ -56,3 +56,5 @@ ide 툴에서 개행문자가 안들어가게끔 하는 설정을 해 두면 미
 관련 문서
 - [블로그 : 보안](https://securus.tistory.com/entry/binbashM-bad-interpreter-%EA%B7%B8%EB%9F%B0-%ED%8C%8C%EC%9D%BC%EC%9D%B4%EB%82%98-%EB%94%94%EB%A0%89%ED%84%B0%EB%A6%AC%EA%B0%80-%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4)
 - [블로그 : 공부를 계속하는 ...](https://haepyung88.tistory.com/213)
+
+## ETC 
