@@ -48,6 +48,17 @@ mv ./kubectl ~/.local/bin/kubectl
 ```
 
 ### 4. bad interpreter error
+kubectl exec 명령어 변경점
+- -- 를 추가로 넣어줘야 먹힘
+```bash
+# before
+kubectl exec -it my-pod /bin/bash
+
+# after
+kubectl exec -it my-pod -- /bin/bash
+```
+
+### 5. bad interpreter error
 윈도우에서 수정한 파일을 리눅스에 옮겨서 작업할 경우 , 개행문자가 파일에 섞여들어가서 발생하는 에러
 
 ide 툴에서 개행문자가 안들어가게끔 하는 설정을 해 두면 미리 방지 가능

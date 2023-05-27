@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <p th:text="'받은 파라미터 : '+ ${hello}"> </p>
+    <p th:text="'포트번호 : '+ ${port}"> </p>
+    <p th:text="'default value : '+ ${default}"> </p>
+    
+    <button type="button" th:onclick="|location.href='@{/start}'|">GO!</button>
+</body>
+</html>
