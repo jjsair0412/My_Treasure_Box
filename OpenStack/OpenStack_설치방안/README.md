@@ -40,3 +40,6 @@
 
 ## Install Glance
 - [Glance_설치_방안](./Glance.md)
+
+## Install Placement
+- [Placement_설치_방안](./Placement.md)
