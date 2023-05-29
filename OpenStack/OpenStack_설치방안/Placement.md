@@ -1,5 +1,7 @@
 # Placement 설치
 - [Yoga_전체환경_Placement_설치방안_docs](https://docs.openstack.org/placement/yoga/install/)
+    - 환경별 설치방안 섹션으로 바로가기 하려면 , 아래링크를 클릭합니다.
+    - [환경별_설치방안](https://docs.openstack.org/placement/yoga/install/#installation-packages)
 - [Yoga_ubuntu_Placement_설치방안_docs](https://docs.openstack.org/placement/yoga/install/install-ubuntu.html)
 
 ## ENV
