@@ -9,6 +9,14 @@
 - Domain : controller
 - Port : 8778 
 
+## ETC
+Glance 설치 및 운영시 에러를 확인할 수 있는 로그파일 위치는 다음과 같습니다.
+```bash
+$ pwd
+/var/log/placement
+```
+
+
 ## KeyStone Precondition
 ### 1. Precondition
 #### MySQL USER 구성

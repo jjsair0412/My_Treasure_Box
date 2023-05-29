@@ -3,7 +3,7 @@
 
 Vagrant.configure("2") do |config|
     config.vm.boot_timeout = 1000
-    config.vm.define "master" do |master| # | | 내부는 alias, 첫글자는 대문자가 올 수 없다.
+    config.vm.define "master" do |master| # Controller Node
   
       master.vm.box = "bento/ubuntu-20.04"
       master.vm.host_name = "master"
@@ -11,6 +11,18 @@ Vagrant.configure("2") do |config|
       master.vm.provider :virtualbox do |masterSpec|
         masterSpec.memory =  16384
         masterSpec.cpus = 12
+      end
+    #   master.vm.provision "shell", path: "./script/common_config.sh"
+    end
+
+    config.vm.define "compute" do |compute| # compute Node
+  
+      compute.vm.box = "bento/ubuntu-20.04"
+      compute.vm.host_name = "compute"
+      compute.vm.network "private_network", ip: "192.168.50.11"
+      compute.vm.provider :virtualbox do |computeSpec|
+        computeSpec.memory =  16384
+        computeSpec.cpus = 12
       end
     #   master.vm.provision "shell", path: "./script/common_config.sh"
     end

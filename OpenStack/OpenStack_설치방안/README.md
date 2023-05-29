@@ -35,6 +35,15 @@
 | cpu | 12 |
 
 
+## 설치 완료 후 구성
+- 외부 Open되는 enpoint API와 포트입니다.
+    - 해당 문서에서 설치결과로 나온 endpoint API는 테스트이기 때문에 , ```http://controller```로 모두 동일합니다.
+
+| 서비스 명 | API | 포트 |
+|--|--|--|
+|  |  | |
+
+
 ## Install KeyStone
 - [KeyStone_설치_방안](./KeyStone.md)
 
@@ -43,3 +52,6 @@
 
 ## Install Placement
 - [Placement_설치_방안](./Placement.md)
+
+## Install Nova
+- [Nova_설치_방안](./Nova.md)
