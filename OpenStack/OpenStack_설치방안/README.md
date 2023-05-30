@@ -3,6 +3,7 @@
 해당 문서는 OpenStack의 각 모듈을 수동으로 설치하는 방안에 대해 기술합니다.
 - 모든 설치과정은 공식 문서를 참고하여 진행합니다.
 - **Yoga** version으로 설치합니다.
+    - [OpenStack_Install_Guide](https://docs.openstack.org/install-guide/)
     - [OpenStack_docs](https://docs.openstack.org/install-guide/openstack-services.html)
 
 설치대상 프로젝트는 다음과 같습니다.
@@ -43,6 +44,11 @@
 |--|--|--|
 |  |  | |
 
+## Install Memcached
+- [Memcached_설치_방안](./Memcached.md)
+
+## Install Message Queue
+- [Message_Queue_설치_방안](./Message_Queue.md)
 
 ## Install KeyStone
 - [KeyStone_설치_방안](./KeyStone.md)
