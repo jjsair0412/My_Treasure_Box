@@ -207,6 +207,8 @@ connection = mysql+pymysql://placement:1234@controller/placement
 [api] 섹션과 [keystone_authtoken]에서 이전에 설치했던 keystone 서비스 엑세스 정보를 기입합니다.
 - Glance를 설치할 때와 동일하게 구성합니다.
 - user_name, password 값은 keystone의 project_domain_name, user_domain_name 구성과 동기화되어야 합니다.
+- 또한 username 및 password는 , keystone을 통해 생성해준 placement user 정보를 기입합니다.
+  - [placement user 생성](#openstack-placement-설정)
 - 각 정보는 , 위에 소싱해둔 정보와 매핑시킵니다.
     - [admin_cli_소싱](#admin-openrc-설정-환경변수-소싱)
 
@@ -223,8 +225,8 @@ auth_type = password
 project_domain_name = Default
 user_domain_name = Default
 project_name = admin
-username = admin
-password = 1234
+username = placement
+password = 12345
 ```
 
 #### 3. placement db와 동기화 합니다.

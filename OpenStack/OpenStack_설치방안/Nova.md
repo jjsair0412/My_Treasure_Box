@@ -9,13 +9,19 @@ Nova를 설치하기 전 , 아키텍처 요구사항에 관련한 docs를 꼭 �
 - [Yoga_Nova_Architecture](https://docs.openstack.org/nova/yoga/install/overview.html#example-architecture)
 
 ## ENV
-- endpoint API : http://controller:8774/v2.1
-- Domain : controller
-- Port : 8774 
+- Controller ENV
+  - endpoint API : http://controller:8774/v2.1
+  - Domain : controller
+  - Port : 8774 
 
+- Compute ENV
+  - endpoint API : 
+  - Domain : 
+  - Port :  
 
 ## Nova Precondition
 OpenStack의 Nova를 설치하기 위해선 , 최소 2개의 노드가 필요합니다.
+  - 그러나 해당 문서는 테스트기 때문에 , 1개 노드에서 둘다 설치합니다.
 - 다음 아키텍처는 OpenStack의 최소 요구사항에 부합하는 아키텍처 입니다.
     - Prod용 시스템 아키텍쳐가 아니기 때문에 , Prod용 시스템 아키텍쳐는 다음 링크를 참고합니다.
         - [OpenStack Architecture Design Guide](https://docs.openstack.org/arch-design/)
@@ -56,6 +62,7 @@ OpenStack의 Nova를 설치하기 위해선 , 최소 2개의 노드가 필요합
 ## Nova 구성
 **먼저 Controller Node부터 구성합니다.**
 
+## Controller Node 구성
 ### 1. Precondition
 #### Database 구성
 총 3개의 Database가 구성됩니다.
@@ -307,3 +314,242 @@ connection = mysql+pymysql://nova:NOVA_DBPASS@controller/nova
 # 실사용 명령어
 connection = mysql+pymysql://nova:1234@controller/nova
 ```
+
+또한 이전에 설치했던 RabbitMQ인 메세지 큐 정보를 [DEFAULT] 섹션에 기입합니다.
+- DEFAULT 섹션은 nova.conf 파일의 맨 위에 있습니다.
+- ```RABBIT_PASS``` 에 설치한 메시지 큐 비밀번호를 기입합니다.
+  - ```1234``` 로 설정했기 때문에 , 기입합니다.
+```conf
+[DEFAULT]
+# ...
+transport_url = rabbit://openstack:RABBIT_PASS@controller:5672/
+
+# 실 사용 명령어
+transport_url = rabbit://openstack:1234@controller:5672/
+```
+
+[keystone_authtoken] 및 [api] 섹션에서 KeyStone 엑세스 정보를 기입합니다.
+- 각 auth 정보는 위에 소싱해둔 정보와 매칭시킵니다.
+- 또한 username 및 password 칸에는 keystone을 통해 생성한 nova username 및 password를 기입합니다.
+  - [nova 자격증명 생성](#자격증명-생성)
+  - [admin_cli_소싱](#자격증명-소싱)
+```conf
+[api]
+# ...
+auth_strategy = keystone
+
+[keystone_authtoken]
+# 실 사용 keystone authtoken 섹션
+# keystone auth 정보 입력
+# source로 소싱해둔 admin-openrc 스크립트확인
+www_authenticate_uri = http://controller:5000
+auth_url = http://controller:5000
+memcached_servers = controller:11211
+auth_type = password
+project_domain_name = Default
+user_domain_name = Default
+project_name = admin
+username = nova
+password = 12345
+```
+
+[service_user] 섹션에 서비스 사용자토큰 정보를 기입합니다.
+
+***- 서비스 사용자 토큰 ?***
+
+    openstack에서 다른 서비스에 REST API 호출할 때 , 일반 사용자 토큰과 함께 서비스 사용자 토큰을 같이 반환하도록 구성해야만 합니다.
+      
+    KeyStone은 일반 사용자 토큰이 만료될 경우에 , 서비스 사용자 토큰을 사용해서 요청을 인증하게 됩니다.
+      
+    이렇게 만든 이유는 , 만약 스냅샷 및 실시간 마이그레이션 작업 등의 오래 실행되는 작업을 수행할 때 , 사용자 토큰이 만료될 수 있기 때문입니다.
+
+    만약 실행하고 있던 작업 수행시간이 사용자 토큰 유효시간보다 더 길어서 사용자 토큰이 만료됐을 경우에 , Nova가 블록 스토리지(Cinder) 또는 네트워킹(Neutron) 과 같은 다른 서비스 API를 호출할 때 실행하고있던 작업이 실패할 수 있기 때문입니다.
+
+    또한 서비스 토큰으로 API 호출자가 서비스인지 식별하는데 쓰이기도 합니다.
+    이는 일부 서비스 API를 사용자별로 제한하는데 사용되게 됩니다.
+
+서비스 사용자토큰을 설정할 때 유의해야할 사항으론 , 
+- 오픈스택(OpenStack)의 구성 요소 중 일부인 블록 스토리지 (Cinder), 이미지 관리 서비스 (Glance), 네트워킹 (Neutron)과 같은 다른 서비스들의 keystone_authtoken.service_token_roles에 service_user에 할당된 역할(role)이 포함되어야 합니다.
+
+서비스 사용자 토큰을 [service_user] 섹션에 아래와 같이 기입합니다.
+- 동일하게 username , password엔 nova user정보를 기입하며 , 나머지 정보는 keystone_authtoken 에 적용한 정보와 동일하게 기입합니다.
+```conf
+[service_user]
+send_service_user_token = true
+auth_url = https://controller/identity
+auth_strategy = keystone
+auth_type = password
+project_domain_name = Default
+project_name = admin
+user_domain_name = Default
+username = nova
+password = 12345
+```
+
+[DEFAULT] 섹션에 컨트롤러 노드의 private ip주소를 기입합니다.
+- 이때 기입된 주소로 노드끼리 통신하기 때문에 , 통신 가능한 private ip를 기입해야 합니다.
+- vagrantfile을 보면 , 192.168.50.10 으로 controller 노드 ip를 설정하였습니다.
+```conf
+[DEFAULT]
+# ...
+my_ip = 192.168.50.10
+```
+
+[vnc] 섹션에서 , VNC (Virtual Network Computer) 가 방금 my_ip 에 설정한 private IP 주소를 사용하도록 VNC 프록시를 구성합니다.
+```conf
+[vnc]
+enabled = true
+# ...
+server_listen = $my_ip
+server_proxyclient_address = $my_ip
+
+# 실사용 명령어
+[vnc]
+enabled = true
+server_listen = 192.168.50.10
+server_proxyclient_address = 192.168.50.10
+```
+
+[glance] 섹션에서 이미지 서비스인 glance의 API endpoint를 기입해 줍니다.
+- [Glance_설치_md](./Glance.md)
+```conf
+[glance]
+# ...
+api_servers = http://controller:9292
+```
+
+[oslo_concurrency] 섹션에 lock path를 구성합니다.
+***- lock path란?***
+
+    Nova는 동시성을 관리하기 위해 lock 파일을 사용하게 됩니다.
+
+    이떄 lock 파일은 , 여러 프로세스나 스레드가 동시에 접근하지 못하도록 특정 작업을 독점하게끔 합니다.
+
+    이를 통해서 데이터 일관성 및 안정성을 지킬 수 있습니다.
+
+아래처럼 lock 파일이 저장될 경로를 구성합니다.
+```conf
+[oslo_concurrency]
+# ...
+lock_path = /var/lib/nova/tmp
+```
+
+OpenStack의 패키징 버그가 있기 떄문에 , [Default] 섹션에서 ```log_dir``` 구성을 제거해야 합니다.
+```conf
+# 작업 전 DEFAULT
+[DEFAULT]
+log_dir = /var/log/nova
+lock_path = /var/lock/nova
+state_path = /var/lib/nova
+transport_url = rabbit://openstack:1234@controller:5672/
+my_ip = 192.168.50.10
+
+# 작업 후 DEFAULT
+[DEFAULT]
+lock_path = /var/lock/nova
+state_path = /var/lib/nova
+transport_url = rabbit://openstack:1234@controller:5672/
+my_ip = 192.168.50.10
+```
+
+[placement] 섹션에 placement 접근 정보를 기입합니다.
+- 이전에 설치해두었던 정보 및 소싱 정보를 조합해서 해당 섹션을 채워줍니다.
+  - username 및 password에 placement 접근 정보를 기입합니다.
+- [placement 설치 방안](./Placement.md)
+```conf
+[placement]
+# ...
+region_name = RegionOne
+project_domain_name = Default
+project_name = service
+auth_type = password
+user_domain_name = Default
+auth_url = http://controller:5000/v3
+username = placement
+password = PLACEMENT_PASS
+
+# 실사용 명령어
+[placement]
+# ...
+region_name = RegionOne
+project_domain_name = Default
+project_name = admin
+auth_type = password
+user_domain_name = Default
+auth_url = http://controller:5000/v3
+username = placement
+password = 12345
+```
+
+#### Nova 데이터베이스 작업
+nova-api database를 동기화 합니다.
+- 여기에 지원중단 메시지가 출력되는데 , 무시하면 됩니다.
+```bash
+$ su -s /bin/sh -c "nova-manage api_db sync" nova
+```
+
+cell0 데이터베이스를 등록합니다.
+```bash
+$ su -s /bin/sh -c "nova-manage cell_v2 map_cell0" nova
+ result = self._query(query)
+```
+
+celll 셀을 만들어 줍니다.
+```bash
+$ su -s /bin/sh -c "nova-manage cell_v2 create_cell --name=cell1 --verbose" nova
+  result = self._query(query)
+85f331b7-27cd-4357-8b4f-793dbf00722b
+```
+
+nova 데이터베이스를 동기화 합니다.
+```bash
+$ su -s /bin/sh -c "nova-manage db sync" nova
+```
+
+nova cell0 및 cell1이 올바르게 등록되었는지 확인 합니다.
+```bash
+# su -s /bin/sh -c "nova-manage cell_v2 list_cells" nova
++-------+--------------------------------------+----------------------------------------------------+--------------------------------------------------------------+----------+
+|  Name |                 UUID                 |                   Transport URL                    |                     Database Connection                      | Disabled |
++-------+--------------------------------------+----------------------------------------------------+--------------------------------------------------------------+----------+
+| cell0 | 00000000-0000-0000-0000-000000000000 |                       none:/                       | mysql+pymysql://nova:****@controller/nova_cell0?charset=utf8 |  False   |
+| cell1 | f690f4fd-2bc5-4f15-8145-db561a7b9d3d | rabbit://openstack:****@controller:5672/nova_cell1 | mysql+pymysql://nova:****@controller/nova_cell1?charset=utf8 |  False   |
++-------+--------------------------------------+----------------------------------------------------+--------------------------------------------------------------+----------+
+```
+
+실제 output은 이렇게 출력됐습니다.
+- 문제생기면 트러블슈팅할 예정
+```bash
+  result = self._query(query)
++-------+--------------------------------------+------------------------------------------+-------------------------------------------------+----------+
+|  Name |                 UUID                 |              Transport URL               |               Database Connection               | Disabled |
++-------+--------------------------------------+------------------------------------------+-------------------------------------------------+----------+
+| cell0 | 00000000-0000-0000-0000-000000000000 |                  none:/                  | mysql+pymysql://nova:****@controller/nova_cell0 |  False   |
+| cell1 | 85f331b7-27cd-4357-8b4f-793dbf00722b | rabbit://openstack:****@controller:5672/ |    mysql+pymysql://nova:****@controller/nova    |  False   |
++-------+--------------------------------------+------------------------------------------+-------------------------------------------------+----------+
+```
+
+### 설치 마무리
+- Nova compute 서비스를 다시 시작합니다.
+
+```bash
+$ service nova-api restart
+$ service nova-scheduler restart
+$ service nova-conductor restart
+$ service nova-novncproxy restart
+```
+
+- curl명령 한번 날려봅니다.
+```bash
+curl http://controller:8774/v2.1
+{"version": {"id": "v2.1", "status": "CURRENT", "version": "2.87", "min_version": "2.1", "updated": "2013-07-23T11:33:21Z", "links": [{"rel": "self", "href": "http://controller:8774/v2.1/"}, {"rel": "describedby", "type": "text/html", "href": "http://docs.openstack.org/"}], "media-types": [{"base": "application/json", "type": "application/vnd.openstack.compute+json;version=2.1"}]}}
+```
+
+## Compute Node 구성
+
+### OverView
+compute 서비스는 인스턴스 또는 VM을 배포하기 위해서 , 여러 하이퍼바이저를 지원합니다.
+
+그러나 해당 문서는 테스트기 때문에 , 가상 머신에 대한 하드웨어 가속을 지원하는 컴퓨팅 노드에서 커널 기반 VM(KVM) 확장과 함께 QEMU(Quick EMUlator) 하이퍼바이저를 사용합니다.
+
+### Compute Node 설치 및 conf구성

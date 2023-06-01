@@ -230,6 +230,7 @@ connection = mysql+pymysql://glance:1234@controller/glance
 ```
 
 [keystone_authtoken] 및 [paste_deploy] 칸에 ID 서비스(keystone) 액세스 설정을 구성해 줍니다.
+- 최 하단 username 및 password는 , 위에 keystone을 통해 생성해준 glance user정보를 기입합니다.
 - 각 정보는 , 위에 소싱해둔 정보와 매핑시킵니다.
     - [admin_cli_소싱](#1-admin-cli-소싱)
 ```conf
@@ -243,8 +244,8 @@ auth_type = password
 project_domain_name = Default
 user_domain_name = Default
 project_name = admin
-username = admin
-password = 1234
+username = glance
+password = 12345
 
 
 [paste_deploy]
