@@ -376,7 +376,7 @@ password = 12345
 ```conf
 [service_user]
 send_service_user_token = true
-auth_url = https://controller/identity
+auth_url = http://controller:5000/identity
 auth_strategy = keystone
 auth_type = password
 project_domain_name = Default
@@ -508,7 +508,7 @@ $ su -s /bin/sh -c "nova-manage db sync" nova
 
 nova cell0 및 cell1이 올바르게 등록되었는지 확인 합니다.
 ```bash
-# su -s /bin/sh -c "nova-manage cell_v2 list_cells" nova
+$ su -s /bin/sh -c "nova-manage cell_v2 list_cells" nova
 +-------+--------------------------------------+----------------------------------------------------+--------------------------------------------------------------+----------+
 |  Name |                 UUID                 |                   Transport URL                    |                     Database Connection                      | Disabled |
 +-------+--------------------------------------+----------------------------------------------------+--------------------------------------------------------------+----------+
@@ -529,7 +529,7 @@ nova cell0 및 cell1이 올바르게 등록되었는지 확인 합니다.
 +-------+--------------------------------------+------------------------------------------+-------------------------------------------------+----------+
 ```
 
-### 설치 마무리
+### Controller node 설치 마무리
 - Nova compute 서비스를 다시 시작합니다.
 
 ```bash
@@ -546,10 +546,212 @@ curl http://controller:8774/v2.1
 ```
 
 ## Compute Node 구성
+- [Yoga_ubuntu_compute_node_설치방안_공식_docs](https://docs.openstack.org/nova/yoga/install/compute-install-ubuntu.html)
+
+### ETC
+compute 서비스의 로그파일 경로는 다음과 같습니다.
+- compute 서비스가 실패하면 해당 로그를 확인하고 트러블슈팅
+```bash
+$ pwd
+/var/log/nova/nova-compute.log
+```
 
 ### OverView
-compute 서비스는 인스턴스 또는 VM을 배포하기 위해서 , 여러 하이퍼바이저를 지원합니다.
+    compute 서비스는 인스턴스 또는 VM을 배포하기 위해서 , 여러 하이퍼바이저를 지원합니다.
 
-그러나 해당 문서는 테스트기 때문에 , 가상 머신에 대한 하드웨어 가속을 지원하는 컴퓨팅 노드에서 커널 기반 VM(KVM) 확장과 함께 QEMU(Quick EMUlator) 하이퍼바이저를 사용합니다.
+    그러나 해당 문서는 테스트기 때문에 , 가상 머신에 대한 하드웨어 가속을 지원하는 컴퓨팅 노드에서 커널 기반 VM(KVM) 확장과 함께 QEMU(Quick EMUlator) 하이퍼바이저를 사용합니다.
+
+    해당 가이드 방안은 처음 compute 노드를 구성하는것을 가정하고 설치를 진행하게 됩니다. 따라서 추가적으로 노드를 구성하기 위해선 , [예시_아키텍쳐](https://docs.openstack.org/nova/yoga/install/overview.html#overview-example-architectures) 링크를 참고해서 구성합니다.
+
+    추가적인 Compute Node는 고유 IP 주소가 필요합니다.
 
 ### Compute Node 설치 및 conf구성
+    해당 설치 방안은 기본설치 입니다. 따라서 Prod에 설치하게 된다면 , 여기서 옵션을 추가하면 됩니다.
+
+#### 패키지 설치
+nova-compute 패키지를 apt 명령어로 설치합니다.
+```bash
+$ sudo apt-get install nova-compute
+```
+
+#### conf 구성
+nova-compute 구성은 nova.conf파일에 설정합니다.
+```bash
+$ pwd
+/etc/nova/nova.conf
+```
+
+[DEFAULT] 섹션에서 메세지 큐 정보를 기입합니다.
+- RabbitMQ를 설치했기 때문에 , RabbitMQ 정보로 기입합니다.
+```conf
+[DEFAULT]
+# ...
+transport_url = rabbit://openstack:RABBIT_PASS@controller
+
+# 실 사용 명령어
+[DEFAULT]
+# ...
+transport_url = rabbit://openstack:1234@controller
+```
+
+[api] 섹션 및 [keystone_authtoken] 섹션에 KeyStone 서비스 엑세스 정보를 기입합니다.
+```conf
+[api]
+# ...
+auth_strategy = keystone
+
+[keystone_authtoken]
+# ...
+www_authenticate_uri = http://controller:5000/
+auth_url = http://controller:5000/
+memcached_servers = controller:11211
+auth_type = password
+project_domain_name = Default
+user_domain_name = Default
+project_name = admin
+username = nova
+password = NOVA_PASS # 12345
+```
+
+[service_user] 섹션에 서비스 사용자 토큰 정보를 기입합니다.
+```conf
+send_service_user_token = true
+auth_url = http://controller:5000/identity
+auth_strategy = keystone
+auth_type = password
+project_domain_name = Default
+project_name = admin
+user_domain_name = Default
+username = nova
+password = NOVA_PASS # 12345
+```
+
+[DEFAULT] 섹션에 my_ip 를 구성합니다.
+- MANAGEMENT_INTERFACE_IP_ADDRESS 를 compute 노드의 private IP로 변경합니다.
+- 물론 controller node와 통신할수 있어야 합니다.
+  - 같은 private IP 대역이여야만 함
+```conf
+[DEFAULT]
+# ...
+my_ip = MANAGEMENT_INTERFACE_IP_ADDRESS
+
+[DEFAULT]
+# ...
+my_ip = 192.168.50.11
+```
+
+[neutron] 섹션을 구성합니다. [vnc] 원격 콘설 엑세스를 활성화 하고 구성합니다.
+- 여기서 compute node는 모든 ip에 대해 listen하고는 있지만 , 프록시는 자신의 ip 주소만 허용하는것을 알 수 있습니다.
+- novncproxy_base_url 은 , 웹 브라우저를 통해 해당 compute node에 있는 인스턴스의 원격 콘솔에 접근 할 수 있는 도메인주소를 나타냅니다.
+  - controller나 다른 도메인으로 base_url을 설정했는데, 만약 사용자가 해당 도메인에 접근할 수 없는 환경이라면 , 해당 도메인을 controller node의 private ip로 변경해야만 합니다.
+```conf
+[vnc]
+# ...
+enabled = true
+server_listen = 0.0.0.0
+server_proxyclient_address = $my_ip
+novncproxy_base_url = http://controller:6080/vnc_auto.html
+```
+
+[glance] 섹션에 glance 서비스 endpoint API를 구성합니다.
+```conf
+[glance]
+# ...
+api_servers = http://controller:9292
+```
+
+[placement] 섹션에 Placement API를 구성합니다.
+- 이때 username과 password는 controller 노드에 구성한것과 동일하게 , placement의 user 정보를 기입합니다.
+```conf
+[placement]
+# ...
+region_name = RegionOne
+project_domain_name = Default
+project_name = service
+auth_type = password
+user_domain_name = Default
+auth_url = http://controller:5000/v3
+username = placement
+password = PLACEMENT_PASS # 12345
+```
+
+### Compute Node 설치 마무리
+#### 하드웨어 가속 지원여부 확인
+- compute node가 가상 머신 하드웨어 가속을 지원하는지 아래 명령어로 확인합니다.
+```bash
+$ egrep -c '(vmx|svm)' /proc/cpuinfo
+```
+해당 명령어의 결과로 0이 아닌 값을 반환하게 된다면 , 하드웨어 가속을 지원하기때문에 추가 구성이 필요하지 않습니다.
+- 따라서 해당 섹션을 넘어갑니다.
+
+그러나 아래처럼 0을 반환한다면 , 노드가 가속을 지원하지 않기 때문에 , [libvirt] 섹션의 KVM 대신에 QEMU 를 사용하도록 구성을 변경해야 합니다.
+
+```bash
+# 하드웨어 가속 지원안함 (Vagrant by Virtualbox)
+$ egrep -c '(vmx|svm)' /proc/cpuinfo
+0
+```
+
+지원 안할경우 [libvirt] 섹션을 다음과 같이 변경합니다.
+```conf
+[libvirt]
+# ...
+virt_type = qemu
+```
+### Compute service 재시작
+컴퓨팅 서비스를 재 시작 합니다.
+- 하드웨어 가속을 지원하더라도 여기서부터 합니다.
+```bash
+$ service nova-compute restart
+```
+
+만약 아래와 같은 에러로그와 함께 실패한다면 ,
+```bash
+$ cat /var/log/nova/nova-compute.log
+... 
+AMQP server on controller:5672 is unreachablenova-compute
+```
+
+컨트롤러 노드의 방화벽이 포트 5672에 대한 액세스를 차단하고 있는것이기 때문에, 컨트롤러 노드에서 포트 5672를 열도록 방화벽을 구성하고 컴퓨팅 노드에서 서비스를 다시 시작합니다.
+
+#### cell database 구성
+cell database에 compute node를 추가합니다.
+
+**- 해당 작업은 controller node에서 진행해야만 합니다.** 
+
+1. compute host 확인
+자격증명 소싱 후 , openstack 명령어로 CLI command를 활성화 시킨 이후에 , database에 compute node가 들어가있는지 확인합니다.
+
+```bash
+# 소싱
+$ . admin-openrc
+
+$ openstack compute service list --service nova-compute
++--------------------------------------+--------------+--------+------+---------+-------+----------------------------+
+| ID                                   | Binary       | Host   | Zone | Status  | State | Updated At                 |       
++--------------------------------------+--------------+--------+------+---------+-------+----------------------------+       
+| 86fe49bb-3388-4d8a-bbf3-1f6ad425fd09 | nova-compute | master | nova | enabled | up    | 2023-06-01T16:24:22.000000 |       
++--------------------------------------+--------------+--------+------+---------+-------+----------------------------+ 
+```
+
+2. 컴퓨팅 호스트 검색
+- 아래처럼 매핑되었다면 정상 처리된것입니다.
+```bash
+$ sudo su
+
+$ su -s /bin/sh -c "nova-manage cell_v2 discover_hosts --verbose" nova
+... 
+  result = self._query(query)
+Checking host mapping for compute host 'master': d7e690dd-73af-4e65-99d6-0f5825d3c24f
+Creating host mapping for compute host 'master': d7e690dd-73af-4e65-99d6-0f5825d3c24f
+Found 1 unmapped computes in cell: 85f331b7-27cd-4357-8b4f-793dbf00722b
+```
+
+### ETC
+만약 새로운 compute node를 추가하고 싶다면 , controller node에서 ```nova-manage cell_v2 discover_hosts``` 를 실행해야만 합니다.
+
+또는 nova.conf의 [scheduler] 섹션에서 다음과 같이 인터벌 옵션을 줄 수 도 있습니다.
+```conf
+[scheduler]
+discover_hosts_in_cells_interval = 300
+```
