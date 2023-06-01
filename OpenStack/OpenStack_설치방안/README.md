@@ -25,6 +25,9 @@
 ### 설치시 주의 사항
 - **각 프로젝트는 유기적으로 동작하기 때문에 , 설치 순번을 꼭 지켜야만 합니다.**
 - **각 프로젝트를 설치할 때 , 설치할 환경이 suse linux인지 , centos인지, ubuntu인지 꼭 확인하고 각 환경에 맞는 설치방안을 따라야 합니다. (다다름)**
+- **서비스별로 유저를 생성하게 되는데 , 이때 프로젝트 권한을 줄 때 잘 보고 프로젝트 권한을 주어야 합니다. 안그러면 keystone에서 권한없다고 401에러 발생합니다.**
+    - ```openstack role add --project service --user nova admin``` 요 명령어 날릴때 , project 확인하는 습관을 들이자. 401에러 발생한다면 , 테스트니까 모든 프로젝트에 생성한 user에게 admin 권한을 부여해보자.
+    - 생성된 모든 프로젝트 확인 command : ```openstack project list```
 
 ## 설치 환경
 - vagrant를 통해 VM을 설치하고 , 고 위에 OpenStack을 설치합니다.
