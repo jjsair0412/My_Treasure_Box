@@ -69,3 +69,18 @@ ide 툴에서 개행문자가 안들어가게끔 하는 설정을 해 두면 미
 - [블로그 : 공부를 계속하는 ...](https://haepyung88.tistory.com/213)
 
 ## ETC 
+### 1. K8S TLS Secret 생성 및 교체
+- tls 인증서 생성 command line
+```bash
+$ kubectl create secret tls ${tls-secret-name} --key ${tls-key} --cert ${tls-cert} -n ${namespace} --save-config
+```
+
+- tls 인증서 yaml template 생성 command line
+```bash
+$ kubectl create secret tls ${tls-secret-name} --key ${tls-key} --cert ${tls-cert} -n ${namespace} --dry-run=client -o yaml > secret.yaml
+```
+
+- tls 인증서 교체
+```bash
+$ kubectl create secret tls ${tls-secret-name} --key ${tls-key} --cert ${tls-cert} -n ${namespace} --dry-run=client -o yaml | kubectl apply -f -
+```
