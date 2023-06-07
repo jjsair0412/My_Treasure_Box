@@ -1,4 +1,6 @@
 # 10-Kubeadm.conf 파일 이란 ? ( Kubelet Drop-In file ) 
+- [kubelet drop-in file에 대한 공식문서](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/kubelet-integration/#the-kubelet-drop-in-file-for-systemd)
+
 ## Overview
 kubernetes를 설치하고 kubelet을 실행하면 , 다음과 같은 로그를 확인할 수 있습니다.
 ```bash
