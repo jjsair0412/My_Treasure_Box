@@ -15,9 +15,9 @@ Nova를 설치하기 전 , 아키텍처 요구사항에 관련한 docs를 꼭 �
   - Port : 8774 
 
 - Compute ENV
-  - endpoint API : 
-  - Domain : 
-  - Port :  
+  - endpoint API : http://controller:5672
+  - Domain : http://controller:5672
+  - Port :  5672
 
 ## Nova Precondition
 OpenStack의 Nova를 설치하기 위해선 , 최소 2개의 노드가 필요합니다.
@@ -29,7 +29,7 @@ OpenStack의 Nova를 설치하기 위해선 , 최소 2개의 노드가 필요합
 
 
 최소 요구사항에 부합하는 아키텍처를 따릅니다.
-- 
+
 ![hwreqs][hwreqs]
 
 
