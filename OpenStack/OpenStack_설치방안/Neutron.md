@@ -81,3 +81,46 @@ Self-service는 Openstack 내부에서만 네트워크가 돌게 하거나 , Nat
 또한 설치시 주의할 점으로 , 각 노드에선 IP 호출이 아닌 다른 이름 (DNS) 으로 각 노드끼리 호출 가능해야만 합니다. 
 - 현재 테스트 환경에선 /etc/hosts 파일을 수정하여 진행합니다.
 
+## ***Neutron 설치 및 구성 시작***
+- 상단 아키텍처를 참고하며 구성해야 편합니다.
+    - [아키텍처](#Neutron-Precondition)
+## Host Networking
+- 컨트롤러 노드 , 컴퓨팅 노드 모두 하나의 노드에 몰려있기 때문에 , NIC 구성정보가 동일합니다.
+### Controller node
+1. NIC 구성
+먼저 네트워크 인터페이스부터 구성합니다.
+
+```bash
+# usecase
+- IP 주소 : 10.0.0.11
+- 네트워크 마스크 : 255.255.255.0(또는 /24)
+- 기본 게이트웨이 : 10.0.0.1
+
+# 실 구성정보
+- IP 주소 : 192.168.50.10
+- 네트워크 마스크 : 255.255.255.0(또는 /24)
+- 기본 게이트웨이 : 192.168.50.1
+```
+
+/etc/network/interfaces 파일에 다음과 같이 기입합니다.
+- INTERFACE_NAME 을 실제 interface 이름으로 변경해야 합니다.
+    - ex ) eth0 , ens224
+```bash
+# usecase
+vi /etc/network/interfaces
+# The provider network interface
+auto INTERFACE_NAME
+iface INTERFACE_NAME inet manual
+up ip link set dev $IFACE up
+down ip link set dev $IFACE down
+
+# 실사용 명령어
+vi /etc/network/interfaces
+# The provider network interface
+auto eth3
+iface eth3 inet manual
+up ip link set dev $IFACE up
+down ip link set dev $IFACE down
+```
+
+재부팅하거나 아래 명령어 기입합니다.
