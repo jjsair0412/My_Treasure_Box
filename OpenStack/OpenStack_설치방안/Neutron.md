@@ -801,6 +801,12 @@ service neutron-l3-agent restart
 ```
 
 ## ***설치결과 확인***
+9696번 port로 열려있는 neutron이 실행중인지 curl 명령어로 확인해 봅니다.
+```bash
+$  curl http://192.168.50.10:9696/
+{"versions": [{"id": "v2.0", "status": "CURRENT", "links": [{"rel": "self", "href": "http://192.168.50.10:9696/v2.0/"}]}]}
+```
+
 admin-openrc 자격증명을 소싱합니다.
 ```bash
 $ . admin-openrc
