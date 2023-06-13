@@ -112,12 +112,14 @@ kind: PodSecurityPolicy
 - helm chart로 nfs-client provisioner를 설치합니다. [chart](https://artifacthub.io/packages/helm/kvaps/nfs-server-provisioner)
 ```
 # nfs provisioner 이름 그대로 다 repo명을 하면 , pull할때 이름길어서 에러납니다.
-$ helm repo add nfs-pro https://kubernetes-sigs.github.io/nfs-ganesha-server-and-external-provisioner/
+$ helm repo add nfs-pro https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
 $ helm repo update
+$ helm pull nfs/nfs-subdir-external-provisioner  --untar
 
 $ helm upgrade --install --kubeconfig=$KUBE_CONFIG  nfs . \
 --set nfs.server=10.xxx.xxx.xxx \ # nfs server 주소
 --set nfs.path=/share \ # mount 경로
+--set storageClass.reclaimPolicy=Retain \ # reclaimPolicy 정책 지정 (Retain : pv 안지워짐)
 -n nfs \ 
 -f values.yaml
 ```
