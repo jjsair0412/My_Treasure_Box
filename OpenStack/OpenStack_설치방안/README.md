@@ -5,6 +5,7 @@
 - **Yoga** version으로 설치합니다.
     - [OpenStack_Install_Guide](https://docs.openstack.org/install-guide/)
     - [OpenStack_docs](https://docs.openstack.org/install-guide/openstack-services.html)
+    - [OpenStack_version별_최소설치방안](https://docs.openstack.org/install-guide/openstack-services.html#minimal-deployment-for-yoga)
     - [OpenStack_용어집](https://docs.openstack.org/install-guide/common/glossary.html#term-message-queue)
 
 설치대상 프로젝트는 다음과 같습니다.
@@ -69,3 +70,6 @@
 
 ## Install Neutron
 - [Neutron_설치_방안](./Neutron.md)
+
+## Install horizon
+- [horizon_설치_방안](./horizon.md)
