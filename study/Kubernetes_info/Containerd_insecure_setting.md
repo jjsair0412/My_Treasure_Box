@@ -42,3 +42,8 @@ $ pwd
           endpoint = ["private_regi.jinseong.com"]
 ...
 ```
+
+containerd deamon을 재 시작 합니다.
+```bash
+$ systemctl restart containerd
+```
