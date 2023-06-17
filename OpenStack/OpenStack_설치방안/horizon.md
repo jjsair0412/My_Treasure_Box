@@ -1,6 +1,7 @@
 # Horizon 설치 방안
 - [Yoga_전체환경_Horizon_설치방안_docs](https://docs.openstack.org/horizon/xena/install/)
 - [Yoga_ubuntu_Horizon_설치방안_docs](https://docs.openstack.org/horizon/xena/install/install-ubuntu.html)
+- [Yoga_ubuntu_Horizon_Manual_설치](https://docs.openstack.org/horizon/latest/install/from-source.html#deployment)
 
 ## ETC
 Horizon을 구성한 뒤 , apache2를 restart 했는데도 404나 500 에러가 발생한다면 , 아래 명령어로 트러블슈팅합니다 .
@@ -8,6 +9,18 @@ Horizon을 구성한 뒤 , apache2를 restart 했는데도 404나 500 에러가 
 Horizon은 python application이기에 다음 명령어로 확인해야 합니다.
 ```bash
 $ python -c "import py_compile; py_compile.compile(r'/etc/openstack-dashboard/local_settings.py')"
+```
+
+실제 openstack-dashboard python code의 경로는 다음과 같습니다.
+```bash
+$ pwd
+/usr/share/openstack-dashboard/
+```
+
+python 명령어로 강제 작동시켜서 디버깅이 가능합니다.
+```bash
+$ pwd
+python manage.py runserver
 ```
 
 ## ENV
