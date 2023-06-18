@@ -34,11 +34,13 @@
 - vagrant를 통해 VM을 설치하고 , 고 위에 OpenStack을 설치합니다.
 - ubuntu 위에 설치합니다.
 
-|name | 버전 및 용량| 
-|--|--|
-| ubuntu | 20.04 |
-| memory | 16,384 |
-| cpu | 12 |
+|name | 버전 및 용량|비고|
+|--|--|--|
+| ubuntu | 20.04 | |
+| python | 3.6 | Horizon 설치시 , python 3.6 or 3.7 버전 필요 |
+| Django | 3.2 | Horizon 설치시 , Django 3.2 필요 |
+| memory | 16,384 | |
+| cpu | 12 | |
 
 
 ## 설치 완료 후 구성

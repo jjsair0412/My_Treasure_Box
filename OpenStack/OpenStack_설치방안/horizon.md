@@ -19,14 +19,14 @@ $ pwd
 
 python 명령어로 강제 작동시켜서 디버깅이 가능합니다.
 ```bash
-$ pwd
-python manage.py runserver
+$ python manage.py runserver
 ```
 
 ## ENV
 - endpoint API : 
 - Domain : 
 - Port :  
+- python : 3.6
 
 ## OverView
 해당 문서에선 OpenStack의 데시보드 서비스인 Horizon을 ubuntu os에 설치하는 방안에 대해 기술한 문서 입니다.
@@ -34,6 +34,36 @@ python manage.py runserver
 로컬 환경에 설치하고있기 때문에 , access
 
 ## ***설치 진행***
+## 0. python 3.6 설치
+먼저 python 3.6 설치를 진행합니다.
+
+```bash
+$ sudo apt-get update
+$ sudo add-apt-repository ppa:deadsnakes/ppa
+$ sudo apt-get update
+$ sudo apt install python3.6
+```
+
+설치가 잘 되었는지 확인합니다.
+```bash
+$ which python
+/usr/bin/python
+
+$ ls /usr/bin/ | grep python
+```
+
+ubuntu 20.04를 사용하기 때문에 , default로 python 2.7.18 버전을 사용합니다.
+
+따라서 방금 설치해준 python 3.6으로 버전을 변경해주어야 합니다.
+```bash
+$ sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.6 2
+
+$ sudo update-alternatives --config python
+
+$ python --version
+Python 3.6.15
+```
+
 ## 1. 구성요소 설치 및 구성
 apt 명령어로 먼저 필수 패키지를 설치 합니다.
 ```bash
