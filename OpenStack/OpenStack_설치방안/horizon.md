@@ -56,9 +56,25 @@ ubuntu 20.04를 사용하기 때문에 , default로 python 2.7.18 버전을 사�
 
 따라서 방금 설치해준 python 3.6으로 버전을 변경해주어야 합니다.
 ```bash
-$ sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.6 2
+# python 설치경로 확인
+$ ls /usr/bin/python*
+/usr/bin/python   /usr/bin/python2.7         /usr/bin/python2-config  /usr/bin/python3.6   /usr/bin/python3.8         /usr/bin/python3.9       /usr/bin/python3-pbr    /usr/bin/python-config
+/usr/bin/python2  /usr/bin/python2.7-config  /usr/bin/python3         /usr/bin/python3.6m  /usr/bin/python3.8-config  /usr/bin/python3-config  /usr/bin/python3-unit2
 
-$ sudo update-alternatives --config python
+$ sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.6 1
+
+$  sudo update-alternatives --config python
+There are 2 choices for the alternative python (providing /usr/bin/python).
+
+  Selection    Path                Priority   Status
+------------------------------------------------------------
+  0            /usr/bin/python3.6   2         auto mode
+  1            /usr/bin/python3.6   2         manual mode
+* 2            /usr/bin/python3.9   1         manual mode
+
+# default로 사용할 python 번호 선택 
+# 3.9를 사용할거라 , 2번 선택
+Press <enter> to keep the current choice[*], or type selection number: 2 
 
 $ python --version
 Python 3.6.15
@@ -67,6 +83,12 @@ Python 3.6.15
 ## 1. 구성요소 설치 및 구성
 apt 명령어로 먼저 필수 패키지를 설치 합니다.
 ```bash
+# 필수패키지 설치
+$ sudo apt-get update
+$ python -m pip install –upgrade pip
+$ pip install -U cffi
+$ pip install -U netifaces
+
 $ sudo apt-get install openstack-dashboard
 ```
 
@@ -165,7 +187,7 @@ OPENSTACK_NEUTRON_NETWORK = {
 Timezone을 구성합니다.
 - [default_timezone_확인](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
 ```py
-TIME_ZONE = "KR"
+TIME_ZONE = "Asia/Seoul"
 ```
 
 만약 아래 경로에 위치한 ```openstack-dashboard.conf``` 파일에 아래 설정이 없다면 추가합니다.
