@@ -33,6 +33,8 @@ $ python manage.py runserver
 
 로컬 환경에 설치하고있기 때문에 , access
 
+python에서 에러 발생할경우 , .py 파일 설정중 오탈자 및 %s 설정을 확인합니다.
+- %s 를 Domain 명으로 수정해봅니다.
 ## ***설치 진행***
 ## 0. python 3.6 설치
 먼저 python 3.6 설치를 진행합니다.
@@ -146,6 +148,10 @@ OPENSTACK_KEYSTONE_URL = "http://%s/identity/v3" % OPENSTACK_HOST
 # 실 사용 명령어
 # LB , 프록시 없이 구성하고있기 때문에 keystone의 5000번 포트를 추가합니다.
 OPENSTACK_KEYSTONE_URL = "http://%s:5000/identity/v3" % OPENSTACK_HOST
+
+# 에러 수정사항
+# %s 대신 도메인 기입
+OPENSTACK_KEYSTONE_URL = "http://localhost:5000/identity/v3" % OPENSTACK_HOST
 ```
 
 도메인 support 기능을 활성화 합니다.
