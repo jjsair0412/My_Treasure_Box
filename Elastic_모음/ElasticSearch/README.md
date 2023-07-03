@@ -7,6 +7,7 @@
 
 ## ElasticSearch 동작의 이해
 - 색인 , 검색의 기본적인 동작 원리를 정리합니다.
+    - [Elastic_movement](./Elastic_movement.md)
 
 ## ElasticSearch 모니터링 방안
 - cat API의 사용법 및 주요 모니터링 지표에 대해 정리합니다.
