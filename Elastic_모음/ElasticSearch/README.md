@@ -11,6 +11,7 @@
 
 ## ElasticSearch 모니터링 방안
 - cat API의 사용법 및 주요 모니터링 지표에 대해 정리합니다.
+    - [Elastic_Monitoring](./Elastic_Monitoring.md)
 
 ## ElasticSearch 트러블 슈팅 방안
 - 트러블슈팅 방안에 대해 정리합니다.
