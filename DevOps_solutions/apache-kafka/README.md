@@ -1,6 +1,7 @@
 # Aapache Kafka
 ## Directory Map
 - [Kafka-basic-start](./kafka-quickstart-tutorial/)
+- [Kafka udemy 강의 이력](./Kafka_Study/)
 
 # Kafka란 ?
 미국 linkedin에서 개발했으며, pub-sub 모델의 메시지 큐 종류 입니다.
