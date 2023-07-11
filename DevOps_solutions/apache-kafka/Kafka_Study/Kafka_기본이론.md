@@ -1,6 +1,38 @@
 # Kafka 기본이론
 ## 문서 색인
-
+- [토픽이란 ?](#토픽이란)
+    - Kafka Topic에 대한 기초적인 설명
+- [파티션 및 오프셋이란 ?](#파티션--오프셋)
+    - Kafka의 partition과 Offset이란 ??
+- [Kafka 프로듀서란 ?](#producers)
+    - Kafka의 Producers란 ?
+    - [Producer의 Message key](#producers--message-keys)
+        - Producer가 파티션으로 데이터를 전달하는 방식 ?
+    - [Kafka Producer serializer -  Message 생성자](#kafka-message-serializer)
+        - Producer가 broker로 메시지 보낼 때 변환시키는애에 대한 설명 ( 객체 -> byte )
+- [Kafka 컨슈머란 ?](#consumers)
+    - Kafka의 Consumer란 ?
+    - [Kafka Consumer Deserializer](#consumer-deserializer)
+        - Consumer가 broker에서 데이터를 받을 때 변환시키는애에 대한 설명 ( byte -> 객체 )
+- [Consumer group](#consumer-group)
+    - Kafka Consumer Group이란 ?
+    - [Consumer Group과 파티션의 관계](#consumer-group-특성-1---consumer-group과-파티션의-관계)    
+        - Consumer Group과 파티션의 관계 - 개수 매핑 ( 1대1 or 다대 일 or 다대 다 )
+    - [Consumer Offset](#consumer-group-특성-2---consumer-offsets)
+        - Consumer Group 에서 Broker에 발행하는 Consumer Offset에 대한 문서
+- [Kafka Broker](#kafka-brokers)
+    - 카프카 브로커란 ?
+    - [broker와 topic의 관계](#broker-with-topic)
+        - Kafka Broker와 Topic 파티션의 관계 
+- [Topic replication factor](#topic-replication-factor---kafka-topic의-재해복구-방법)
+    - Topic의 재해복구 방법 - replication factor 개수
+- [ETC](#etc)
+    - Kafka Producer Acknowledgements ( 프로듀서가 브로커에게 데이터 송신 정상 여부 확인방안 )
+    - Kafka Version 차이점
+- [Kafka의 주요 특징들](#kafka-주요-특징)
+    - Kafka 주요 특징들
+- [Zookeeper](#zookeeper)
+    - Zookeeper 설명 및 주요 특장점들
 
 ## 토픽이란 ?
 Kafka cluster에있는 데이터 스트림을 의미함.
