@@ -28,4 +28,14 @@ Kafka Producer를 만들기 위해선 , 아래 단계를 거쳐야 합니다.
 3. send data
 4. flush and close producer
 
-아래 코드와 주석을 참고합니다.
+**아래 코드와 주석을 참고합니다.**
+[ProducerDemo](./src/main/java/io/Conduktor/demos/kafka/ProducerDemo.java)
+
+
+## 2. Kafka Callbacks
+java Callback 인터페이스를 통해서 프로듀서가 어떤 파티션의 어떤 오프셋으로 보내는지 확인하는것이 가능합니다.
+
+***StickyPartitioner*** 로 특정 파티션에 메세지를 보낼 수 있습니다.
+
+**아래 코드와 주석을 참고합니다.**
+[ProducerDemoWithCallback](./src/main/java/io/Conduktor/demos/kafka/ProducerDemoWithCallback.java)

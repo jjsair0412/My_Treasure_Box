@@ -1,19 +1,21 @@
 package io.Conduktor.demos.kafka;
 
+import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
-public class ProducerDemo {
+public class ProducerDemoWithCallback {
 
     private static final Logger log = LoggerFactory.getLogger(ProducerDemo.class.getSimpleName());
 
     public static void main(String[] args) {
-        log.info("hello kafka");
+        log.info("I am a Kafka Producer");
 
         // 1. create Producer Properties
         // 여기에 Kafka Cluster에 연결할 필요충분조건들을 Key-value로 넣어줍니다.
@@ -40,12 +42,29 @@ public class ProducerDemo {
 
         // 3. send data -- 비동기식
         // 데이터 보내기
-        producer.send(producerRecord);
+        // 이때 Callback 파라미터를 넣을 수 있습니다.
+        producer.send(producerRecord, new Callback() {
+            @Override
+            public void onCompletion(RecordMetadata metadata, Exception e) {
+                // 성공적으로 메세지가 보내지거나 exception이 발생할 때 마다 해당 익명함수 호출
+                if (e == null) {
+                    // 레코드가 성공적으로 보내졌을 때
+                    log.info("Received new metadata \n" +
+                            "topic: "+metadata.topic() +"\n" +
+                            "Partition: "+metadata.partition() +"\n" +
+                            "offset: "+metadata.offset() +"\n" +
+                            "timestamp: "+metadata.timestamp() +"\n" +
+                            "hasOffset: "+metadata.hasOffset() +"\n");
+                } else {
+                    log.error("Error while producing", e);
+                }
+            }
+        });
 
         // 4. flush and close producer
         // 프로듀서에게 모든 데이터 보내고 완료될때까지 기다림 -- 동기식
         producer.flush();
-        
+
         // flush와 producer 종료
         producer.close();
     }
