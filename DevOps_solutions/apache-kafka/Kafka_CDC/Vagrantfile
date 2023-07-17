@@ -8,6 +8,7 @@ Vagrant.configure("2") do |config|
     kafka.vm.box = "ubuntu/focal64"
     kafka.vm.host_name = "kafka"
     kafka.vm.network "private_network", ip: "192.168.50.10"
+    db.vm.network "forwarded_port", guest: 9092, host: 9092 # MySQL port
     kafka.vm.provider :virtualbox do |kafkaSpec|
       kafkaSpec.memory = 16384
       kafkaSpec.cpus = 8
