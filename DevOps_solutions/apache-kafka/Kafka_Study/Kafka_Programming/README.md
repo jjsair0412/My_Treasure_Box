@@ -5,4 +5,4 @@ Java 11 version과 Gradle을 통해서 Kafka SDK를 사용하는 방안에 대�
 ## Project Location
 상위 gradle project에 여러 하위 gradle project가 위치해 있습니다.
 
-- [Kafka basic](./Kafka-basics/)
+- [Kafka basic](./kafka-basics)
