@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
-public class ProducerDemoWithCallback {
+public class ProducerDemoKeys {
 
     private static final Logger log = LoggerFactory.getLogger(ProducerDemo.class.getSimpleName());
 
@@ -33,24 +33,29 @@ public class ProducerDemoWithCallback {
         properties.setProperty("value.serializer",StringSerializer.class.getName());
 
 
-        properties.setProperty("batch.size","400");
-
-        // 전체 파티션에 RoundRobin으로 데이터 전송
-        properties.setProperty("partitioner.class", RoundRobinPartitioner.class.getName());
-
         // 2. create the Producer
         // Kafka Producer 객체 생성
         // serializer 정보와 동일하게 key-value 데이터 타입을 지정하고 , 프로퍼티로 위에 만들어준 properties 객체주입
         KafkaProducer<String,String> producer = new KafkaProducer<>(properties);
 
-        for (int j =0; j<10; j++){
-            // topic에 30번 보내기
-            for (int i = 0; i<30; i++){
+        // 배치 2번돌기
+        for (int j = 0; j<2; j++ ){
+            log.info(j+" 번째 batch 입니다.");
+            // 한번 돌때마다 topic에 10번 보내기
+            for (int i = 0; i<10; i++){
+
+                // key , value , 대상 topic 변수로 지정
+                String topic = "demo_java";
+                String key = "id_" +i;
+                String value = "hello world i : " +i;
+
+
                 // create a Producer Record
                 // Kafka로 보낼 레코드값 주입
                 // 해당 예제에선 topic과 해당 topic의 넣을 value값 주입, 수많은 옵션 있음. 필요에따라 다른것 쓰기
+                // key를 포함한 value가 있는 옵션으로 변경
                 ProducerRecord<String, String> producerRecord =
-                        new ProducerRecord<>("demo_java","hello world"+i);
+                        new ProducerRecord<>(topic,key,value);
 
                 // 3. send data -- 비동기식
                 // 데이터 보내기
@@ -61,53 +66,21 @@ public class ProducerDemoWithCallback {
                         // 성공적으로 메세지가 보내지거나 exception이 발생할 때 마다 해당 익명함수 호출
                         if (e == null) {
                             // 레코드가 성공적으로 보내졌을 때
-                            log.info("Received new metadata \n" +
-                                    "topic: "+metadata.topic() +"\n" +
-                                    "Partition: "+metadata.partition() +"\n" +
-                                    "offset: "+metadata.offset() +"\n" +
-                                    "timestamp: "+metadata.timestamp() +"\n" +
-                                    "hasOffset: "+metadata.hasOffset() +"\n");
+                            log.info("key : "+key+" | partition : "+metadata.partition());
+
                         } else {
                             log.error("Error while producing", e);
                         }
                     }
                 });
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
             }
 
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
-
-
-//        // create a Producer Record
-//        // Kafka로 보낼 레코드값 주입
-//        // 해당 예제에선 topic과 해당 topic의 넣을 value값 주입, 수많은 옵션 있음. 필요에따라 다른것 쓰기
-//        ProducerRecord<String, String> producerRecord =
-//                new ProducerRecord<>("demo_java","hello world");
-//
-//        // 3. send data -- 비동기식
-//        // 데이터 보내기
-//        // 이때 Callback 파라미터를 넣을 수 있습니다.
-//        producer.send(producerRecord, new Callback() {
-//            @Override
-//            public void onCompletion(RecordMetadata metadata, Exception e) {
-//                // 성공적으로 메세지가 보내지거나 exception이 발생할 때 마다 해당 익명함수 호출
-//                if (e == null) {
-//                    // 레코드가 성공적으로 보내졌을 때
-//                    log.info("Received new metadata \n" +
-//                            "topic: "+metadata.topic() +"\n" +
-//                            "Partition: "+metadata.partition() +"\n" +
-//                            "offset: "+metadata.offset() +"\n" +
-//                            "timestamp: "+metadata.timestamp() +"\n" +
-//                            "hasOffset: "+metadata.hasOffset() +"\n");
-//                } else {
-//                    log.error("Error while producing", e);
-//                }
-//            }
-//        });
 
         // 4. flush and close producer
         // 프로듀서에게 모든 데이터 보내고 완료될때까지 기다림 -- 동기식
