@@ -2,7 +2,6 @@ package io.Conduktor.demos.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.CooperativeStickyAssignor;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -13,9 +12,9 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Properties;
 
-public class ConsumerDemoWithShutdown {
+public class ConsumerDemoCooperative {
 
-    private static final Logger log = LoggerFactory.getLogger(ConsumerDemoWithShutdown.class.getSimpleName());
+    private static final Logger log = LoggerFactory.getLogger(ConsumerDemoCooperative.class.getSimpleName());
 
     public static void main(String[] args) {
         log.info("I am Kafka Consumer");
@@ -51,8 +50,6 @@ public class ConsumerDemoWithShutdown {
         // earliest : --from-beginning 옵션에 해당하는 옵션 . 처음부터 끝까지 다 poll.
         // latest : 가장 최신으로 cluster에 들어간 애를 poll .
         properties.setProperty("auto.offset.reset","earliest");
-        // 파티션 리벨런싱전략 변경
-        properties.setProperty("partition.assignment.strategy", CooperativeStickyAssignor.class.getName());
 
         // consumer 생성
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(properties);

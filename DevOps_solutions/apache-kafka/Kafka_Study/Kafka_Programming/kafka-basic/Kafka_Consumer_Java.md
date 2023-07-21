@@ -113,3 +113,105 @@ consumer가 shutdownd을 시작함
 [main] INFO org.apache.kafka.common.metrics.Metrics - Metrics reporters closed
 [main] INFO org.apache.kafka.common.utils.AppInfoParser - App info kafka.consumer for consumer-my-java-appilcation-1 unregistered
 ```
+
+## 3. Consumer Group의 파티션 Rebalance
+**같은 Group에 존재하는 Consumer들은 토픽의 파티션을 공정하게 분배합니다.**
+
+이말이 뭐냐면 , 아래 코드로 consumer를 3대 만든다 했을 때 , demo_java 토픽의 파티션이 3개기 때문에 파티션을 한개씩 할당받는다는 의미입니다.
+- [ConsumerDemoWithShutdown 예제 코드](./src/main/java/io/Conduktor/demos/kafka/ConsumerDemoWithShutdown.java)
+
+로그를 보면 확인할 수 있는데 , 컨슈머 그룹에 컨슈머가 1대씩 추가될 때 마다 , 파티션을 골고루 재 분배합니다.
+- 아래 사진은 같은 그룹에 속한 3대의 컨슈머가 파티션을 골고루 나눠가진것을 확인할 수 있는 이미지 입니다.
+
+![consumer_partition_rebal](./Images/consumer_partition_rebal.png)
+
+또한 한대가 줄어들 때 마다 파티션을 다시 리 벨런싱 합니다.
+- demo_java-1 파티션을 점유하던 컨슈머가 사라지면 , 해당 파티션을 다시 다른 컨슈머가 소비하도록 이동시킴
+
+**따라서 컨슈머 그룹 내부의 컨슈머들은 , 파티션을 동적으로 분배하여 가지게 됩니다..!!**
+
+>토픽 내부에 파티션이 추가되거나 , 컨슈머 그룹내부의 컨슈머가 삭제 또는 추가될때 파티션이 컨슈머 사이를 움직이는데 , 이것을 리벨런싱 이라 합니다.
+
+### 3.1 리벨런싱 전략
+#### **1.적극적 리밸런싱 - Eager Rebalance**
+모든 컨슈머가 중단되고 , 컨슈머 그룹을 해제합니다.
+
+이후 다시 컨슈머 그룹에 합류하게 되며 파티션을 재 할당 받습니다.
+
+얘는 아래와 같은 단점이 있습니다
+1. 이전 파티션을 잃어버림
+
+모든 컨슈머가 컨슈머 그룹에서 이탈하고 , 다시 컨슈머 그룹으로 들어와서 파티션을 무작위로 할당받기 때문에 , 이전에 소비했던 파티션을 잃어버릴 수 있습니다.
+
+2. 컨슈머 데이터 소비 중단
+
+모든 컨슈머가 짧은시간동안 중단되기 때문에 , 잠깐동안 데이터 소비가 멈춥니다.
+
+
+#### **2. 협력적 리벨런싱 - Cooperative Rebalance (Incremental Rebalance)**
+모든 파티션을 모든 컨슈머에게 재 할당하지 않고 , 파티션을 작은 그룹으로 나눠서 한 컨슈머에서 다른 컨슈머로 재 할당 하는 방법
+
+이러한 과정을 계속 반복하면서 모든 파티션을 컨슈머에게 할당합니다.
+
+이것은 적극적 리벨런싱 문제처럼 중단이 일어나지 않는다는 장점이 있습니다.
+
+***예를 들어 ..***
+
+>파티션 3개와 컨슈머 2개 가 서로 소비하고있는 와중에 컨슈머 한대가 추가됐을 경우 ,
+>특정 컨슈머에 중첩되어 소비되어지고있는 파티션중 한개만 뜯어져서 , 추가된 컨슈머에게 소비되는 전략 입니다.
+
+
+#### **사용 방안**
+```partition.assignment.strategy``` 옵션을 통해 사용합니다.
+
+|             |                |                                                                                                  |                     |
+|-------------|----------------|--------------------------------------------------------------------------------------------------|---------------------|
+| **리벨런싱 전략** | **이름**             | **설명**                                                                                           | **비고**              |
+| 적극적 리벨런싱    | RangeAssignor  | 파티션을 토픽당 기준으로 할당                                                                                 |                     |
+| -           | RoundRobin     | 모든 파티션이 모든 토픽에 걸쳐서 할당                                                                            |                     |
+| -           | StickyAssignor | 처음엔 라운드로빈처럼 동작하다가 , 컨슈머 개수에 변화가 생기면 파티션 이동을 최소화함                                                 |                     |
+| 협력적 리벨런싱    | CooperativeStickyAssignor | 데이터 이동 횟수를 최소화하기 위하여 컨슈머 사이에 파티션이동 횟수를 최소화함                                                      |                     |
+| -           | RangeAssignor,CooperativeStickyAssignor | 처음엔 RangeAssignor를 사용하다가 , RangeAssignor를 제거하면 CooperativeStickyAssignor 을 한번만 순차적으로 재 실행하여 사용함. | kafka 3.0 부터 기본 옵션임 |
+
+실제로 consumer를 실행하면 , 최상단 로그에 협력적 리벨런싱의 방법이 default로 잡히는것을 확인할 수 있습니다.
+
+```logcatfilter
+...
+partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+...
+```
+
+해당 리벨런싱 전략을 변경하기 위해서 , properties를 설정할 때 key-value로 넣어주면 됩니다.
+
+```java
+// 파티션 리벨런싱전략 변경
+properties.setProperty("partition.assignment.strategy", CooperativeStickyAssignor.class.getName());
+```
+
+실제 코드
+- [ConsumerDemoCooperative 예제 코드](./src/main/java/io/Conduktor/demos/kafka/ConsumerDemoCooperative.java)
+
+## 4. Static Group Membership
+기본적으로 컨슈머가 그룹에서 나가거나 합류되면 , 리벨런싱이 일어남.
+
+그래서 컨슈머가 그룹에서 나갓다가 재 할당되면 , 멤버ID 가 새로 생성되어 바뀌게 되는데 , ```group.instance.id``` 옵션으로 그룹 인스턴스 id를 특정하면 , 해당 컨슈머는 정적 멤버가 될 수 있음.
+
+이렇게 static member가 되면 , 해당 static member에 할당된 파티션은 고정되게 됩니다.
+>만약 static member가 그룹에서 사라졌을 때 , 수 밀리초에 해당하는 session.timeout 세션 시간 안에 그룹에 재 할당되면 , 기존에 자기가 소비했었던 파티션을 그대로 가져갑니다. (재할당이 일어나지 않습니다.)
+>그러나 해당 시간을 초과함에도 그룹에 해당 멤버가 다시 join하지 않는다면 , 리벨런싱이 일어납니다.
+
+### 4.1 사용 방안
+static group member를 설정하기 위해서 , properties에 key-value로 넣어주면 됩니다.
+- 각각의 컨슈머들에게 다른 id값을 넣어주어야 합니다.
+
+```java
+// 파티션 리벨런싱전략 변경
+properties.setProperty("group.instance.id", "...");
+```
+
+## 5. consumer offset commit
+자바 consumer api는 기본적으로 offset을 자동 commit 합니다.
+
+consumer에서 브로커에게 데이터를 poll 할 때 마다 , ```enable.auto.commit``` 옵션을 ```true```로 하고 , ```auto.commit.interval.ms``` 를 ```5000```으로 두면 5초마다 자동커밋을 수행합니다.
+
+근데 이 auto.commit을 disable하고 커밋할 스레드를 따로 두어서 호출할 수 도 있습니다.
