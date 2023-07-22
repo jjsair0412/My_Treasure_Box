@@ -36,3 +36,8 @@ S3에 미리 서명된 URL을 공유하는 방법입니다.
 
 HTTP 메서드 (GET , POST) 를 사용할 수 있습니다.
 - 다운로드 및 업로드 모두 미리 서명된 URL을 사용할 수 있습니다.
+
+# Presigned URL 사용 방안
+aws cli 명령어로 Presigned URL을 생성할 수 있습니다.
+
+aws API (sdk) 를 통해 Presigned URL을 생성할 수 있습니다.
