@@ -11,3 +11,8 @@ Source System에서 Target System으로 데이터를 이동해야 할 때 , 만�
 
 Source Sytem은 Web site나 Pricing Data 등 여러가지가 될 수 있고 , Target System은 database나 데이터 메트릭서버가 될 수 있습니다.
 
+## kafka 기본 이론
+카프카에대한 이론적인 내용들을 정리해 두었습니다.
+
+성능개선 및 코드에서 설명할 이론들은 , 코드에 주석 및 README로 정리했습니다.
+-[kafka 기본이론](./Kafka_기본이론.md)
