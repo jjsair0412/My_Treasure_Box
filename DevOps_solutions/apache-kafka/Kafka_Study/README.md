@@ -15,4 +15,9 @@ Source Sytem은 Web site나 Pricing Data 등 여러가지가 될 수 있고 , Ta
 카프카에대한 이론적인 내용들을 정리해 두었습니다.
 
 성능개선 및 코드에서 설명할 이론들은 , 코드에 주석 및 README로 정리했습니다.
--[kafka 기본이론](./Kafka_기본이론.md)
+- [kafka 기본이론](./Kafka_기본이론.md)
+
+## kafka programming
+java 언어를 통해 kafka를 어떻게 핸들링할것인가에 대한 내용을 정리해 두었습니다.
+
+- [kafka programming](./Kafka_Programming/)
