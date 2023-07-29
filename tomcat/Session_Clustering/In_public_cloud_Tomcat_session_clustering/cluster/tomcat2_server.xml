@@ -1,5 +1,10 @@
 <!-- 2번 서버 설정 -->
-<Engine name="Catalina" defaultHost="localhost" jvmRoute="tomcat1">
+<Server port="8006" shutdown="SHUTDOWN">
+  <Service name="Catalina">
+    <Connector port="8080" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               redirectPort="8443" />
+<Engine name="Catalina" defaultHost="localhost" jvmRoute="tomcat2">
 
 <Cluster 
         channelSendOptions="8" 
@@ -46,4 +51,7 @@
         filter=".*\.gif;.*\.js;.*\.jpg;.*\.png;.*\.htm;.*\.html;.*\.css;.*\.txt;" 
     />
     <ClusterListener className="org.apache.catalina.ha.session.ClusterSessionListener" />
-</Cluster>
+  </Cluster>
+</Engine>
+</Service>
+</Server>
