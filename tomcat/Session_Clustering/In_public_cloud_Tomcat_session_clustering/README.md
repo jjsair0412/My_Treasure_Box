@@ -27,7 +27,8 @@ tomcat 인스턴스가 총 3대며 , 각 인스턴스들은 다른 EC2 VM에 위
 당연하겠지만 , 여기에 작성되는 ip 주소로 각 ec2들은 열린 포트로 통신이 가능해야 합니다.
 ## 3. server.xml 구성
 각 요소들에대한 상세 설명은 주석으로 대신합니다.
-
+- 전체 server.xml은 아래 링크를 타고가서 확인 가능
+- [tomcat server.xml 설정](./cluster/)
 ```xml
 <!-- 1번 서버 설정 -->
 <Engine name="Catalina" defaultHost="localhost" jvmRoute="tomcat1">
