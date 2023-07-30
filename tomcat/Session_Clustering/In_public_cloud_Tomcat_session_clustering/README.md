@@ -24,6 +24,8 @@ Tomcat 내부 인스턴스들끼리 member join이 되었다 하더라도 , mult
 ## 2. 서버 구성
 tomcat 인스턴스가 총 3대며 , 각 인스턴스들은 다른 EC2 VM에 위치합니다.
 
+haproxy가 각 tomcat으로 request를 로드벨런싱해주는 구성으로 테스트 하였습니다.
+
 당연하겠지만 , 여기에 작성되는 ip 주소로 각 ec2들은 열린 포트로 통신이 가능해야 합니다.
 ## 3. server.xml 구성
 각 요소들에대한 상세 설명은 주석으로 대신합니다.
@@ -31,6 +33,18 @@ tomcat 인스턴스가 총 3대며 , 각 인스턴스들은 다른 EC2 VM에 위
 - [tomcat server.xml 설정](./cluster/)
 ```xml
 <!-- 1번 서버 설정 -->
+<Server port="8005" shutdown="SHUTDOWN">
+  <Service name="Catalina">
+  <!--  
+    tomcat에서 외부 클라이언트에게 inbound 받을 포트기입
+    - 해당 예제에서는 8080으로 통일
+
+    redirectPort 는 웹 클라이언트가 http를 사용할 경우 , ssl인증하여 https로 리다이렉션할때 사용할 포트 지정
+    - 기본적으로 8443 많이 사용함
+  -->
+    <Connector port="8080" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               redirectPort="8443" />
 <Engine name="Catalina" defaultHost="localhost" jvmRoute="tomcat1">
 
 <Cluster 
@@ -105,6 +119,12 @@ tomcat 인스턴스가 총 3대며 , 각 인스턴스들은 다른 EC2 VM에 위
         </Interceptor>
         <Interceptor className="org.apache.catalina.tribes.group.interceptors.MessageDispatchInterceptor" />
     </Channel>
+    <!--  
+        tomcat 서버의 Virtual Host 설정
+        
+        해당 예제는 webapps 내부 폴더가 appBase
+    -->
+    <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="true">
     <!-- 
         org.apache.catalina.ha.tcp.ReplicationValve 으로 세션클러스터링 활성화.
         filter 옵션으로 Valve에 의해 처리될 요청 URL 패턴을 정의 , 여기에 작성된 정규 표현식에 일치하는 요청만이 세션 
@@ -117,8 +137,12 @@ tomcat 인스턴스가 총 3대며 , 각 인스턴스들은 다른 EC2 VM에 위
         className="org.apache.catalina.ha.tcp.ReplicationValve" 
         filter=".*\.gif;.*\.js;.*\.jpg;.*\.png;.*\.htm;.*\.html;.*\.css;.*\.txt;" 
     />
+    </Host>
     <ClusterListener className="org.apache.catalina.ha.session.ClusterSessionListener" />
-</Cluster>
+  </Cluster>
+</Engine>
+</Service>
+</Server>
 ```
 
 

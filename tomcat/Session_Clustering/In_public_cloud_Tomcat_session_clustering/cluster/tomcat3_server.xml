@@ -50,6 +50,10 @@
         className="org.apache.catalina.ha.tcp.ReplicationValve" 
         filter=".*\.gif;.*\.js;.*\.jpg;.*\.png;.*\.htm;.*\.html;.*\.css;.*\.txt;" 
     />
+
+    <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+        prefix="localhost_access_log" suffix=".txt"
+        pattern="%h %l %u %t &quot;%r&quot; %s %b" />
     <ClusterListener className="org.apache.catalina.ha.session.ClusterSessionListener" />
   </Cluster>
 </Engine>
