@@ -1,5 +1,7 @@
 package io.conduktor.demos.kafka.opensearch;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonParser;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -71,11 +73,26 @@ public class OpenSearchConsumer {
 
                 for (ConsumerRecord<String, String> record : records) {
 
+                    // opensearch에 동일한 데이터가 들어가면 안되기 때문에 , 각 데이터에 ID값을 지정해허 아래 두가지 방법 중 하나를 선택해서 사용해야 함
+
+                    // 1번 방법
+                    // kafka 레코드 좌포값을 사용해서 , ID 값 정의
+//                    String id = record.topic() + "_" + record.partition() + "_" + record.offset();
+
+
+                    // 2번 방법 ( best usecase )
+                    // kafka에서 받아오는 데이터 값 자체에 ID값을 정의해서 , 그걸 사용하는 방법
+
                     try{
+                        // json값에서 id값 뽑아옴
+                        // meta.id 에 있음
+                        String id = extractId(record.value());
                         // 레코드 한개씩 뽑아서 오픈서치로 보내기
                         // Opensearch client 에게 json 데이터를 보내겠다고 알림
+                        // indexRequest 에 위 unique한 id값을 추가해서 보냄
                         IndexRequest indexRequest = new IndexRequest("wikimedia")
-                                .source(record.value(), XContentType.JSON);
+                                .source(record.value(), XContentType.JSON)
+                                .id(id);
 
                         // Opensearch client로 오픈서치에게 json 데이터 보내겠다는 요청보냄.
                         IndexResponse response = openSearchClient.index(indexRequest, RequestOptions.DEFAULT);
@@ -97,6 +114,17 @@ public class OpenSearchConsumer {
         // 구성된 모든것 close
     }
 
+    // 동일한 id를 두번 요청하면 , 덮어씌우는 기능하는 메서드
+    private static String extractId(String json) {
+        // gson libray 사용해서 json 파싱
+        String asString = JsonParser.parseString(json)
+                .getAsJsonObject()
+                .get("meta")
+                .getAsJsonObject()
+                .get("id")
+                .getAsString();
+        return asString;
+    }
 
     public static RestHighLevelClient createOpenSearchClient() {
         String connString = "http://localhost:9200";
