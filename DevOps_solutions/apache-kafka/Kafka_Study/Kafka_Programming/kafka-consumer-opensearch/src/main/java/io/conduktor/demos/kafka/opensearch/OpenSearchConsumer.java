@@ -12,7 +12,10 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.opensearch.action.bulk.BulkRequest;
+import org.opensearch.action.bulk.BulkResponse;
 import org.opensearch.action.index.IndexRequest;
 import org.opensearch.action.index.IndexResponse;
 import org.opensearch.client.OpenSearchClient;
@@ -43,6 +46,28 @@ public class OpenSearchConsumer {
         // Kafka client 구성
         KafkaConsumer<String, String> consumer = createKafkaConsumer();
 
+        // 안전종료 옵션 추가
+        // 1. 메인 thread의 reference를 가져옵니다.
+        final Thread mainThread = Thread.currentThread();
+
+        // 2. shotdown hook을 추가합니다
+        Runtime.getRuntime().addShutdownHook(new Thread(){
+            public void run() {
+                // consumer.wakeup() 메서드를 사용하는데, 얘는 consuer.poll() 메서드가 수행된 이후 알아서 wakeup() 예외를 던집니다.
+                log.info("종료를 감지함. consumer.wakeup() 메서드를 호출하고 나갈 예정...");
+                consumer.wakeup();
+
+                // 메인프로그램이 끝날때 까지 해당 hook이 살아있어야함.
+                // 메인 스레드에 합류해서 메인 스레드의 코드 실행을 허용해야 합니다.
+                // 하단의 try catch로 묶인 poll 부분
+                try {
+                    mainThread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
         // 이렇게 구성하면 , try 조건구문안에 있는 객체가 성공하던 실패하던 close() 메서드 호출함.
         // 따라서 오픈서치 클라이언트나 컨슈머나 둘중에 하나가 성공하던 실패하던 무조건 close 호출
         try (openSearchClient; consumer){
@@ -65,25 +90,26 @@ public class OpenSearchConsumer {
             // 메인 코드 로직 수행
             // 데이터 소비 코드
             while(true) {
-                // 데이터가 없을 경우 해당 줄을 3000초동안 차단함
+                // 데이터가 없을 경우 해당 라인을 3000초동안 차단함
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(3000));
 
                 int recordCount = records.count();
                 log.info("Received " + recordCount + " record(s)");
 
+                // 레코드를 받은 직후에 , 대량 요청을 생성하기 위해서 BulkRequest 사용
+                BulkRequest bulkRequest = new BulkRequest(); // 대량요청 옵션
+
                 for (ConsumerRecord<String, String> record : records) {
 
-                    // opensearch에 동일한 데이터가 들어가면 안되기 때문에 , 각 데이터에 ID값을 지정해허 아래 두가지 방법 중 하나를 선택해서 사용해야 함
-
+                    // opensearch에 동일한 데이터가 들어가면 안되기 때문에 , 각 데이터에 ID값을 지정해서 아래 두가지 방법 중 하나를 선택해서 사용해야 함
                     // 1번 방법
-                    // kafka 레코드 좌포값을 사용해서 , ID 값 정의
+                    // kafka 레코드 좌포값을 사용해서 , ID 값 정의 - 중복데이터 방지 방안
 //                    String id = record.topic() + "_" + record.partition() + "_" + record.offset();
 
 
-                    // 2번 방법 ( best usecase )
-                    // kafka에서 받아오는 데이터 값 자체에 ID값을 정의해서 , 그걸 사용하는 방법
-
                     try{
+                        // 2번 방법 ( best usecase ) - 중복데이터 방지 방안
+                        // kafka에서 받아오는 데이터 값 자체에 ID값을 정의해서 , 그걸 사용하는 방법
                         // json값에서 id값 뽑아옴
                         // meta.id 에 있음
                         String id = extractId(record.value());
@@ -92,21 +118,53 @@ public class OpenSearchConsumer {
                         // indexRequest 에 위 unique한 id값을 추가해서 보냄
                         IndexRequest indexRequest = new IndexRequest("wikimedia")
                                 .source(record.value(), XContentType.JSON)
-                                .id(id);
+                                .id(id); // 해당 객체는 , 데이터가 있을 때 마다 오픈서치에 삽입하게 되는데 , 이렇게되면 대량요청에대해 대응하기 힘듬,.
+
+                        bulkRequest.add(indexRequest);
 
                         // Opensearch client로 오픈서치에게 json 데이터 보내겠다는 요청보냄.
                         IndexResponse response = openSearchClient.index(indexRequest, RequestOptions.DEFAULT);
                         log.info("Inserted 1 document into Opensearch");
-                        log.info(response.getId());
+//                        log.info(response.getId());
                     }catch (Exception e) {
                         e.printStackTrace();
                     }
 
                 }
 
+                if (bulkRequest.numberOfActions() > 0 ) { // bulkRequest 개수가 0 이상일 때만 , 대량 요청 전달 (opensearch로)
+                    BulkResponse bulkresponse = openSearchClient.bulk(bulkRequest, RequestOptions.DEFAULT);
+                    log.info("inserted : "+bulkresponse.getItems().length + " record(s)");
+
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e ) {
+                        e.printStackTrace();
+                    }
+
+                    // auto.commit.offset 옵션이 false 일 경우 , 위의 for문 (batch) 이 전체사용된 이후 오프셋을 커밋하게끔 코드로 구성
+                    // 여기선 그니까 , kafka topic에 쌓여있는 데이터를 모두 소비한 다음 offset을 커밋하게끔 함.
+                    consumer.commitSync(); // offset commit 옵션
+                    log.info("offset이 커밋되었습니다. !!!!");
+
+                }
+
+
             }
 
 
+        }catch (WakeupException e) {
+            log.info("consumer가 shutdownd을 시작함");
+        } catch (Exception e) {
+            log.info("consumer가 예상 못한 에러발생");
+            e.printStackTrace();
+        } finally {
+            // WakeupException에 걸리거나 Exception 에 걸리면 consumer를 종료
+            // openSearchClient 또한 같이 close() 시킴
+            // close하면서 offset도 commit함
+            consumer.close();
+            openSearchClient.close();
+            log.info("consumer가 우아하게 종료됨..");
         }
 
 
@@ -126,6 +184,7 @@ public class OpenSearchConsumer {
         return asString;
     }
 
+    // opensearch와 연동하는 메서드
     public static RestHighLevelClient createOpenSearchClient() {
         String connString = "http://localhost:9200";
 
@@ -158,6 +217,7 @@ public class OpenSearchConsumer {
         return restHighLevelClient;
     }
 
+    // kafka consumer 생성 메서드
     private static KafkaConsumer<String, String> createKafkaConsumer(){
 
         String bootstrapServers = "127.0.0.1:9092";
@@ -175,6 +235,9 @@ public class OpenSearchConsumer {
 
         // consumer group id 값을 지정해야합니다.
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG,groupId);
+
+        // consumer offset auto.commit 옵션 enable , disable 지정
+        properties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,"false");
 
         // offset을 어디서부터 pull 할지 설정하는 부분
         // none/earliest/latest 세 옵션값 가능

@@ -1,6 +1,8 @@
 # kafka producer wikimedia
 wikimedia 스트림값을 받아서 카프카로 전송하는 프로듀서
 
+producer 성능 최적화 방안 등 주석으로 설명되어있는것도 많아서 , 해당 README와 코드를 같이 읽어야만 합니다.
+
 ## overview
 코드 수행순서는 다음과 같습니다
 1. kafka producer 생성
