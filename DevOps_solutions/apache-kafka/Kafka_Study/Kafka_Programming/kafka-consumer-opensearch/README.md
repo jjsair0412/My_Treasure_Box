@@ -147,9 +147,19 @@ kafka broker의 offset.retention.minutes 옵션으로 데이터 갖고있는 시
 
 ### auto.offset.reset=none
 컨슈머가 오프셋을 찾지 못하면 , 에러가 발생합니다.
-- 컨슈머에 장애가 발생했을 때 , 데이터를 복구할 방법을 찾아야만 할 때 사용합니다.
+- 컨슈머에 장애가 발생했을 때 , 데이터를 복구할 방법을 찾아야만 할 때 사용합니다.    
 
 ## consumer 고급 성능개선 방안
+### consumer liveliness 방안
+컨슈머가 정상 상태인지 확인하는건 , 브로커 그룹에 있는 ***consumer group coordinator*** 브로커가 컨슈머의 헬스체크를 담당
+
+해당 브로커가 컨슈머의 health check 하기 위해선 , 아래 두가지 메커니즘이 작동함.
+1. heartbeat
+   - 하트비트 스레드를 계속 사용중인지 메시지를 브로커에게 계속 보냄
+   - ***consumer coordinator broker***에서 작동
+2. poll     
+    - 컨슈머가 게속 사용중이라고 판단하는 다른 브로커가 poll 메커니즘이 작동함
+
 ### consumer 속도개선
 
 ### consumer 비용 최적화 방안
