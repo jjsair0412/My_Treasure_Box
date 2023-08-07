@@ -164,7 +164,7 @@ kafka broker의 offset.retention.minutes 옵션으로 데이터 갖고있는 시
 - 그러나 , 대부분 데이터를 빠르게 처리하고 자주 poll 하는것이 좋다.
 
 ### consumer 속도개선
-#### ```heartbeat.interval.ms``` 
+#### ```heartbeat.interval.ms``` - heartbeat 메커니즘에서 작동 
 - 하트비트 작동 시간간격을 조절하는 옵션 , 
 - default 3초 (조절가능)
 - 주로 ```session.timeout.ms``` 의 1/3 속도로 설정함
@@ -173,7 +173,7 @@ kafka broker의 offset.retention.minutes 옵션으로 데이터 갖고있는 시
 
 하트비트 메커니즘은 , consumer application이 작동 중인지 확인하는데 사용됨.
 
-#### ```max.poll.interval.ms```
+#### ```max.poll.interval.ms``` - heartbeat 메커니즘에서 작동
 - poll 시간 간격을 조절하는 옵션
 - default 5분 (조절가능)
 - 컨슈머가 사용 중이 아닌 것으로 간주할 때 까지, poll 사이에 시간을 얼마나 둘지에 대한 옵션
@@ -181,5 +181,27 @@ kafka broker의 offset.retention.minutes 옵션으로 데이터 갖고있는 시
 대규모데이터를 처리하는 순간 , 시간이 오래 걸리기에 그거에 맞춰서 설정해야함 (poll 시간에 맞춰서)
 - 빠른 application 이라면 10초 , 20초로 둬도 되지만,,
 - 대규모 데이터를 처리하는 application 이라면 5분 (default) , 10분 으로 둬야할듯
+
+#### ```fetch.min.bytes``` - poll 메커니즘에서 작동
+- 요청 당 kafka에서 가져올 최소 데이터 갯수
+- default 1 (조절가능) (1MB)
+- 해당 값을 높이면 , 레이턴시가 낮아지지만 , 요청 수가 그만큼 떨어지기때문에 , 처리량을 높힐 수 있습니다.
+  - 만약 1MB라면 , kafka 내부 데이터가 1MB가 되기 전까진 , 컨슈머에서 받을 필요가 없다는것과 동일하기 때문
+
+#### ```fetch.max.wait.ms``` - poll 메커니즘에서 작동
+- ```fetch.min.bytes``` 를 충족할 용량이 되지 않았을 때 , kafka 브로커가 consumer 가 보내는 poll 요청에 응답하기 전 차단할 최대 시간
+- default 500 (0.5초) (조절가능)
+    - 만약 ```fetch.min.bytes``` 가 1MB고 , ```fetch.max.wait.ms``` 가 500이라면 , poll 요청이 consumer로 return되기 전 500ms의 레이턴시가 생길 것임.
+    - 이러한 레이턴시는, 성능최적화에 도움이 될 수 있음
+
+#### ```max.partition.fetch.bytes``` - poll 메커니즘에서 작동
+- kafka 서버가 반환 할 파티션당 데이터 최대 양
+- default 1 (조절가능) (1MB)
+- 1개 파티션당 1MB가 필요하다고 계산하기 때문에 (100개 파티션이라면 100MB) , 필요에 따라 조절해야 함
+
+#### ```fetch.max.bytes``` - poll 메커니즘에서 작동
+- 각 poll 요청에서 가져올 데이터의 최대 양
+- default 55 (조절가능) (55MB)
+- 메모리가 충분할 경우, 값을 높혀서 컨슈머가 요청 당 더 많은 데이터를 가져오게끔 할 수 있음
 
 ### consumer 비용 최적화 방안
