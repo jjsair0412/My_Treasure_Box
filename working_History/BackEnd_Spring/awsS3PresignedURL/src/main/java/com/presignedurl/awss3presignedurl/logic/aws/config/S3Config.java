@@ -1,4 +1,4 @@
-package com.presignedurl.awss3presignedurl.config;
+package com.presignedurl.awss3presignedurl.logic.aws.config;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;

@@ -1,6 +1,6 @@
 package com.presignedurl.awss3presignedurl.logic.aws;
 
-import com.presignedurl.awss3presignedurl.config.S3Config;
+import com.presignedurl.awss3presignedurl.logic.aws.config.S3Config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,7 +19,7 @@ public class objectServiceImpl implements objectService {
 
     // 간단버전
     @Override
-    public URL simpleUploadStock(String bucket, String filePath, HttpMethod httpMethod) {
+    public URL simpleUpload(String bucket, String filePath, HttpMethod httpMethod) {
         return amazonS3.getAmazonS3Client().generatePresignedUrl(bucket,filePath,getPreSignedUrlExpiration(),httpMethod);
     }
 
