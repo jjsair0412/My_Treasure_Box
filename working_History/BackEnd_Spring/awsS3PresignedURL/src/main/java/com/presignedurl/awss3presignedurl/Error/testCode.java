@@ -2,7 +2,7 @@ package com.presignedurl.awss3presignedurl.Error;
 
 import org.junit.Test;
 
-public class test {
+public class testCode {
     @Test
     public void test(){
         if(true){

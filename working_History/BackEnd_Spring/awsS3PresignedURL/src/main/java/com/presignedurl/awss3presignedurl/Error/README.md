@@ -7,7 +7,7 @@
 
 2. 에러가 발생시, Eunm class를 생성자로 받음으로써 , 메시지 및 errorEnum class가 주입됨
 - throw로 로직 수행중 에러 던짐
-- [error testCode](./test.java)
+- [error testCode](./testCode.java)
 
 3. 필터 체인이 모두 수행되고 난 뒤, 디스페쳐 서블릿이 호출되기 직전 , 발생한 customException을 @ExceptionHandler 가 받습니다.
 - @RestControllerAdvice 클래스안에 @ExceptionHandler가 에러를 받습니다.
