@@ -16,3 +16,9 @@ object storage에 저장된 대용량 파일을 , 접근권한을 가진 사용�
 >
 >***X-Auth-Token*** 값을 spring에서 keystone (kakao icloud keystone service) 에 요청하여 발급받은 후, FrontEnd에서 해당 토큰으로 object storage에 인증하는 방식으로 우회하여 개발하였음.
 
+### 공통 에러처리
+BackEnd SpringBoot에서 발생한 error 및 데이터 response를 공통 관리하고 , 규격을 통일하기 위해 controller의 response Domain을 통일하였으며 , Error 또한 ```@RestControllerAdvice``` 및 ```@ExceptionHandler```을 통해 에러 response를 통일하였습니다.
+
+또한 custom Exception 처리에 , Exception Enum Class를 미리 정의하여 에러 코드 및 메세지를 통합 관리 하였습니다.
+
+- [sample code 및 사용방안 README](./BackEnd_Spring/awsS3PresignedURL/src/main/java/com/presignedurl/awss3presignedurl/Error/)
