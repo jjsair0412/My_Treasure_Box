@@ -23,3 +23,17 @@ BackEnd SpringBoot에서 발생한 error 및 데이터 response를 공통 관리
 
 - [에러 공통처리 code 및 사용방안 README](./BackEnd_Spring/awsS3PresignedURL/src/main/java/com/presignedurl/awss3presignedurl/Error/)
 - [정상 로직 수행 시 controller code 및 공통처리 사용방안 ](./BackEnd_Spring/awsS3PresignedURL/src/main/java/com/presignedurl/awss3presignedurl/commonResponse/)
+
+### 영상 및 이미지 처리에 대한 고찰
+s3 object storage에 영상 && 이미지를 저장해야하는 상황이며 , 해당 영상 또는 이미지의 해상도나 영상이라면 영상의 길이 등의 메타데이터를 따로 RDB에 저장해야 했습니다.
+
+#### Best Architecture 
+AWS 일 경우 , 
+
+1. client가 업로드 요청하면 , Lambda or 특정 Backend 서버에 presigned URL 생성 요청
+2. FE 측에서 callBack 요청으로 보냈기에 , response 받은 presigned URL로 contents S3에 저장
+3. S3에 저장 트리거를 걸고있는 Lambda function이 동작하면서 , S3에 저장된 contents 메타데이터 추출
+4. 추출 후 RDB에 메타데이터 저장
+
+![Best Arch](./Images/bestArch.jpeg)
+
