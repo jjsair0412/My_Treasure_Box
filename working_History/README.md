@@ -27,6 +27,18 @@ BackEnd SpringBoot에서 발생한 error 및 데이터 response를 공통 관리
 ### 영상 및 이미지 처리에 대한 고찰
 s3 object storage에 영상 && 이미지를 저장해야하는 상황이며 , 해당 영상 또는 이미지의 해상도나 영상이라면 영상의 길이 등의 메타데이터를 따로 RDB에 저장해야 했습니다.
 
+아래는 관련 방안에 대해 study한 결과가 모여있는 디렉터리 입니다.
+- [best architecture](#best-architecture) 를 기반으로 콘텐츠를 어떻게 관리해야할지 study 하였으며 , 차후 실 운영단계에서는 아래와 같은 변경사항이 예상됩니다.
+    - [code](./contentsManage/)
+
+>**변경사항**
+>
+>1. backEnd -> nodejs 에서 spring Boot Application 변경
+>
+>2. lambda 사용 못하기 때문에 , 람다함수를 boot application으로 대체
+> 
+>3. presignedURL 사용 못하기 때문에 , Temp URL로 변경하거나 , x-auth-token을 통해서 관리
+
 #### Best Architecture 
 AWS 일 경우 , 
 
@@ -45,3 +57,14 @@ AWS 일 경우 ,
     - [테스트 코드 위치](./BackEnd_Spring/ffmpegTest/src/main/java/com/ffmpeg/ffmpegtest/service/ffmpegCli.java)
 
 ![worstArch](./Images/worstArch.jpeg)
+
+
+### 영상 및 이미지 스트리밍과 빠르게 확인할수 있게끔 하는 CDN 관련 고찰
+CDN을 통해 메인 페이지 이미지들을 빠르게 받아볼 수 있도록 해야 함
+
+- TEST 결과
+>1. S3 bucket 또는 Domain과 연결해서 , 연결된 곳의 캐시를 먹일 수 있음.
+>2. 캐시 저장 유효기간을 정할 수 있는데 , 만약 실제 스토리지에 해당 데이터가 삭제되었더라도 , 유효기간이 지나지 않으면 캐시를 새로 받아오지 않기 때문에 반영되지 않음.
+>3. origin path를 지정해서 , object storage에 특정 path에만 접근할 수 있게끔 설정할 수 있음. 
+>   - 나머지 데이터들은 지킬 수 있다.
+>4. https 접근 가능하도록 적용 가능
