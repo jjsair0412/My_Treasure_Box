@@ -42,5 +42,6 @@ AWS 일 경우 ,
 1. client가 세그먼트별로 영상을 쪼개서 Backend로 영상 저장
     - slo 방식으로 저장했기 때문에 , 각 세그먼트와 세그먼트 메니페스트 파일 두개를 s3에 저장
 2. [ffmpeg-cli-wrapper 오픈소스](https://github.com/bramp/ffmpeg-cli-wrapper) 사용하여 , 해당 코드 올라가는 서버에 ffmpeg 설치 후 영상 저장하여 메타데이터 추출 후 RDB 저장
+    - [테스트 코드 위치](./BackEnd_Spring/ffmpegTest/src/main/java/com/ffmpeg/ffmpegtest/service/ffmpegCli.java)
 
 ![worstArch](./Images/worstArch.jpeg)
