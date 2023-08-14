@@ -8,6 +8,7 @@ import net.bramp.ffmpeg.FFprobe;
 import net.bramp.ffmpeg.builder.FFmpegBuilder;
 import net.bramp.ffmpeg.probe.FFmpegProbeResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,12 @@ public class ffmpegCli {
     @Autowired
     private ResourceLoader resourceLoader;
 
+
+    @Value("${output.filePath}")
+    private String outputPath;
+
+    @Value("${input.filePath}")
+    private String inputPath;
 
     public void ffmpegCliTest(){
         try {
@@ -39,7 +46,8 @@ public class ffmpegCli {
                     .setInput(probeResult)     // Filename, or a FFmpegProbeResult
                     .overrideOutputFiles(true) // Override the output if it exists
 
-                    .addOutput("/Users/jujinseong/mystudy/My_Treasure_Box/working_History/BackEnd_Spring/ffmpegTest/src/main/resources/result/output.mp4")   // Filename for the destination
+//                    .addOutput("/Users/jujinseong/mystudy/My_Treasure_Box/working_History/BackEnd_Spring/ffmpegTest/src/main/resources/result/output.mp4")   // Filename for the destination
+                    .addOutput(outputPath)
                     .setFormat("mp4")        // Format is inferred from filename, or can be set
                     .setTargetSize(250_000)  // 출력 파일의 크기를 대략적으로 제어하는 데 사용되는 메서드 , 대상 크기에 가깝게 크기를 바꿈 ( 250KB 정도로 만들도록 지시 )
 
@@ -75,7 +83,8 @@ public class ffmpegCli {
     // file input
     private String getFilePath() throws IOException {
         try {
-            Resource resource = resourceLoader.getResource("classpath:testJinseong.mp4");
+            Resource resource = resourceLoader.getResource(inputPath+"testJinseong.mp4");
+//            Resource resource = resourceLoader.getResource("classpath:testJinseong.mp4");
 //            Resource resource = resourceLoader.getResource("classpath:testJinseongImage.jpeg");
             File file = resource.getFile();
             log.info("file path : "+file.getPath());
