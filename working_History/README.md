@@ -1,5 +1,5 @@
 # OverView
-해당 폴더는 kakao icloud를 통해 플랫폼 개발 과정중 발생한 기술적 이슈 사항들에 대한 해결 방안을 정리한 폴더 입니다.
+해당 폴더는 kakao icloud를 통해 플랫폼 개발 과정중 발생한 기술적 이슈 사항들에 대한 고찰 및 해결 방안을 정리한 폴더 입니다.
 
 ## repository RoadMap
 ### S3 Presigned URL
