@@ -57,11 +57,16 @@ const UploadForm = () => {
     return (
         <div>
           <form onSubmit={onSubmit}>
-          <img src ={imgSrc} />
+          <img src ={imgSrc} className={`image-preview ${imgSrc && "image-preview-show"}`}/>
           <ProgressBar percent={percent}/>
             <div className="file-dropper">
                 {fileName}
-                <input id="image" type="file" onChange={imageSelectHandler}/>
+                <input 
+                    id="image" 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={imageSelectHandler}
+                />
             </div>
             <button className="file-button" type="submit">제출</button>
           </form>
