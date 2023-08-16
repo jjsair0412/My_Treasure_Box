@@ -34,6 +34,11 @@ Kafka 프로그래밍을 활용하여 , 발생 가능한 문제들을 해결할 
 외부에서 데이터를 가져와 카프카에 보내주거나 , 카프카에서 외부로 데이터를 전송할 수 있음
   - 여러 종류의 데이터 저장소 (RDB , S3 , elasticSearch 등 ..) 에서 여러 종류의 데이터 저장소 (RDB , S3 , elasticSearch 등 ..) 로 데이터를 이동하여 적제하거나 , 다양한 형태의 스트림값을 받아와서 다양한 형태의 저장소에 적제하고싶을때 사용합니다.
 
+#### 1.1 Kafka Connect Slink vs Kafka Connect Source
+- Kafka Connect Source는 , 외부 데이터베이스에서 데이터를 임포트할 때 사용하며 ,
+- kafka Connect Slink는 , Kafka에서 target 데이터베이스로 데이터를 계속 export하기 위해 사용합니다.
+
+
 ### 2. Kafka Stream
 카프카 토픽에서 다른 카프카 토픽으로 전환할 수 있음
   - ex) 특정 토픽에서 데이터를 읽어와서 , 어떤 종류의 계산을 한 다음 계산결과를 다른 토픽에 저장하고 싶을때 사용합니다.
