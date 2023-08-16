@@ -99,32 +99,32 @@ public class ffmpegCli {
      * 볼수있는 메타데이터 정보
      *
      * Format 정보:
-     *      filename: 파일 이름
+     *      filename: 파일 이름 -
      *      nb_streams: 스트림의 개수
      *      nb_programs: 프로그램의 개수
-     *      format_name: 포맷 이름 (예: "mov,mp4,m4a,3gp,3g2,mj2")
-     *      format_long_name: 포맷의 긴 이름 (예: "QuickTime / MOV")
+     *      format_name: 포맷 이름 (예: "mov,mp4,m4a,3gp,3g2,mj2") -
+     *      format_long_name: 포맷의 긴 이름 (예: "QuickTime / MOV") -
      *      start_time: 시작 시간 (초)
-     *      duration: 지속 시간 (초)
-     *      size: 파일 크기 (바이트)
-     *      bit_rate: 비트레이트
+     *      duration: 지속 시간 (초) -
+     *      size: 파일 크기 (바이트) -
+     *      bit_rate: 비트레이트-
      *      probe_score: 프로브 점수
      *      tags: 다양한 태그 (예: encoder, language 등)
      *
      * Streams 정보 (비디오, 오디오, 자막 등 각각의 스트림에 대한 정보):
-     *      codec_name: 코덱 이름
+     *      codec_name: 코덱 이름 -
      *      codec_long_name: 코덱의 긴 이름
      *      profile: 코덱 프로필
      *      codec_type: 스트림 타입 (예: "video", "audio")
      *      codec_time_base: 코덱의 타임베이스
      *      codec_tag: 코덱 태그
-     *      width & height: 비디오 해상도 (비디오 스트림에만 해당)
+     *      width & height: 비디오 해상도 (비디오 스트림에만 해당) -
      *      has_b_frames: B 프레임의 유무 (비디오 스트림에만 해당)
      *      sample_rate: 샘플 레이트 (오디오 스트림에만 해당)
-     *      channels: 오디오 채널 수 (오디오 스트림에만 해당)
+     *      channels: 오디오 채널 수 (오디오 스트림에만 해당)  -
      *      channel_layout: 채널 레이아웃 (오디오 스트림에만 해당)
      *      bits_per_sample: 샘플 당 비트 수
-     *      r_frame_rate: 프레임 레이트
+     *      r_frame_rate: 프레임 레이트 -
      *      avg_frame_rate: 평균 프레임 레이트
      *      time_base: 스트림의 타임베이스
      *      start_pts & start_time: 스트림의 시작 시간 (PTS 및 초)

@@ -1,0 +1,36 @@
+@startuml
+
+participant FrontEnd as FE
+box "BackEnd Server" #LightBlue
+    participant BackEnd as BE
+    entity "FFmpeg Installed FileStorage" as FileStorage
+end box
+database ObjectStorage as OS
+database RDB as RDB
+
+note over FE
+  0. SLO segment 및 SLO Manifest Object json file 생성
+end note
+
+FE -> BE: upload 요청 (Files + Metadata)
+note right: 파라미터 값 : \nSLO Segment \nSLO Manifest Object json file \ninsert 되어야하는 기본 정보
+
+activate BE
+BE -> BE: x-auth-token 발급
+BE -> OS: PUT SLO segment
+BE -> OS: PUT SLO Manifest Object json file
+BE -> FileStorage: Save first segment
+BE -> FileStorage: Extract Metadata from segment
+FileStorage --> BE: Metadata response
+
+note over BE
+  3. 추출 성공시 임시파일 제거
+end note
+
+BE -> FileStorage: Remove Temp segment file
+BE -> BE: Combine Metadata and basic info
+BE -> RDB: contents metadata && upload info Insert to RDB
+
+deactivate BE
+
+@enduml

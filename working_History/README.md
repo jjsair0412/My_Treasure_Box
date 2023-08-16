@@ -59,6 +59,7 @@ AWS 일 경우 ,
 ![worstArch](./Images/worstArch.jpeg)
 
 
+
 ### 영상 및 이미지 스트리밍과 빠르게 확인할수 있게끔 하는 CDN 관련 고찰
 CDN을 통해 메인 페이지 이미지들을 빠르게 받아볼 수 있도록 해야 함
 
@@ -68,3 +69,13 @@ CDN을 통해 메인 페이지 이미지들을 빠르게 받아볼 수 있도록
 >3. origin path를 지정해서 , object storage에 특정 path에만 접근할 수 있게끔 설정할 수 있음. 
 >   - 나머지 데이터들은 지킬 수 있다.
 >4. https 접근 가능하도록 적용 가능
+
+
+### PresignedURL 및 람다를 사용하지 못할 경우 , contents의 메타데이터를 추출해야 할 때의 시퀀스 다이어그램
+요구사항중 , 업로드된 contents들의 메타데이터 (해상도 , 포멧 , 비트레이트 , 영상 길이 등)을 추출해서 RDB에 저장해야 했습니다.
+
+PresignedURL을 사용하지 못하고 , ***X-Auth-Token***을 사용해 object storage에 저장해야 했으며 , 업로드되는 contents들을 세그먼트별로 쪼개서 백엔드에 요청이 들어왔을 경우 , ***맨 앞 세그먼트만 임시 저장소에 저장하여 ffmpeg와 ffmpeg-cli-wrapper를 이용해 메타데이터를 추출*** 하는 로직으로 진행하였습니다.
+
+#### 시퀀스 다이어그램
+
+![class-diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/jjsair0412/My_Treasure_Box/main/working_History/diagram.wsd)
