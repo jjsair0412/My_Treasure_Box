@@ -19,6 +19,8 @@ Java 11 version과 Gradle을 통해서 Kafka SDK를 사용하는 방안에 대�
   - kafka cluster에 적제된 스트림 값을 , consumer가 소비하는 로직에 대한 내용이 정리되어 있습니다,
   - cosumer 성능 최적화 (offset commit 시기 조절) 등에 대한 로직이 정리되어 있습니다.
   - 또한 대량의 데이터를 consumer가 BulkRequest 객체를 통해 어떻게 소비하는지에 대한 내용까지 있습니다.
+- [Kafka_실사례_아키텍처](./kafka-realExample)
+  - Kafka 를 실제 아키텍처에 도입할 때 , 어떤 부분을 고려해야되고 어떻게 구성해야하는지에 대한 기본적인 설명이 들어가 있습니다.
 
 ## Kafka Extended API
 Kafka 프로그래밍을 활용하여 , 발생 가능한 문제들을 해결할 수 있는 API가 있습니다.
