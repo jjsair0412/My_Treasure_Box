@@ -71,10 +71,12 @@ CDN을 통해 메인 페이지 이미지들을 빠르게 받아볼 수 있도록
 >4. https 접근 가능하도록 적용 가능
 
 
+
+
 ### PresignedURL 및 람다를 사용하지 못할 경우 , contents의 메타데이터를 추출해야 할 때의 시퀀스 다이어그램
 요구사항중 , 업로드된 contents들의 메타데이터 (해상도 , 포멧 , 비트레이트 , 영상 길이 등)을 추출해서 RDB에 저장해야 했습니다.
 
-PresignedURL을 사용하지 못하고 , ***X-Auth-Token***을 사용해 object storage에 저장해야 했으며 , 업로드되는 contents들을 세그먼트별로 쪼개서 백엔드에 요청이 들어왔을 경우 , ***맨 앞 세그먼트만 임시 저장소에 저장하여 ffmpeg와 ffmpeg-cli-wrapper를 이용해 메타데이터를 추출*** 하는 로직으로 진행하였습니다.
+PresignedURL을 사용하지 못하고 , ***X-Auth-Token***을 사용해 object storage에 저장해야 했으며 , 업로드되는 contents들을 chunk별로 쪼개서 백엔드에 요청이 들어왔을 경우 , ***맨 앞 chunk만 임시 저장소에 저장하여 ffmpeg와 ffmpeg-cli-wrapper를 이용해 메타데이터를 추출*** 하는 로직으로 진행하였습니다.
 
 >람다 쓰고싶어요
 >
@@ -86,6 +88,17 @@ PresignedURL을 사용하지 못하고 , ***X-Auth-Token***을 사용해 object 
 
 ![class-diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/jjsair0412/My_Treasure_Box/main/working_History/diagram.wsd)
 
+>**영상 처리로직 자체를 변경해야될것같음**
+>
+>그 이유는 , 현재 FE에서 각 chunk를 쪼게서 , 맨앞 chunk로 메타데이터를 추출하게 되는데,
+>
+>영상 및 이미지 등의 멀티미디어 컨텐츠는 , **atom(or box) 라는 단위가 미디어 바이트 어딘가에 저장되어 있고, 이친구가 해당 미디어의 모든 메타데이터를 품고 있습니다.**
+>
+>그런데 , 바이트별로 쪼개는 과정에서 해당 atom이 깨지거나 누락되는 경우가 발생하여 , 로직상 atom이 있는 chunk를 찾아서 메타데이터를 추출해보려 했지만 ,,
+>
+>atom 자체가 깨진것인지 , 에러는 안나지만 메타데이터 값이 깨져서 출력되는 현상이 발생했습니다..
+>
+>따라서, **FrontEnd에서 사용자에게 ffmpeg를 설치하게끔 요청하고, 설치가 되었다면 메타데이터 추출을 FE 리엑트에서 진행하도록 로직 변경 예정 입니다.**
 
 ### slo 업로드 방식
 
@@ -171,6 +184,13 @@ object storage 및 kakao icloud (openstack) 에 접근할 때엔 , 대부분의 
 각 chunk를 백엔드 서버 내부에 10개 또는 20개 등 테스트 후 최적 개수로 **ConcurrentLinkedQueue**에 저장해 두었다가
 
 각 큐에 들어간 chunk가 특정 개수를 만족하면 , 그때 한번에 upload하는것으로 업로드 속도를 최적화할 예정입니다.
+>kakao icloud object storage에 각 chunk를 저장해야 하는데 , 한번 요청에 한 chunk만 들어갈 수 있어 해당방법은 보류되었습니다.
+
+#### 청크 upload 요청시 스레드풀 생성하여 병렬 처리
+이전 구현 방식으론 , 각 청크들이 한번에 하나의 스레드만 작동하면서 upload를 진행하였습니다.
+
+해서, 16개 스레드 풀을 생성하여 , 한번에 16개의 스레드가 생성되어 16번씩 요청을 처리하도록 하여 성능을 개선하였습니다.
+>이전의 요청에선 5분 이상이 걸리던 1GB 영상이 , 업로드시 1분 35초가 소요되는것을 확인할 수 있었습니다.
 
 #### 메타데이터 추출과 청크 업로드
 업로드 과정에서 , 맨앞 청크만 빼서 임시 디렉토리에 저장한 뒤 , ffmpeg를 사용하여 메타데이터를 추출하고 , 그 다음 청크들을 업로드하게 됩니다.
