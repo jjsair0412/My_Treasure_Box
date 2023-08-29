@@ -86,7 +86,7 @@ PresignedURL을 사용하지 못하고 , ***X-Auth-Token***을 사용해 object 
 
 #### 시퀀스 다이어그램
 
-![class-diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/jjsair0412/My_Treasure_Box/main/working_History/diagram.wsd)
+<!-- ![class-diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/jjsair0412/My_Treasure_Box/main/working_History/diagram.wsd) -->
 
 >**영상 처리로직 자체를 변경해야될것같음**
 >
