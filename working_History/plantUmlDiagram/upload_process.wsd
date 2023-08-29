@@ -1,4 +1,4 @@
-@startuml
+@startuml uploadProcess
 
 title 영상 업로드 프로세스
 
