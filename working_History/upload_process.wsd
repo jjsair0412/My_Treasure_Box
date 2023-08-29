@@ -1,0 +1,27 @@
+title 영상 업로드 프로세스
+
+participant "프론트엔드" as frontend
+participant "Upload Request Queue API" as queueAPI
+box "Kubernetes BackEnd Server" #LightSkyBlue
+    participant "백엔드 Upload API" as backendAPI
+    participant "임시 디렉토리" as tmpDir
+    participant "ffprobe" as ffmpeg
+end box
+participant "Object Storage" as objStorage
+database "RDB" as RDB
+
+frontend->queueAPI: 영상 전송
+queueAPI->tmpDir: 용량 체크
+tmpDir->queueAPI: 용량 확인
+queueAPI->queueAPI: 대기 상태\n큐에서 대기\n**(임시 디렉토리 용량 수용가능범위에 없음)**
+queueAPI->backendAPI: 업로드 요청 \n**(임시 디렉토리 용량 수용 가능)**
+backendAPI->tmpDir: 임시저장
+tmpDir->ffmpeg: 메타데이터 추출
+ffmpeg->RDB: 메타데이터 RDB 업로드
+backendAPI->backendAPI: 청크 분할
+backendAPI->backendAPI: 청크 분할 완료
+par "병렬 스레드 처리"
+    tmpDir->objStorage: 청크 업로드
+    objStorage->tmpDir: 업로드 완료
+    tmpDir->objStorage: 업로드 완료된 청크는 임시파일 제거
+end par

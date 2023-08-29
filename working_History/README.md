@@ -100,6 +100,13 @@ PresignedURL을 사용하지 못하고 , ***X-Auth-Token***을 사용해 object 
 >
 >따라서, **FrontEnd에서 사용자에게 ffmpeg를 설치하게끔 요청하고, 설치가 되었다면 메타데이터 추출을 FE 리엑트에서 진행하도록 로직 변경 예정 입니다.**
 
+#### 로직 변경 후 시퀀스 다이어그램
+- upload 로직 변경 후 최종본 시퀀스 다이어그램입니다.
+- **영상 및 미디어 콘텐츠들의 atom값을 조절하는것은 , 모든 파일을 저장하는것 외에는 불가능하다 판단되어 , 임시 디렉토리에 모든 파일을 저장하되 FrontEnd와 BackEnd API 사이에 종단점 Queue API를 두어서 , 임시 디렉토리가 수용이 가능할 때만 Upload API로 이동하게끔 개발 할 예정입니다.**
+
+![class-diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/jjsair0412/My_Treasure_Box/main/working_History/upload_process.wsd)
+
+
 ### slo 업로드 방식
 
 ### slo 다운로드 방식에 대한 고찰
@@ -196,3 +203,4 @@ object storage 및 kakao icloud (openstack) 에 접근할 때엔 , 대부분의 
 업로드 과정에서 , 맨앞 청크만 빼서 임시 디렉토리에 저장한 뒤 , ffmpeg를 사용하여 메타데이터를 추출하고 , 그 다음 청크들을 업로드하게 됩니다.
 
 이 과정에서 또한 속도 저하가 일어난다 생각되기  때문에 , **각 청크 업로드** 로직과 **메타데이터 추출** 로직은 병렬로 수행되게끔 리펙토링할 예정입니다.
+
