@@ -1,4 +1,4 @@
-@startuml
+@startuml uploadProcess
 
 participant FrontEnd as FE
 box "BackEnd Server" #LightBlue
