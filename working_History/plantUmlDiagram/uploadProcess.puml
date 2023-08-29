@@ -7,23 +7,31 @@ participant "Upload Request Queue API" as queueAPI
 box "Kubernetes BackEnd Server" #LightSkyBlue
     participant "백엔드 Upload API" as backendAPI
     participant "임시 디렉토리" as tmpDir
-    participant "ffprobe" as ffmpeg
+    participant "ffmpeg / ffprobe" as ffmpeg
 end box
 participant "Object Storage" as objStorage
 database "RDB" as RDB
 
-frontend->queueAPI: 영상 전송
-queueAPI->tmpDir: 용량 체크
-tmpDir->queueAPI: 용량 확인
+frontend->queueAPI: 영상 업로드 요청
+queueAPI->tmpDir: 임시 디렉토리 용량 체크
+tmpDir->queueAPI: 임시 디렉토리 용량 확인
 queueAPI->queueAPI: 대기 상태\n큐에서 대기\n**(임시 디렉토리 용량 수용가능범위에 없음)**
 queueAPI->backendAPI: 업로드 요청 \n**(임시 디렉토리 용량 수용 가능)**
 backendAPI->tmpDir: 임시저장
 tmpDir->ffmpeg: 메타데이터 추출
 ffmpeg->RDB: 메타데이터 RDB 업로드
-backendAPI->backendAPI: 청크 분할
-backendAPI->backendAPI: 청크 분할 완료
+backendAPI->ffmpeg: 썸네일 추출
+ffmpeg->backendAPI: 썸네일 추출 완료
+backendAPI->objStorage: 썸네일 object storage에 적제
+backendAPI->ffmpeg: 청크 분할\n**10MB 단위로 청크 분할**
 par "병렬 스레드 처리"
-    tmpDir->objStorage: 청크 업로드
-    objStorage->tmpDir: 업로드 완료
-    tmpDir->objStorage: 업로드 완료된 청크는 임시파일 제거
+    backendAPI->objStorage: 분할한 청크 개별 업로드
+    objStorage->backendAPI: 업로드 완료
+    note over backendAPI
+        각 청크 Response 데이터 사용하여 SLO Manifest Object 큐에 적제
+    end note
+    backendAPI->tmpDir: 업로드 완료된 청크는 임시파일 제거
 end par
+backendAPI->objStorage: 최종 생성된 SLO Manifest Object Json 업로드
+objStorage->backendAPI: 업로드 결과 Reponse
+backendAPI->frontend: 업로드 결과 Response entity 생성하여 응답
