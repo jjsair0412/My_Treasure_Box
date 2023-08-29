@@ -86,7 +86,7 @@ PresignedURL을 사용하지 못하고 , ***X-Auth-Token***을 사용해 object 
 
 #### 시퀀스 다이어그램
 
-![class-diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/jjsair0412/My_Treasure_Box/main/working_History/plantUmlDiagram/diagram.wsd)
+![class-diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/jjsair0412/My_Treasure_Box/main/working_History/plantUmlDiagram/diagram.puml)
 
 >**영상 처리로직 자체를 변경해야될것같음**
 >
@@ -104,7 +104,7 @@ PresignedURL을 사용하지 못하고 , ***X-Auth-Token***을 사용해 object 
 - upload 로직 변경 후 최종본 시퀀스 다이어그램입니다.
 - **영상 및 미디어 콘텐츠들의 atom값을 조절하는것은 , 모든 파일을 저장하는것 외에는 불가능하다 판단되어 , 임시 디렉토리에 모든 파일을 저장하되 FrontEnd와 BackEnd API 사이에 종단점 Queue API를 두어서 , 임시 디렉토리가 수용이 가능할 때만 Upload API로 이동하게끔 개발 할 예정입니다.**
 
-![upload-process-diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/jjsair0412/My_Treasure_Box/main/working_History/plantUmlDiagram/upload_process.wsd)
+![upload-process-diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/jjsair0412/My_Treasure_Box/main/working_History/plantUmlDiagram/upload_process.puml)
 
 
 ### slo 업로드 방식
