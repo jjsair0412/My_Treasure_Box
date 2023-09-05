@@ -23,7 +23,7 @@ ffmpeg->RDB: 메타데이터 RDB 업로드
 backendAPI->ffmpeg: 썸네일 추출
 ffmpeg->backendAPI: 썸네일 추출 완료
 backendAPI->objStorage: 썸네일 object storage에 적제
-backendAPI->ffmpeg: 청크 분할\n**10초 단위로 청크 분할**
+backendAPI->ffmpeg: 청크 분할\n**10MB 단위로 청크 분할**
 par "병렬 스레드 처리"
     backendAPI->objStorage: 분할한 청크 개별 업로드
     objStorage->backendAPI: 업로드 완료

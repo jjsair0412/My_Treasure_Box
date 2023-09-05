@@ -108,6 +108,8 @@ PresignedURL을 사용하지 못하고 , ***X-Auth-Token***을 사용해 object 
 
 
 ### slo 업로드 방식
+#### **중요 고려사항**
+***SLO (Static large object) 방식으로 파일을 업로드하기 위해선 !! chunk를 나눌 때 , ffmpeg와같은 특정솔루션을 통해 나누는것이 아니라 , Byte단위의 데이터로 쪼개야 합니다 !!***
 
 ### slo 다운로드 방식에 대한 고찰
 slo방식으로 object storage에 업로드 되었기때문에 , 대용량 파일은 chunk별로 쪼개져서 저장되고 , 각 chunk들을 관리하는 manifest object 파일이 생성되었습니다.
