@@ -1,0 +1,23 @@
+@startuml
+
+participant "JobLauncher" as JL
+participant "Job" as J
+participant "Step" as S
+participant "ItemReader" as IR
+participant "ItemProcessor" as IP
+participant "ItemWriter" as IW
+database "Database" as DB
+database "Elasticsearch" as ES
+
+JL -> J: start()
+J -> S: execute()
+S -> IR: read()
+IR -> DB: fetch data
+DB --> IR: return data
+S -> IP: process(data)
+IP --> S: return processed data
+S -> IW: write(processedData)
+IW -> ES: index data
+ES --> IW: confirm indexed
+
+@enduml

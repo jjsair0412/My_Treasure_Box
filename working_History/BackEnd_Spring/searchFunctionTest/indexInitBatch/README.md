@@ -11,3 +11,10 @@ batch 최신 변동사항 정리
 
 batch 생성 스키마 정리
 - https://zzang9ha.tistory.com/426
+## dependency
+spring data elasticsearch 의존성을 추가합니다.
+- [spring_data_elasticsearch_maven_repository](https://mvnrepository.com/artifact/org.springframework.data/spring-data-elasticsearch)
+>해당 예제에선 5.1.2 버전 사용
+
+## 프로세스
+![class-diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/jjsair0412/My_Treasure_Box/working_History/BackEnd_Spring/searchFunctionTest/indexInitBatch/indicesDiagram.puml)
