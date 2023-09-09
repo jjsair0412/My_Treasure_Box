@@ -31,9 +31,14 @@ OpenJDK 64-Bit Server VM Corretto-11.0.19.7.1 (build 11.0.19+7-LTS, mixed mode)
 ### 2. apache kafka 설치
 - [kafka 공식 다운로드 페이지](https://kafka.apache.org/downloads) 에서 latest kafka를 설치합니다.
     - 설치대상 버전 : 3.1.0 , Scala 2.13
+>꼭 binary download에서 bin파일들을 설치해야만 합니다.
+>
+>아니면 아래 에러발생
+>
+>Classpath is empty. Please build the project first e.g. by running './gradlew jar -PscalaVersion=2.13.6'
 
 ```bash
-$ wget https://archive.apache.org/dist/kafka/3.1.0/kafka-3.1.0-src.tgz
+$ wget https://downloads.apache.org/kafka/3.5.1/kafka_2.12-3.5.1.tgz
 ```
 
 설치한 tar파일 압축해제합니다.

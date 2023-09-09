@@ -19,5 +19,14 @@ Source Sytem은 Web site나 Pricing Data 등 여러가지가 될 수 있고 , Ta
 
 ## kafka programming
 java 언어를 통해 kafka를 어떻게 핸들링할것인가에 대한 내용을 정리해 두었습니다.
-
 - [kafka programming](./Kafka_Programming/)
+
+## kakfa CLI
+바이너리 파일을 통해 Kafka를 조작하는 방법에 대해 정리해 두었습니다.
+- [kafka Cli](./Kafka_CLI/)
+
+## kafka Advanced Topic Conifg
+kafka의 토픽을 구성할 때 , 고급 내용을 다룹니다.
+
+[kafka topic 구성 추가제거방안](./Kafka_Advanced_Topic_Config/topic_구성_추가제거방안.md) 문서 내용을 바탕으로 , 토픽에 대해 삭제 정책 ( delete , compact ) 등을 결정하거나 , OSR에도 데이터를 저장하는 등의 관리 전략들을 정리해 두었습니다.
+- [kafka Advanced topic config](./Kafka_Advanced_Topic_Config/)
