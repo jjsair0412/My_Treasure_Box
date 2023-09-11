@@ -126,14 +126,20 @@ ES의 검색 과정은 다음과같은 다이어그램을 따릅니다.
 ### 애널라이저 (Analyzer)
 inverted index를 만들기 위한 과정에서 , 애널라이저라는 과정이 꼭 필요합니다.
 
-문자열 -> character fileter -> tokenizer -> token filter -> tokens 
+    문자열 -> character fileter -> tokenizer -> token filter -> tokens 
 
-> 위 단계를 거치며 문자열을 분석해서 inverted index 구성을 위해 토큰을 만들어 내는 과정을 의미합니다.
+위 단계를 거치며 문자열을 분석해서 inverted index 구성을 위해 토큰을 만들어 내는 과정을 의미합니다.
 
 character fileter , tokenizer , token filter를 잘 조합해서 custom analyzer를 만들 수 있습니다.
+- 예시
+  - ```character fileter``` 에서 특수문자를 제거
+  - ```tokenizer``` 에서 공백을 제거
+  - ```token filter``` 에서 소문자로 변경
 
 ## 검색 과정 최종 아키텍쳐
 따라서 , 검색 과정은 아래와 같은 최종적인 아키텍처를 가집니다, 
+
+>검색어 분석 과정에서 에널라이저를 적용하여 , 해당 애널라이저로 토큰을 생성한 뒤 검색하는것을 의미합니다.
 
 우측편이 실제로 어떤 작업이 일어나는지에대해 기술되어 있습니다.
 
