@@ -136,6 +136,15 @@ character fileter , tokenizer , token filter를 잘 조합해서 custom analyzer
   - ```tokenizer``` 에서 공백을 제거
   - ```token filter``` 에서 소문자로 변경
 
+### Custom 애널라이저
+한글 형태소를 분석하는것은 쉬운작업이 아닙니다.
+
+한글은 복합어, 합성어등이 많아서 , 하나의 단어도 여러 어간으로 분리해야 하는 경우가 많아 한글 형태소 사전이 꼭 필요합니다.
+
+ElasticSearch에선 이러한 문제를 해결하기 위해 , ***노리 (nori) 한글 형태소 분석기*** 를 개발하였습니다.
+>nori 형태소분석기는 , Elasticsearch 6.6 버전부터 지원합니다.
+- [관련 문서](https://esbook.kimjmin.net/06-text-analysis/6.7-stemming/6.7.2-nori)
+
 ## 검색 과정 최종 아키텍쳐
 따라서 , 검색 과정은 아래와 같은 최종적인 아키텍처를 가집니다, 
 
