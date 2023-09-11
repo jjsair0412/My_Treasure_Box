@@ -15,12 +15,20 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class IndexWriterImpl implements IndexWriter{
 
+    /**
+     * ElasticSearch와 상호 작용하기위한 ElasticsearchTemplate 객체 주입
+     */
     private final ElasticsearchTemplate elasticsearchTemplate;
     @Bean
     @Override
     public ItemWriter<InfoDtoIndex> elasticSearchWriter() {
         return items -> {
             try{
+                /**
+                 * Processor 계층에서 변환된 items 를 받아서 , elasticsearchTemplate.save() 메서드로
+                 *
+                 * elasticSearch에 색인 합니다.
+                 */
                 for (InfoDtoIndex item : items) {
                     InfoDtoIndex save = elasticsearchTemplate.save(item);
                     log.info("save.getCategory() : " +save.getCategory());

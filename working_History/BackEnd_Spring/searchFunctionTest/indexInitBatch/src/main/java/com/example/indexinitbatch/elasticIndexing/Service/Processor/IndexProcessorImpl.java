@@ -11,6 +11,10 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 public class IndexProcessorImpl implements IndexProcessor{
 
+    /**
+     *
+     * Reader에서 반환받은 InfoDto 엔티티를 InfoDtoIndex 엔티티로 변환 합니다.
+     */
     @Bean
     @Override
     public ItemProcessor<InfoDto, InfoDtoIndex> processor() {

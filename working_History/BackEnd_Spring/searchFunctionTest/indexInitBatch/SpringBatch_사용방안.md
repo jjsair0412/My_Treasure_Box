@@ -1,4 +1,11 @@
 # Spring Batch 사용방안
+## Spring batch 코드 사용 방안
+아래 문서 참고하여 코드 확인 하면 알 수 있습니다.
+>해당 예제 코드는 , RDB 대상으로 select 쿼리를 수행 후 , elasticSearch에 색인하는 과정에 대해 테스트한 코드 입니다.
+> 
+>만약 특정 파일을 읽어서 가져가야한다던지 하는 기능이 필요하다면 , 그때그때 Reader , Processor , Writer 코드를 수정하여 사용하면 됩니다.
+- [사용방안](./사용방안.md)
+
 ## Spring batch 동작 방식
 ### 구성 요소
 ![Spring Batch Architecture](./Images/SpringBatchArchitecture.jpeg)
@@ -6,7 +13,6 @@
 spring batch는 내부적으로 스케줄러를 가지고있지 않기 떄문에 , 혼자서 job을 수행하며 동작할 수 없습니다.
 
 따라서 외부 스케줄러가 있어야 하고, Batch Scheduler라 함은 외부 모듈을 의미합니다. 해당 외부 스케줄러가 batch job을 동작시키게 됩니다.
-
 
 스케줄러의 종류로는 아래와 같습니다.
 1. Quartz Scheduler
