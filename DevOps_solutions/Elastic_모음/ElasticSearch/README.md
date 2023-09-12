@@ -18,6 +18,5 @@
     - [Elastic_TroubleShooting](./Elastic_TroubleShooting.md)
 
 ## ElasticSearch 참고하기 좋은 가이드북 문서
-ElasticSearch 가이드북 입니다. 개발할때 좋았어요
-
+- ElasticSearch 가이드북 입니다. 개발할때 좋았어요
     - [ElasticSearch 가이드북](https://esbook.kimjmin.net/)
