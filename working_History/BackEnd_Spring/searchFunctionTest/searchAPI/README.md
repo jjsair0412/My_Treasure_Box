@@ -132,12 +132,11 @@ POST info_index/_search
                         }
                     }
                 },
-                
             ],
             "must": [
                 {
                     "match":{
-                        "category": "과자"
+                        "category": "스마트워치"
                     }
                 }
             ]
