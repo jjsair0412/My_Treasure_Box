@@ -1,7 +1,6 @@
 package com.example.searchapi.Service;
 
 import com.example.searchapi.Entity.InfoEntityIndex;
-import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -17,7 +16,6 @@ import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -113,6 +111,7 @@ public class SearchServiceImpl implements SearchService {
             throw new RuntimeException(e.getMessage());
         }
     }
+
 
     private RestHighLevelClient createConnection() {
         // elasticSearch 로그인정보 기입

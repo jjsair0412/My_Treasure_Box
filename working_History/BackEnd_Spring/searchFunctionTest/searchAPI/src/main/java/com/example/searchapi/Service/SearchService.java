@@ -10,4 +10,5 @@ public interface SearchService {
 
     // 카테고리별 검색
     List<InfoEntityIndex> matchCategory(String indexName, String categoryName);
+
 }
