@@ -1,7 +1,7 @@
-package com.example.indexinitbatch.elasticIndexing.Service.Writer;
+package com.batch.eventindexinitbatch.elasticIndexing.Service.Writer;
 
-import com.example.indexinitbatch.elasticIndexing.Config.ElasticTemplateGlobalConfig;
-import com.example.indexinitbatch.elasticIndexing.Entity.InfoDtoIndex;
+import com.batch.eventindexinitbatch.elasticIndexing.Config.ElasticTemplateGlobalConfig;
+import com.batch.eventindexinitbatch.elasticIndexing.Entity.InfoDtoIndex;
 import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

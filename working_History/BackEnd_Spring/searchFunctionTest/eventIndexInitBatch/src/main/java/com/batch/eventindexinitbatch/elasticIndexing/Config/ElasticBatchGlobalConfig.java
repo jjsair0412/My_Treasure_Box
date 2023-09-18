@@ -1,7 +1,7 @@
-package com.example.indexinitbatch.elasticIndexing.Config;
+package com.batch.eventindexinitbatch.elasticIndexing.Config;
 
-import com.example.indexinitbatch.elasticIndexing.Entity.InfoDto;
-import com.example.indexinitbatch.elasticIndexing.Entity.InfoDtoIndex;
+import com.batch.eventindexinitbatch.elasticIndexing.Entity.InfoDto;
+import com.batch.eventindexinitbatch.elasticIndexing.Entity.InfoDtoIndex;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;

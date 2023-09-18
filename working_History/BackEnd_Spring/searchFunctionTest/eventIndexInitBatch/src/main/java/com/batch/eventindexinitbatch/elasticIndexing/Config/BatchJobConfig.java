@@ -1,4 +1,4 @@
-package com.example.indexinitbatch.elasticIndexing.Config;
+package com.batch.eventindexinitbatch.elasticIndexing.Config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
