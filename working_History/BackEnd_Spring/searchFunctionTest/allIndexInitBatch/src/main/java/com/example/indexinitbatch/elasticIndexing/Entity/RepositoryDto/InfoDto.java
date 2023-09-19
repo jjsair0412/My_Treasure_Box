@@ -1,9 +1,12 @@
-package com.example.indexinitbatch.elasticIndexing.Entity;
+package com.example.indexinitbatch.elasticIndexing.Entity.RepositoryDto;
 
+import com.example.indexinitbatch.elasticIndexing.Entity.Index.CategoryIndex;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -13,5 +16,5 @@ public class InfoDto {
     int firstInfoId;
     String name;
     int age;
-    String category;
+    List<CategoryIndex> categoryRepos;
 }

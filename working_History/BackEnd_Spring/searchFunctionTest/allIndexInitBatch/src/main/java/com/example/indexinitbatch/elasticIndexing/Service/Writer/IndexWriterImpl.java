@@ -1,7 +1,7 @@
 package com.example.indexinitbatch.elasticIndexing.Service.Writer;
 
 import com.example.indexinitbatch.elasticIndexing.Config.ElasticTemplateGlobalConfig;
-import com.example.indexinitbatch.elasticIndexing.Entity.InfoDtoIndex;
+import com.example.indexinitbatch.elasticIndexing.Entity.Index.InfoDtoIndex;
 import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +45,7 @@ public class IndexWriterImpl implements IndexWriter{
 
 
                 for (InfoDtoIndex item : items) {
+                    log.info("data json : "+gson.toJson(item));
                     IndexQuery indexQuery = new IndexQuery();
                     indexQuery.setId(String.valueOf(item.getFirstInfoId()));
                     // 벌크 json에 DTO 객체를 넣기 위해서 Json으로 변경

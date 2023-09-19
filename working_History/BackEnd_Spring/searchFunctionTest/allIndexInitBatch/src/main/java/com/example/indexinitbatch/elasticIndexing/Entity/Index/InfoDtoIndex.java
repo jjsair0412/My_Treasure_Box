@@ -1,4 +1,4 @@
-package com.example.indexinitbatch.elasticIndexing.Entity;
+package com.example.indexinitbatch.elasticIndexing.Entity.Index;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,6 +8,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
+
+import java.util.List;
 
 /**
  * @Document(indexName = "info_index")
@@ -23,7 +25,9 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
  * - type은 해당 필드 속성 나타냄
  *  - FieldType.Text : 택스트 기반 필드
  *  - FieldType.Integer : 정수 타입 필드
- *  등 ..
+ *  - FieldType.Nested : Nested 타입 필드
+ *      - 카테고리는 계층 구조로 대 / 중 분류 카테고리들이 여러개 있을 수 있기 때문에 , List로 등록
+ *
  */
 @Document(indexName = "info_index")
 @Getter
@@ -41,6 +45,7 @@ public class InfoDtoIndex {
     @Field(type = FieldType.Integer)
     private int age;
 
-    @Field(type = FieldType.Text)
-    private String category;
+    @Field(type = FieldType.Nested)
+    private List<CategoryIndex> categories;
+
 }

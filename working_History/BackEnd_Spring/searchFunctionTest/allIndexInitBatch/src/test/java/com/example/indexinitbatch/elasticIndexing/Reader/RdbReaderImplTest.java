@@ -1,6 +1,6 @@
 package com.example.indexinitbatch.elasticIndexing.Reader;
 
-import com.example.indexinitbatch.elasticIndexing.Entity.InfoDto;
+import com.example.indexinitbatch.elasticIndexing.Entity.RepositoryDto.InfoDto;
 import com.example.indexinitbatch.elasticIndexing.Service.Reader.RdbReader;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.item.database.JdbcPagingItemReader;

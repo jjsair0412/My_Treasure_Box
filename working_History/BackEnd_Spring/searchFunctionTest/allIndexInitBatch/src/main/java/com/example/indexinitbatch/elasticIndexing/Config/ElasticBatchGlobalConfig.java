@@ -1,7 +1,7 @@
 package com.example.indexinitbatch.elasticIndexing.Config;
 
-import com.example.indexinitbatch.elasticIndexing.Entity.InfoDto;
-import com.example.indexinitbatch.elasticIndexing.Entity.InfoDtoIndex;
+import com.example.indexinitbatch.elasticIndexing.Entity.RepositoryDto.InfoDto;
+import com.example.indexinitbatch.elasticIndexing.Entity.Index.InfoDtoIndex;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -18,6 +18,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
+
+import java.util.List;
 
 @Configuration
 @EnableBatchProcessing
@@ -67,7 +69,7 @@ public class ElasticBatchGlobalConfig {
     public Step firstStep(
             JobRepository repository,
             @Qualifier("selectInformation") JdbcPagingItemReader reader,
-            @Qualifier("processor") ItemProcessor<InfoDto, InfoDtoIndex> processor,
+            @Qualifier("processor") ItemProcessor<List<InfoDto>, InfoDtoIndex> processor,
             @Qualifier("elasticSearchWriter") ItemWriter<InfoDtoIndex> writer){
         return new StepBuilder("firstStep",repository)
                 .<InfoDto, InfoDtoIndex>chunk(1, transactionManager)

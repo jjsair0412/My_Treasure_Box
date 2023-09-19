@@ -1,11 +1,15 @@
 package com.example.indexinitbatch.elasticIndexing.Service.Processor;
 
-import com.example.indexinitbatch.elasticIndexing.Entity.InfoDto;
-import com.example.indexinitbatch.elasticIndexing.Entity.InfoDtoIndex;
+import com.example.indexinitbatch.elasticIndexing.Entity.Index.CategoryIndex;
+import com.example.indexinitbatch.elasticIndexing.Entity.RepositoryDto.InfoDto;
+import com.example.indexinitbatch.elasticIndexing.Entity.Index.InfoDtoIndex;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 @Slf4j
@@ -17,13 +21,23 @@ public class IndexProcessorImpl implements IndexProcessor{
      */
     @Bean
     @Override
-    public ItemProcessor<InfoDto, InfoDtoIndex> processor() {
+    public ItemProcessor<List<InfoDto>, InfoDtoIndex> processor() {
         log.info("call processor");
-        return InfoDto -> InfoDtoIndex.builder()
-                .firstInfoId(InfoDto.getFirstInfoId())
-                .name(InfoDto.getName())
-                .age(InfoDto.getAge())
-                .category(InfoDto.getCategory())
-                .build();
+        return infoDtos -> {
+            InfoDto firstDto = infoDtos.get(0);
+
+            List<CategoryIndex> categoryIndices = new ArrayList<>();
+            for (InfoDto infoDto : infoDtos) {
+                categoryIndices.addAll(infoDto.getCategoryRepos());
+            }
+
+            return InfoDtoIndex.builder()
+                    .firstInfoId(firstDto.getFirstInfoId())
+                    .name(firstDto.getName())
+                    .age(firstDto.getAge())
+                    .categories(categoryIndices)
+                    .build();
+        };
+
     }
 }
