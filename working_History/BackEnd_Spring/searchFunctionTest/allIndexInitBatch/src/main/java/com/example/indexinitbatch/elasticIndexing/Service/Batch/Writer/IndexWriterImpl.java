@@ -1,4 +1,4 @@
-package com.example.indexinitbatch.elasticIndexing.Service.Writer;
+package com.example.indexinitbatch.elasticIndexing.Service.Batch.Writer;
 
 import com.example.indexinitbatch.elasticIndexing.Config.ElasticTemplateGlobalConfig;
 import com.example.indexinitbatch.elasticIndexing.Entity.Index.InfoDtoIndex;
@@ -11,8 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.query.IndexQuery;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Configuration
 @RequiredArgsConstructor
@@ -43,13 +42,12 @@ public class IndexWriterImpl implements IndexWriter{
                 // bulk 사용하기 위해서 indexQuery 리스트 생성
                 List<IndexQuery> queries = new ArrayList<>();
 
-
-                for (InfoDtoIndex item : items) {
-                    log.info("data json : "+gson.toJson(item));
+                for (InfoDtoIndex dtoIndex : items) {
+                    log.info("data json : "+gson.toJson(dtoIndex));
                     IndexQuery indexQuery = new IndexQuery();
-                    indexQuery.setId(String.valueOf(item.getFirstInfoId()));
+                    indexQuery.setId(String.valueOf(dtoIndex.getFirstInfoId()));
                     // 벌크 json에 DTO 객체를 넣기 위해서 Json으로 변경
-                    indexQuery.setSource(gson.toJson(item));
+                    indexQuery.setSource(gson.toJson(dtoIndex));
                     queries.add(indexQuery);
                 }
 

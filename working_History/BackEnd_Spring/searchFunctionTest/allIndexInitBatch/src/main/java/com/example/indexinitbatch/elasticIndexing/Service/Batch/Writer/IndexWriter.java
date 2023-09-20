@@ -1,4 +1,4 @@
-package com.example.indexinitbatch.elasticIndexing.Service.Writer;
+package com.example.indexinitbatch.elasticIndexing.Service.Batch.Writer;
 
 import com.example.indexinitbatch.elasticIndexing.Entity.Index.InfoDtoIndex;
 import org.springframework.batch.item.ItemWriter;

@@ -45,6 +45,9 @@ public class InfoDtoIndex {
     @Field(type = FieldType.Integer)
     private int age;
 
+    @Field(type = FieldType.Text)
+    private List<String> keyword;
+
     @Field(type = FieldType.Nested)
     private List<CategoryIndex> categories;
 

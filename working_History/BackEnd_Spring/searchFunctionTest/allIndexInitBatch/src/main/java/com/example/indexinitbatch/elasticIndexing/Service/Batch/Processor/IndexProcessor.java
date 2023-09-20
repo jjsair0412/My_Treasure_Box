@@ -1,4 +1,4 @@
-package com.example.indexinitbatch.elasticIndexing.Service.Processor;
+package com.example.indexinitbatch.elasticIndexing.Service.Batch.Processor;
 
 import com.example.indexinitbatch.elasticIndexing.Entity.RepositoryDto.InfoDto;
 import com.example.indexinitbatch.elasticIndexing.Entity.Index.InfoDtoIndex;

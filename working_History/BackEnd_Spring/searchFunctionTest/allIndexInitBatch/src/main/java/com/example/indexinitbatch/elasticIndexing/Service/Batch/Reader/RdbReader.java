@@ -1,4 +1,4 @@
-package com.example.indexinitbatch.elasticIndexing.Service.Reader;
+package com.example.indexinitbatch.elasticIndexing.Service.Batch.Reader;
 
 import com.example.indexinitbatch.elasticIndexing.Entity.RepositoryDto.InfoDto;
 import org.springframework.batch.item.database.JdbcPagingItemReader;
