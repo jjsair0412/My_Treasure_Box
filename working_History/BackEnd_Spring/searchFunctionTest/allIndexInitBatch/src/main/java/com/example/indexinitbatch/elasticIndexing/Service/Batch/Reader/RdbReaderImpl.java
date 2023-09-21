@@ -3,7 +3,6 @@ package com.example.indexinitbatch.elasticIndexing.Service.Batch.Reader;
 import com.example.indexinitbatch.elasticIndexing.Entity.Index.CategoryIndex;
 import com.example.indexinitbatch.elasticIndexing.Entity.RepositoryDto.KeywordDto;
 import com.example.indexinitbatch.elasticIndexing.Entity.RepositoryDto.InfoDto;
-import com.example.indexinitbatch.elasticIndexing.Service.Maker.removeDuplicateValue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.database.JdbcPagingItemReader;

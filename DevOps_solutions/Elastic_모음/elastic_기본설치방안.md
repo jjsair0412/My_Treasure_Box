@@ -42,7 +42,7 @@ $ docker run -d --name elasticsearch -p 9200:9200 -p 9300:9300 --restart=always 
 -e "xpack.security.transport.ssl.enabled=false" \
 -e "discovery.type=single-node" \
 -e "ELASTIC_PASSWORD=my_password" \
---net elastic docker.elastic.co/elasticsearch/elasticsearch:8.2.3
+--net elastic docker.elastic.co/elasticsearch/elasticsearch:7.10.0
 ```
 
 컨테이너 접속하여 새로운 유저를 생성합니다.

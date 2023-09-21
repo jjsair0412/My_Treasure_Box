@@ -1,0 +1,29 @@
+package com.example.indexinitbatch.elasticIndexing.Config.ElasticConfigure.Version_8.x.x;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.elasticsearch.core.RefreshPolicy;
+import org.springframework.stereotype.Service;
+
+/**
+ *
+ * ElasticsearchTemplate 초기화 메서드
+ *
+ * ElasticSearch 버전이 8.x.x 일 때 해당
+ */
+//@Configuration
+//public class Version_8_ElasticTemplateGlobalConfigImpl {
+//    private final ElasticsearchTemplate customElasticTemplate;
+//
+//    @Autowired
+//    public Version_8_ElasticTemplateGlobalConfigImpl(ElasticsearchTemplate customElasticTemplate) {
+//        this.customElasticTemplate=customElasticTemplate;
+//    }
+//
+//    public ElasticsearchTemplate customElasticTemplate(){
+//        customElasticTemplate.setRefreshPolicy(RefreshPolicy.IMMEDIATE);
+//        return customElasticTemplate;
+//    }
+//}

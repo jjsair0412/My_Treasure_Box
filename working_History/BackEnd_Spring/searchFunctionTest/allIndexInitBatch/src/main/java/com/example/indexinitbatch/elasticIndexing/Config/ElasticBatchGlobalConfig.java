@@ -70,7 +70,8 @@ public class ElasticBatchGlobalConfig {
             JobRepository repository,
             @Qualifier("selectInformation") JdbcPagingItemReader reader,
             @Qualifier("processor") ItemProcessor<List<InfoDto>, InfoDtoIndex> processor,
-            @Qualifier("elasticSearchWriter") ItemWriter<InfoDtoIndex> writer){
+            @Qualifier("elasticSearchWriter") ItemWriter<InfoDtoIndex> writer
+    ){
         return new StepBuilder("firstStep",repository)
                 .<InfoDto, InfoDtoIndex>chunk(1, transactionManager)
                 .reader(reader)
