@@ -60,8 +60,7 @@ filter {
 output {
   elasticsearch {
     hosts => ["http://elasticsearch:9200"] 
-    ; index => "%{+YYYY.DD.dd}_full_indexing_test_three"
-    index => "info_index"
+    index => "%{+YYYY.DD.dd}_full_indexing_test_three"
     user => "test"  
     password => "test1234"
     document_id => "%{[@metadata][fingerprint]}" # 생성한 고유 ID (fingerprint) 를 각 문서의 document_id로 지정합니다. 
