@@ -22,6 +22,17 @@ $ bin/elasticsearch-plugin install analysis-nori
 $ bin/elasticsearch-plugin remove analysis-nori
 ```
 
+### kubernetes에 배포될 ElasticSearch라면 ..
+만약 Kubernetes에 배포될 ElasticSearch에 특정 플러그인을 설치해야 한다면 , 특정 버전의 ElasticSearch image를 Dockerfile의 baseImage로 등록하여 custom image를 빌드한 이후, 해당 이미지를 사용합니다.
+
+```Dockerfile
+# 버전은 필요에 따라 변경
+FROM docker.elastic.co/elasticsearch/elasticsearch:7.10.0 
+
+# Nori Plugin 설치
+RUN bin/elasticsearch-plugin install analysis-nori
+```
+
 nori 형태소분석기가 잘 설치되었는지 엘라스틱서치에 쿼리를 보내서 확인합니다.
 
 일반 standard tokenizer를 사용하면 , 공백만 자를 수 있습니다.

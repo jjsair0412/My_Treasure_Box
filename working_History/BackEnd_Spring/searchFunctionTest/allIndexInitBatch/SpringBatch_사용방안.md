@@ -233,3 +233,62 @@ ItemReader를 통해 읽은 데이터에 대한 로직을 처리하는 역할을
 처리된 데이터를 저장하거나 출력하는 역할을 합니다. 예를 들어, 데이터를 파일에 쓰거나 데이터베이스에 저장하는 작업을 수행합니다.
 
 여기서 타 API를 호출하거나 , Kafka topic을 발행하거나 , elasticSearch 에 색인하는 등의 작업이 일어 납니다.
+
+
+## ETC - troubleShooting
+### 병렬처리와 SpringBatch
+SpringBatch에서 해당 예제의 작성된 방식처럼 [TaskExecutor 위치](./src/main/java/com/example/indexinitbatch/elasticIndexing/Config/ElasticBatchGlobalConfig.java) TaskExecutor를 설정할 때 굉장히 조심해야 합니다.
+
+SpringBatch는 Step에 등록된 Chunk의 개수만큼 reader , processor , writer 를 반복합니다.
+
+**그런데, 해당 예제처럼 TaskExecutor를 선언하여 특정 개수만큼의 스레드를 병렬로 수행하면 , Chunk 개수만큼 배로 작업이 수행됩니다.**
+
+예를들어 , 아래처럼 
+
+```java
+   @Bean
+    public TaskExecutor taskExecutor(){
+        SimpleAsyncTaskExecutor asyncTaskExecutor = new SimpleAsyncTaskExecutor("spring_batch");
+        asyncTaskExecutor.setConcurrencyLimit(5);
+        return asyncTaskExecutor;
+    }
+```
+
+
+taskExecutor의 스레드 개수를 5로 두고, 
+```java
+    @Bean
+    public Step firstStep(
+            JobRepository repository,
+            @Qualifier("selectInformation") JdbcPagingItemReader reader,
+            @Qualifier("processor") ItemProcessor<List<InfoDto>, InfoDtoIndex> processor,
+            @Qualifier("elasticSearchWriter") ItemWriter<InfoDtoIndex> writer
+    ){
+        return new StepBuilder("firstStep",repository)
+                .<InfoDto, InfoDtoIndex>chunk(1, transactionManager)
+                .reader(reader)
+                .processor(processor)
+                .writer(writer)
+                .taskExecutor(taskExecutor())
+                .build();
+    }
+```
+
+**청크 사이즈를 1로 두면, 5개의 스레드가 1개의 Step을 5번 수행하게 됩니다.**
+
+위처럼 taskExecutor가 설정되면 Spring Batch는 Step 내의 Chunk 처리를 병렬로 수행하려고 시도합니다. 
+
+이 경우, 여러 스레드가 동시에 ItemReader, ItemProcessor, ItemWriter를 호출하게 됩니다. 이러한 병렬 처리는 성능을 향상시킬 수 있지만, 구성 요소들이 동시성에 안전하지 않다면 문제가 발생할 수 있습니다.
+
+따라서, 병렬 처리를 사용할 때는 다음과 같은 점을 고려해야 합니다.
+
+#### 1. **Thread-Safety :** 
+    
+    ItemReader, ItemProcessor, ItemWriter가 여러 스레드에 의해 동시에 접근될 수 있으므로, 이들 구성 요소가 Thread-Safe해야 합니다.
+#### 2. **Statelessness :** 
+
+    가능하면 ItemReader, ItemProcessor, ItemWriter를 상태가 없는 (stateless) 방식으로 구현해야 합니다. 상태가 있는 구성 요소를 사용할 때는 상태를 올바르게 관리해야 합니다.
+#### 3. **Partitioning :** 
+
+    대안적으로, Step의 Partitioning 기능을 사용하여 데이터를 여러 파티션으로 분할하고 각 파티션을 별도의 스레드에서 처리할 수 있습니다. 이 방식을 사용하면 각 스레드가 독립적인 ItemReader 인스턴스를 가질 수 있습니다.
+  
