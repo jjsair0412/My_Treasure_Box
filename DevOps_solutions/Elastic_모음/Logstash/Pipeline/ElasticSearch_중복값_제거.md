@@ -46,6 +46,7 @@ input {
         user => "test" # 해당 index를 접근할 수 있는 username 및 password를 입력합니다.
         password => "test1234"
         docinfo => true
+        schedule => "0 * * * * *" # crontab으로 logstash pipeline 실행 주기를 결정합니다.
     }
 }
 
@@ -60,7 +61,7 @@ filter {
 output {
   elasticsearch {
     hosts => ["http://elasticsearch:9200"] 
-    index => "%{+YYYY.DD.dd}_full_indexing_test_three"
+    index => "%{+YYYY.MM.dd}_full_indexing_test_three"
     user => "test"  
     password => "test1234"
     document_id => "%{[@metadata][fingerprint]}" # 생성한 고유 ID (fingerprint) 를 각 문서의 document_id로 지정합니다. 
