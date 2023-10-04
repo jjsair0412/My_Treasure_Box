@@ -20,3 +20,11 @@
 ## ElasticSearch 참고하기 좋은 가이드북 문서
 - ElasticSearch 가이드북 입니다. 개발할때 좋았어요
     - [ElasticSearch 가이드북](https://esbook.kimjmin.net/)
+
+## ElasticSearch 한글 형태소분석기 도입방안
+- ElasticSearch의 한글 형태소분석기를 도입하는 방안에 대해 설명해두었습니다.
+    - [nori 한글형태소분석기 도입방안](./ElasticSearch_검색_한글형태소분석.md)
+
+## ElasticSearch 검색 조건
+- ElasticSearch의 여러 요구사항에 맞는 검색 조건들의 쿼리를 정리해두었습니다.
+    - [Search Kind](./Search_kind.md)
