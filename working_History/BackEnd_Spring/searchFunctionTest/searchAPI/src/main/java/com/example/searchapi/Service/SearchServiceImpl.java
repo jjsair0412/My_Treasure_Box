@@ -39,34 +39,7 @@ public class SearchServiceImpl implements SearchService {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
         // firstInfoId 컬럼 기준으로 정렬
-        searchSourceBuilder.sort(new FieldSortBuilder("firstInfoId").order(SortOrder.ASC));
-
-        searchRequest.source(searchSourceBuilder);
-
-
-        List<InfoEntityIndex> resultMap = new ArrayList<>();
-
-        try (RestHighLevelClient client = createConnection()) {
-
-            SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-            for (SearchHit hit : response.getHits()) {
-                Map<String, Object> sourceAsMap = hit.getSourceAsMap();
-                resultMap.add(
-                        InfoEntityIndex.builder()
-                                .firstInfoId((Integer) sourceAsMap.get("firstInfoId"))
-                                .category((String) sourceAsMap.get("category"))
-                                .name((String) sourceAsMap.get("name"))
-                                .age((Integer) sourceAsMap.get("age"))
-                                .build()
-                );
-            }
-
-            return resultMap;
-
-        } catch (RuntimeException | IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
-        }
+        return getInfoEntityIndices(searchRequest, searchSourceBuilder);
     }
 
     @Override
@@ -82,6 +55,12 @@ public class SearchServiceImpl implements SearchService {
 
         searchSourceBuilder.query(categoryQuery);
         // firstInfoId 컬럼 기준으로 정렬
+        return getInfoEntityIndices(searchRequest, searchSourceBuilder);
+    }
+
+
+
+    private List<InfoEntityIndex> getInfoEntityIndices(SearchRequest searchRequest, SearchSourceBuilder searchSourceBuilder) {
         searchSourceBuilder.sort(new FieldSortBuilder("firstInfoId").order(SortOrder.ASC));
 
         searchRequest.source(searchSourceBuilder);
