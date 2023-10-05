@@ -9,6 +9,6 @@ public interface SearchService {
     List<InfoEntityIndex> matchAll(String indexName);
 
     // 카테고리별 검색
-    List<InfoEntityIndex> matchCategory(String indexName, String categoryName);
+    List<InfoEntityIndex> matchKeyword(String indexName, String keyword);
 
 }

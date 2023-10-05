@@ -28,11 +28,11 @@ public class SearchController {
     @GetMapping("/search/matchCategory")
     public ResponseEntity<CommonResponseEntity> categorySearch(
             @RequestParam("indexName") String indexName,
-            @RequestParam("category") String category
+            @RequestParam("keyword") String keyword
     ) {
         return new ResponseEntity<>(
                 CommonResponseEntity.builder()
-                        .returnEntity(searchService.matchCategory(indexName,category))
+                        .returnEntity(searchService.matchKeyword(indexName,keyword))
                         .message("testOK")
                         .build(), HttpStatus.OK
         );

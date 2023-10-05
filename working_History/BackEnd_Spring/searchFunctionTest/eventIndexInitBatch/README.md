@@ -20,8 +20,16 @@ elastic search에 RDB 데이터를 특정 event별로 넣어주는 배치 API
 ![batchLogic](../Images/batchLogic.png)
 
 ## Table 생성
+기반이 되는 나머지 테이블들은 , 아래 링크를 타고가면 확인할 수 있습니다.
+- [RDB 정보 섹션에서 찾을수 있음.](../allIndexInitBatch/사용방안.md)
+
 ### 1. Action Table 생성
-| 컬럼 명             | Data Type   | 요약 정보       | 비고                  |
-|------------------|-------------|-------------|---------------------|
-| sub_category_seq | int         | row별 식별자 값 (auto_increment)   | pk |
-| sub_category     | varchar(20) | 중분류 카테고리 명  | -                   |
+| 컬럼 명             | Data Type   | 요약 정보                       | 비고                                 |
+|------------------|-------------|-----------------------------|------------------------------------|
+| _id | int         | row별 식별자 값 (auto_increment) | pk                                 |
+| action     | varchar(20) | 해당 이벤트 분류값                  | UPDATE , DELETE , INSERT 셋중 하나 들어옴 |
+| firstInfoId     | int         | 메인 테이블의 기본키                 | -                                  |
+| changesValue     | varchar(20) | 변경 내용                       | -                                  |
+| updateDateTime     | timestamp   | 변경 발생시간                     | -                                  |
+
+### 

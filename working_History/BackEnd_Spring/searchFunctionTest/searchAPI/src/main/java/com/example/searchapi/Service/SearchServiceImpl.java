@@ -1,6 +1,8 @@
 package com.example.searchapi.Service;
 
+import com.example.searchapi.Entity.CategoriesEntity;
 import com.example.searchapi.Entity.InfoEntityIndex;
+import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -43,12 +45,12 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public List<InfoEntityIndex> matchCategory(String indexName, String categoryName) {
+    public List<InfoEntityIndex> matchKeyword(String indexName, String keyword) {
         SearchRequest searchRequest = new SearchRequest(indexName);
 
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
-        MatchQueryBuilder categoryQuery = QueryBuilders.matchQuery("category", categoryName)
+        MatchQueryBuilder categoryQuery = QueryBuilders.matchQuery("keyword", keyword)
                 .fuzziness(Fuzziness.AUTO)
                 .prefixLength(3)
                 .maxExpansions(10);
@@ -61,27 +63,30 @@ public class SearchServiceImpl implements SearchService {
 
 
     private List<InfoEntityIndex> getInfoEntityIndices(SearchRequest searchRequest, SearchSourceBuilder searchSourceBuilder) {
-        searchSourceBuilder.sort(new FieldSortBuilder("firstInfoId").order(SortOrder.ASC));
 
         searchRequest.source(searchSourceBuilder);
 
-
         List<InfoEntityIndex> resultMap = new ArrayList<>();
 
+        Gson gson = new Gson();
         try (RestHighLevelClient client = createConnection()) {
 
             SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
             for (SearchHit hit : response.getHits()) {
                 Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+
+                System.out.println("sourceAsMap.get(\"categories\").toString() : " + sourceAsMap.get("categories").toString());
+                System.out.println("count : " + sourceAsMap.get("firstInfoId"));
                 resultMap.add(
                         InfoEntityIndex.builder()
-                                .firstInfoId((Integer) sourceAsMap.get("firstInfoId"))
-                                .category((String) sourceAsMap.get("category"))
+                                .firstInfoId((int) sourceAsMap.get("firstInfoId"))
                                 .name((String) sourceAsMap.get("name"))
-                                .age((Integer) sourceAsMap.get("age"))
+                                .age((int) sourceAsMap.get("age"))
+                                .keywords((List<String>) sourceAsMap.get("keyword"))
                                 .build()
                 );
             }
+
 
             return resultMap;
 
