@@ -1,0 +1,32 @@
+@startuml
+
+title Batch Logic Sequence Diagram
+
+
+participant "Batch App" as BA
+
+box "DataBase" #LightBlue
+    database "ActionTable" as AT
+end box
+
+
+box "External Service"
+    database "Elastic Search" as ES
+end box
+
+note over BA
+    미리 지정해 둔 주기 마다 로직 수행
+end note
+
+BA-> AT: Select 수행
+activate BA
+
+AT --> BA: Select 수행 결과 반환
+
+note over AT
+    Action Table 에 적재 되어 있는 변경 결과
+    Elastic Search 에 Insert 하여 검색 결과에 반영 되도록 지정
+end note
+BA -> ES: Elastic Search 에 Insert
+ES --> BA: ES에 Insert 결과 반환
+@enduml

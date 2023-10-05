@@ -1,0 +1,36 @@
+@startuml
+
+title Main Logic Sequence Diagram
+
+participant "메인 로직" as mainLogic
+
+box "DataBase" #LightBlue
+    database "Target Table" as TargetTable
+    database "ActionTable" as ActionTable
+end box
+
+note over mainLogic
+    대상 Event 목록
+    - Insert
+    - Update
+    - Delete
+    위 세가지 Event 중 한가지 발생 시 트리거 실행
+end note
+
+mainLogic->TargetTable: Event 발생
+activate mainLogic
+
+note over ActionTable
+    트리거에서 ElasticSearch에 RDB상 변화된 정보가반영되도록
+    Json Type으로 변환 후 ActionTable에 Insert
+    - RDB일 경우에만 JSON Type 관리 가능
+end note
+TargetTable->ActionTable: 트리거 실행
+ActionTable->TargetTable: 트리거 실행 결과 반환
+
+TargetTable->mainLogic: Return Event Result
+
+
+
+
+@enduml
