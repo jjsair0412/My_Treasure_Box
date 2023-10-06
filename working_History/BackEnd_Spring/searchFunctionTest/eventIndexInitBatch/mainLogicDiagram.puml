@@ -4,9 +4,11 @@ title Main Logic Sequence Diagram
 
 participant "메인 로직" as mainLogic
 
+participant "ES 색인용 JSON 변환 로직" as jsonLogic
+
 box "DataBase" #LightBlue
-    database "Target Table" as TargetTable
     database "ActionTable" as ActionTable
+    database "Target Table" as TargetTable
 end box
 
 note over mainLogic
@@ -14,21 +16,22 @@ note over mainLogic
     - Insert
     - Update
     - Delete
-    위 세가지 Event 중 한가지 발생 시 트리거 실행
+    위 세가지 Event 중 한가지 발생 시 json 변환 로직으로 이동
 end note
 
-mainLogic->TargetTable: Event 발생
+mainLogic->jsonLogic: Event 발생
 activate mainLogic
 
-note over ActionTable
-    트리거에서 ElasticSearch에 RDB상 변화된 정보가반영되도록
-    Json Type으로 변환 후 ActionTable에 Insert
-    - RDB일 경우에만 JSON Type 관리 가능
-end note
-TargetTable->ActionTable: 트리거 실행
-ActionTable->TargetTable: 트리거 실행 결과 반환
+activate jsonLogic
+note right jsonLogic: ElasticSearch에 색인될 JSON 타입으로\n변경 정보를 변환합니다.\n그후, ActionTable에 생성된 JSON 값을 Insert 합니다.
+jsonLogic->ActionTable
 
-TargetTable->mainLogic: Return Event Result
+ActionTable-->jsonLogic: insert 결과 반환
+deactivate
+
+mainLogic->TargetTable: 변경 Event 정보 RDB에 반영
+
+TargetTable-->mainLogic: Return Event Result
 
 
 

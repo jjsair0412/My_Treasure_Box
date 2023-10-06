@@ -40,11 +40,13 @@ public class RdbReaderImpl implements RdbReader {
             /**
              * 수행 쿼리 :
              *
-             * SELECT f.firstInfoId, f.name, f.age, m.main_category, s.sub_category
-             * FROM firstInfo f
-             *   JOIN tb_ref r ON f.firstInfoId = r.firstInfoId
-             *   JOIN tb_main_category m ON r.main_category_seq = m.main_category_seq
-             *   JOIN tb_sub_category s ON r.sub_category_seq = s.sub_category_seq
+             *
+             * SELECT f.firstInfoId, f.name, f.age, m.main_category, s.sub_category, word.keyword
+             *  FROM firstInfo f
+             *    JOIN tb_ref r ON f.firstInfoId = r.firstInfoId
+             *    JOIN tb_main_category m ON r.main_category_seq = m.main_category_seq
+             *    JOIN tb_sub_category s ON r.sub_category_seq = s.sub_category_seq
+             *    JOIN  tb_keyword word on r.keyword_seq = word.keyword_seq
              *
              */
             pagingQueryProvider.setDataSource(template.getDataSource());
