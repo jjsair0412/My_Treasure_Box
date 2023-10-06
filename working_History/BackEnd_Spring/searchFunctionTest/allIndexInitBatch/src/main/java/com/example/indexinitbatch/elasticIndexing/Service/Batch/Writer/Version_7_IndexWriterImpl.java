@@ -4,6 +4,7 @@ import com.example.indexinitbatch.elasticIndexing.Config.ElasticConfigure.Versio
 import com.example.indexinitbatch.elasticIndexing.Entity.Index.InfoDtoIndex;
 import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
+import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.index.IndexRequest;
@@ -31,7 +32,13 @@ public class Version_7_IndexWriterImpl implements IndexWriter{
 
             for (InfoDtoIndex item : items) {
                 IndexRequest indexRequest = new IndexRequest("info_index");
+
+
+                // create Index ID
+                indexRequest.id(Integer.toString(item.getFirstInfoId()));
+
                 indexRequest.source(gson.toJson(item), XContentType.JSON);
+                indexRequest.opType(DocWriteRequest.OpType.INDEX); // Index Id를 비교하여 기존 doc이 있다면 덮어쓰기 수행
 
                 bulkRequest.add(indexRequest);
             }
