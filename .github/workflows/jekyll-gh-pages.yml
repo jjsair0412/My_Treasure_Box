@@ -28,21 +28,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 2.7 # or whichever version you're using
+          ruby-version: 2.7
+
+      - name: Install specific version of Bundler
+        run: gem install bundler:1.17.2
+
       - name: Install dependencies
         run: |
           cd ./jekyll
           bundle install
+
       - name: Setup Pages
         uses: actions/configure-pages@v3
+
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
           source: ./jekyll/
           destination: ./jekyll/_site
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
 
