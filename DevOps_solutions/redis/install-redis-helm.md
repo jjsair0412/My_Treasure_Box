@@ -41,6 +41,33 @@ metrics:
     labels:
       release: prometheus
 ```
+
+- redis Probe를 custom해서 작성. 
+  - Probe에서 에러 발생시 아래 custom-values.yaml 사용
+```yaml
+cluster:
+  init: true
+  nodes: 6
+  replicas: 1
+
+redis:
+  customLivenessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - redis-cli -h localhost -p $REDIS_PORT_NUMBER ping
+  customReadinessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - redis-cli -h localhost -p $REDIS_PORT_NUMBER ping
+
+usePassword: false
+password: ''
+```
+
 ### 2.3 Helm redis 설치
 ```
 $ helm upgrade --install redis-cluster . -f values.yaml,affinity-values.yaml,config-values.yaml -n redis
