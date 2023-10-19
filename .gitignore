@@ -4,3 +4,5 @@
 *.gradle
 *.idea
 node_modules
+*.terraform*
+terraform.tfstate

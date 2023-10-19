@@ -27,7 +27,7 @@
 [Air-Gap 설치 방안](https://docs.rke2.io/install/airgap/#tarball-method)
 
 ### 2.2 Install Script 다운로드
-```
+```bash
 $ curl -sfL https://get.rke2.io --output install.sh
 ```
 ## 3. RKE2 install
@@ -35,7 +35,7 @@ $ curl -sfL https://get.rke2.io --output install.sh
 - [config 파일 옵션](https://docs.rke2.io/install/install_options/server_config/)
 - profile의 cis설정을 진행하면 , rke2는 해당 옵션값의 cis 벤치마크설정이 들어간 podSecurityPolicy를 자동으로 생성합니다.
 따라서 , root권한이 필요한 파드가 생성되면 아래의 에러가 발생합니다.
-```
+```bash
 container has runAsNonRoot and image will run as root (pod: "rke2-coredns-rke2-coredns-547d5499cb-crp7j_kube-system(747e37be-d4c2-433a-8a26-84da86c2ef07)", container: coredns)
 ```
 - cis 설정이 필요하지 않다면 , profile 옵션을 넣어주지 않도록 합니다. 
@@ -45,7 +45,7 @@ container has runAsNonRoot and image will run as root (pod: "rke2-coredns-rke2-c
 ### 3.1 RKE2를 설치합니다.
 - Rancher server를 설치할 모든 노드에 접속해서 , Swap을 비활성화 하고 , network 브릿지를 설정합니다.
   첫번째 rke2-server node에서만 작업합니다.
-```
+```bash
 Rancher Server 설치 대상 모든 Node 환경에 접속하여 Swap 비활성화, Network 브릿시 설정
 $ sudo swapoff -a
 $ sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
@@ -61,7 +61,7 @@ EOF
 $ sudo sysctl --system
 ```
 
-```
+```bash
 # 위의 준비과정에서 다운로드한 파일이 있는 디렉토리로 이동
 $ cd /home/jjsair0412/Desktop/rke2
 
@@ -77,7 +77,7 @@ $ INSTALL_RKE2_ARTIFACT_PATH=/root/rke2-artifacts sh install.sh
 ```
 - 첫 번째 Node에서 Config File을 생성하여 rancher server를 시작하고 확인합니다.
   tls-san option은 선택 사항입니다.
-```
+```bash
 # Config 파일 작성
 mkdir -p /etc/rancher/rke2
 cat << EOF >>  /etc/rancher/rke2/config.yaml
@@ -92,7 +92,7 @@ selinux: true # selinux 관련 에러 발생시 false로 변경
 EOF
 ```
 - CIS mode를 enable 합니다.
-```
+```bash
 # selinux 설정
 $ sudo cp -f /usr/local/share/rke2/rke2-cis-sysctl.conf /etc/sysctl.d/60-rke2-cis.conf
 $ sysctl -p /etc/sysctl.d/60-rke2-cis.conf
@@ -102,7 +102,7 @@ $ useradd -r -c "etcd user" -s /sbin/nologin -M etcd
 
 ### 3.2 Enable rke2
 - rke2를 활성화 시킵니다.
-```
+```bash
 # daemon 재실행
 systemctl daemon-reload
 
@@ -119,7 +119,7 @@ journalctl -u rke2-server -f
 #### 3.3.1 config파일 작성
 - tls-san option에 master node들의 ip를 작성합니다.
 -  selinux는 false로 두고 설치합니다. 에러가 발생할 확률이 있음
-```
+```bash
 $ mkdir -p /etc/rancher/rke2
 $ sudo cat << EOF >>  /etc/rancher/rke2/config.yaml
 write-kubeconfig-mode: "0644"
@@ -136,17 +136,17 @@ EOF
 ```
 #### 3.3.2 ( option ) ip route 설정
 - 만약 offline환경에 network 설정이 아무것도 되어있지 않다면 , iproute 경로를 지정해주어야 한다.
-```
+```bash
 $ sudo ip route add default via 192.168.65.135
 ```
 #### 3.3.3 selinux 설정
-```
+```bash
 $ sudo cp -f /usr/local/share/rke2/rke2-cis-sysctl.conf /etc/sysctl.d/60-rke2-cis.conf
 $ sysctl -p /etc/sysctl.d/60-rke2-cis.conf
 $ useradd -r -c "etcd user" -s /sbin/nologin -M etcd
 ```
 #### 3.3.4 rke2 server up
-```
+```bash
 # RKE2 Server UP
 $ systemctl enable rke2-server.service
 $ systemctl start rke2-server.service
@@ -157,7 +157,7 @@ $ journalctl -u rke2-server -f
 - rke2 필요 방화벽을 열어줍니다.
   테스트를 진행할때는 default ubuntu에서 진행하였기 때문에 , 방화벽 allow 작업은 생략해도 무관합니다.
   [방화벽 목록](https://docs.rke2.io/install/requirements/#networking)
-```
+```bash
 # For etcd nodes, run the following commands:
 firewall-cmd --permanent --add-port=2376/tcp
 firewall-cmd --permanent --add-port=2379/tcp
@@ -193,7 +193,7 @@ firewall-cmd --permanent --add-port=30000-32767/udp
 ## 4. rke2 worker ( agent ) 설치 방안
 - rke2 agent 설치 방안입니다.
 ### 4.1 파일 복사
-```
+```bash
 $ cd /home/jjsair0412/Desktop/rke2
 
 # 다운로드한 파일을 artifacts 폴더를 생성하여 그곳으로 복사
@@ -209,7 +209,7 @@ $ INSTALL_RKE2_ARTIFACT_PATH=/root/rke2-artifacts sh install.sh
 ### 4.2 config파일 작성
 - tls-san option에 master node들의 ip를 작성합니다.
 -  selinux는 false로 두고 설치합니다. 에러가 발생할 확률이 있음
-```
+```bash
 $ mkdir -p /etc/rancher/rke2
 $ sudo cat << EOF >>  /etc/rancher/rke2/config.yaml
 write-kubeconfig-mode: "0644"
@@ -237,7 +237,7 @@ $ sysctl -p /etc/sysctl.d/60-rke2-cis.conf
 $ useradd -r -c "etcd user" -s /sbin/nologin -M etcd
 ```
 ### 4.5 rke2 agent up
-```
+```bash
 # RKE2 agent UP
 $ systemctl enable rke2-agent.service
 $ systemctl start rke2-agent.service
@@ -250,7 +250,7 @@ $ journalctl -u rke2-agent -f
 -   kubeconfig 파일은 `/etc/rancher/rke2/rke2.yaml` 에 작성됩니다.
 -   다른 서버 또는 에이전트 노드를 등록하는 데 사용할 수 있는 토큰은 다음 위치에 생성됩니다. `/var/lib/rancher/rke2/server/node-token`
 
-```
+```bash
 # 노드 확인
 /var/lib/rancher/rke2/bin/kubectl \
         --kubeconfig /etc/rancher/rke2/rke2.yaml get nodes
@@ -263,7 +263,7 @@ $ journalctl -u rke2-agent -f
 ctr --address /run/k3s/containerd/containerd.sock images ls
 ```
 ### 5.1 node  & Pod 상태 확인
-```
+```bash
 $ kubectl get nodes -o wide
 NAME      STATUS   ROLES                       AGE     VERSION          INTERNAL-IP      EXTERNAL-IP   OS-IMAGE           KERNEL-VERSION      CONTAINER-RUNTIME
 master    Ready    control-plane,etcd,master   23m     v1.22.9+rke2r2   192.168.65.138   <none>        Ubuntu 22.04 LTS   5.15.0-37-generic   containerd://1.5.11-k3s2
@@ -305,7 +305,7 @@ rke2-metrics-server-8574659c85-x469v                    1/1     Running     0   
 
 ## 추가 setting
 - 아래 방법은 centos에 환경변수를 임시로 지정해주는 방법이라 , 로그인이 끊기거나 종료된다면 초기화 됩니다.
-```
+```bash
 # Path에 추가
 $ export PATH=$PATH:/var/lib/rancher/rke2/bin/
 
@@ -317,7 +317,7 @@ $ export CONTAINERD_ADDRESS=/run/k3s/containerd/containerd.sock
 ```
 
 -   **centos인 경우** 환경변수 영구 설정 방법은 아래 명령어를 참조하면 됩니다.
-```
+```bash
 # /etc/bashrc 파일 맨 마지막에 export 세가지 명령어를 추가해 줍니다.
 $ sudo vi /etc/bashrc
 ...
@@ -328,7 +328,7 @@ export CONTAINERD_ADDRESS=/run/k3s/containerd/containerd.sock
 ```
 
 -   **ubuntu인 경우** 환경변수 영구 설정 방법은 아래 명령어를 참조하면 됩니다.
-```
+```bash
 # /etc/bash.bashrc 파일 맨 마지막에 export 세가지 명령어를 추가해 줍니다.
 $ sudo vi /etc/bash.bashrc
 ...
@@ -345,7 +345,7 @@ $ source /etc/bash.bashrc
 ### 1. rke2-server.service를 start 시켯을 때 , default route가 없다고 하는 에러
  - offline 설치 ( 이더넷 , nat 등 ) 을 전부다 해제했을 때 route가 없으면 발생하는 에러이다.
    아래 명령어를 작성해서 해결.
-```
+```bash
 # rke2-server master 한대를 지정해서 default 경로를 지정해주면 된다.
 # 만약 LB가 존재한다면 LB ip주소를 넣어준다.
 $ sudo ip route add default via 192.168.65.134
