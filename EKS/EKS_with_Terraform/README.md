@@ -1,6 +1,8 @@
 # Amazon EKS ( Elastic Kubernetes Service )
 
--   [EKS Terraform github](https://github.com/terraform-aws-modules/terraform-aws-eks#important-note)
+- [EKS Terraform github](https://github.com/terraform-aws-modules/terraform-aws-eks#important-note)
+- 해당 문서는 아래 링크의 문서를 보고 공부한내용을 정리하였습니다.
+  - [링크](https://learnk8s.io/terraform-eks)
 
 ## TroubleShooting
 
