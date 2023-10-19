@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helloeks
+spec:
+  selector:
+    matchLabels:
+      name: helloeks
+  template:
+    metadata:
+      labels:
+        name: helloeks
+    spec:
+      containers:
+        - name: app
+          image: paulbouwer/hello-kubernetes:1.10.1
+          ports:
+            - containerPort: 8080
