@@ -5,6 +5,7 @@ Elastic Search에 색인된 문서를 대상으로 , Create, Read, Update, Delet
 해당 문서에서 CRUD를 진행할 때 , ElasticSearch의 Update Script를 사용하였습니다.
 - [관련 공식문서](https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting-fields.html#_update_scripts)
 
+
 ### 종류
 
 #### 1. ctx._source
@@ -116,6 +117,16 @@ curl -X POST -u "test:test1234" "http://localhost:9200/info_index/_update/WGmXto
     "params": {
       "keywords_to_remove": ["으악하나","으악둘"]
     }
+  }
+}'
+```
+
+- index내부 모든 doc 삭제
+```bash
+curl -X POST -u "test:test1234" "localhost:9200/info_index/_delete_by_query" -H "Content-Type: application/json" -d'
+{
+  "query": {
+    "match_all": {}
   }
 }'
 ```
