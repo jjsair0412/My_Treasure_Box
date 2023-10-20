@@ -1,8 +1,10 @@
 # Amazon EKS ( Elastic Kubernetes Service )
 
+-   CloudNet@ 팀 gasida님의 DOIK(Database Operator In Kubernetes) 스터디를 진행하며 작성한 글 입니다.
 - [EKS Terraform github](https://github.com/terraform-aws-modules/terraform-aws-eks#important-note)
 - 해당 문서는 아래 링크의 문서를 보고 공부한내용을 정리하였습니다.
   - [링크](https://learnk8s.io/terraform-eks)
+  - [terraform 코드](https://github.com/hashicorp/learn-terraform-provision-eks-cluster)
 
 ## TroubleShooting
 
@@ -73,90 +75,127 @@ aws-cli 를 통해 aws 계정이 정상적으로 등록되어있는지를 확인
     ```
     
 
-### 1\. main.tf 정의
+### 1 terraform 구성
+- [terraform 전체 코드는 해당 URL에 있습니다.](https://github.com/hashicorp/learn-terraform-provision-eks-cluster)
 
 main.tf파일을 정의합니다.
-
 ```
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
 provider "aws" {
-  region = "ap-northeast-2"
+  region = var.region
 }
 
-data "aws_availability_zones" "available" {}
-
-data "aws_eks_cluster" "cluster" {
-  name = module.eks.cluster_id
-}
-
-data "aws_eks_cluster_auth" "cluster" {
-  name = module.eks.cluster_id
+# Filter out local zones, which are not currently supported 
+# with managed node groups
+data "aws_availability_zones" "available" {
+  filter {
+    name   = "opt-in-status"
+    values = ["opt-in-not-required"]
+  }
 }
 
 locals {
-  cluster_name = "basick8s"
+  cluster_name = "education-eks-${random_string.suffix.result}"
 }
 
-provider "kubernetes" {
-  host                   = data.aws_eks_cluster.cluster.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
-  token                  = data.aws_eks_cluster_auth.cluster.token
-}
-
-module "eks-kubeconfig" {
-  source     = "hyperbadger/eks-kubeconfig/aws"
-  version    = "1.0.0"
-
-  depends_on = [module.eks]
-  cluster_id =  module.eks.cluster_id
-  }
-
-resource "local_file" "kubeconfig" {
-  content  = module.eks-kubeconfig.kubeconfig
-  filename = "kubeconfig_${local.cluster_name}"
+resource "random_string" "suffix" {
+  length  = 8
+  special = false
 }
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "3.18.1"
+  version = "5.0.0"
 
-  name                 = "k8s-vpc"
-  cidr                 = "172.16.0.0/16"
-  azs                  = data.aws_availability_zones.available.names
-  private_subnets      = ["172.16.1.0/24", "172.16.2.0/24", "172.16.3.0/24"]
-  public_subnets       = ["172.16.4.0/24", "172.16.5.0/24", "172.16.6.0/24"]
+  name = "education-vpc"
+
+  cidr = "10.0.0.0/16"
+  azs  = slice(data.aws_availability_zones.available.names, 0, 3)
+
+  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+  public_subnets  = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+
   enable_nat_gateway   = true
   single_nat_gateway   = true
   enable_dns_hostnames = true
 
   public_subnet_tags = {
     "kubernetes.io/cluster/${local.cluster_name}" = "shared"
-    "kubernetes.io/role/elb"                      = "1"
+    "kubernetes.io/role/elb"                      = 1
   }
 
   private_subnet_tags = {
     "kubernetes.io/cluster/${local.cluster_name}" = "shared"
-    "kubernetes.io/role/internal-elb"             = "1"
+    "kubernetes.io/role/internal-elb"             = 1
   }
 }
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "18.30.3"
+  version = "19.15.3"
 
-  cluster_name    = "${local.cluster_name}"
-  cluster_version = "1.24"
-  subnet_ids      = module.vpc.private_subnets
+  cluster_name    = local.cluster_name
+  cluster_version = "1.27"
 
-  vpc_id = module.vpc.vpc_id
+  vpc_id                         = module.vpc.vpc_id
+  subnet_ids                     = module.vpc.private_subnets
+  cluster_endpoint_public_access = true
+
+  eks_managed_node_group_defaults = {
+    ami_type = "AL2_x86_64"
+
+  }
 
   eks_managed_node_groups = {
-    first = {
-      desired_capacity = 1
-      max_capacity     = 10
-      min_capacity     = 1
+    one = {
+      name = "node-group-1"
 
-      instance_type = "m5.large"
+      instance_types = ["t3.small"]
+
+      min_size     = 1
+      max_size     = 3
+      desired_size = 2
     }
+
+    two = {
+      name = "node-group-2"
+
+      instance_types = ["t3.small"]
+
+      min_size     = 1
+      max_size     = 2
+      desired_size = 1
+    }
+  }
+}
+
+
+# https://aws.amazon.com/blogs/containers/amazon-ebs-csi-driver-is-now-generally-available-in-amazon-eks-add-ons/ 
+data "aws_iam_policy" "ebs_csi_policy" {
+  arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+}
+
+module "irsa-ebs-csi" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
+  version = "4.7.0"
+
+  create_role                   = true
+  role_name                     = "AmazonEKSTFEBSCSIRole-${module.eks.cluster_name}"
+  provider_url                  = module.eks.oidc_provider
+  role_policy_arns              = [data.aws_iam_policy.ebs_csi_policy.arn]
+  oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
+}
+
+resource "aws_eks_addon" "ebs-csi" {
+  cluster_name             = module.eks.cluster_name
+  addon_name               = "aws-ebs-csi-driver"
+  addon_version            = "v1.20.0-eksbuild.1"
+  service_account_role_arn = module.irsa-ebs-csi.iam_role_arn
+  tags = {
+    "eks_addon" = "ebs-csi"
+    "terraform" = "true"
   }
 }
 ```
@@ -207,51 +246,19 @@ $ terraform init
 
 terraform validate 명령어로 오류가없는지 검증합니다.
 
-```
+```bash
 $ terraform validate
-```
-
-아래와같은 에러가 발생하는데,, 해당 main.tf파일 들어가서 아래 line들을 제거해줍니다.
-
--   enable\_classiclink
--   enable\_classiclink\_dns\_support
--   enable\_classiclink
-
-```
-╷
-│ Error: Unsupported argument
-│ 
-│   on .terraform/modules/vpc/main.tf line 35, in resource "aws_vpc" "this":
-│   35:   enable_classiclink             = null # https://github.com/hashicorp/terraform/issues/31730
-│ 
-│ An argument named "enable_classiclink" is not expected here.
-╵
-╷
-│ Error: Unsupported argument
-│ 
-│   on .terraform/modules/vpc/main.tf line 36, in resource "aws_vpc" "this":
-│   36:   enable_classiclink_dns_support = null # https://github.com/hashicorp/terraform/issues/31730
-│ 
-│ An argument named "enable_classiclink_dns_support" is not expected here.
-╵
-╷
-│ Error: Unsupported argument
-│ 
-│   on .terraform/modules/vpc/main.tf line 1244, in resource "aws_default_vpc" "this":
-│ 1244:   enable_classiclink   = null # https://github.com/hashicorp/terraform/issues/31730
-│ 
-│ An argument named "enable_classiclink" is not expected here.
 ```
 
 정상수행되면 아래와같은 Success 문구가 출력됩니다.
 
-```
+```bash
 Success! The configuration is valid, but there were some validation warnings as shown above.
 ```
 
 plan 명령을 실행하여, 어떤 인프라를 구축할지 예측 결과를 확인합니다.
 
-```
+```bash
 terraform plan
 ```
 
@@ -260,31 +267,33 @@ plan 수행결과, 테스트가 완료되었다고 판단된다면 apply 명령�
 -   배포시간은 20분정도 소요됩니다.
 -   `Apply complete! Resources: 49 added, 0 changed, 0 destroyed.` 메세지가 출력되면 성공
     
-    ```
-    terraform apply
-    ...
-    Apply complete! Resources: 49 added, 0 changed, 0 destroyed.
-    ```
+```
+terraform apply
+...
+Apply complete! Resources: 49 added, 0 changed, 0 destroyed.
+```
     
 
-### 3\. 배포결과 확인
+### 3. 배포결과 확인
 
-tree 명령어로 , main.tf 파일 위치에 어떤파일들이 생성되었는지 확인합니다.
 
-```
-tree . -a -L 2   
-.
-├── .terraform
-│   ├── modules
-│   └── providers
-├── .terraform.lock.hcl
-├── README.md
-├── kubeconfig_basick8s
-├── main.tf
-└── terraform.tfstate
+생성한 EKS Cluster의 KubeConfig를 구성합니다.
+
+```bash
+aws eks --region $(terraform output -raw region) update-kubeconfig \
+    --name $(terraform output -raw cluster_name)
 ```
 
-만들어진 kubeconfig파일 `kubeconfig_basick8s` 로 kubectl 명령어를 수행하여 워커노드의 상태를 확인합니다.
+
+노드 상태를 확인합니다.
+
+```bash
+kubectl get nodes
+NAME                                            STATUS   ROLES    AGE   VERSION
+ip-10-0-1-225.ap-northeast-2.compute.internal   Ready    <none>   39m   v1.27.5-eks-43840fb
+ip-10-0-2-89.ap-northeast-2.compute.internal    Ready    <none>   39m   v1.27.5-eks-43840fb
+ip-10-0-3-190.ap-northeast-2.compute.internal   Ready    <none>   39m   v1.27.5-eks-43840fb
+```
 
 ## 테라폼을 통한 EKS 관리
 
@@ -292,24 +301,28 @@ Terraform은 Infrastructure as Code, 인프라를 코드로 관리할 수 있는
 
 ### 노드추가
 
-main.tf파일의 node\_group 모듈에 `second`라는 워커노드를 추가해보겠습니다.
+main.tf파일의 node\_group 모듈에 `two`라는 워커노드를 추가해보겠습니다.
 
 ```
 ...
   eks_managed_node_groups = {
-    first = {
-      desired_capacity = 1
-      max_capacity     = 10
-      min_capacity     = 1
+    one = {
+      name = "node-group-1"
 
-      instance_type = "m5.large"
+      instance_types = ["t3.small"]
+
+      min_size     = 1
+      max_size     = 3
+      desired_size = 2
     }
-    second = {
-      desired_capacity = 1
-      max_capacity     = 10
-      min_capacity     = 1
+    two = {
+      name = "node-group-2"
 
-      instance_type = "m5.large"
+      instance_types = ["t3.small"]
+
+      min_size     = 1
+      max_size     = 2
+      desired_size = 1
     }
   }
 ...
@@ -374,8 +387,10 @@ port-foward로 로컬의 8888로 오는 모든 트래픽을 , Kubernetes deploym
 kubectl port-forward <helloeks-podname> 8080:8080
 ```
 
--   결과  
-    [##_Image|kage@mydbo/btsyPzalBZ3/7CKtTHKG8jl2QnRk5ewvo0/img.png|CDM|1.3|{"originWidth":1786,"originHeight":872,"style":"alignCenter","width":null}_##]
+- 결과  
+
+![firstResult](./images/first_result.png)
+    
 
 그러나 파드는 지속적으로 고정된 IP를 가지지 않으며, 또한 제거되거나 다시 생성되면서 이름이 계속해서 변화하기때문에, Kubernetes의 Service로 Deployment를 관리해주어야 합니다.
 
@@ -464,7 +479,6 @@ ALB를 EKS Cluster에서 사용하기위해, 먼저 각 worker Node의 권한을
 
 -   main.tf파일에 아래와 같은 resource를 추가합니다.
 -   추가로 정책이 들어가있는 iam-policy.json 파일을 main.tf와 동일경로에 생성합니다.
-    
     -   [전체코드 및 iam-policy.json 파일위치](https://github.com/jjsair0412/My_Treasure_Box/tree/main/EKS/EKS_with_Terraform)
         
 ```tf
@@ -502,30 +516,28 @@ helm chart로 배포합니다.
 
 -   helm에 대한 설명은 아래 링크에 기입해두었습니다.
 -   [helm chart란?](https://github.com/jjsair0412/My_Treasure_Box/blob/main/DevOps_solutions/helm%20info.md)
+- eks/aws-load-balancer-controller chart를 사용합니다.
 
-```
+```bash
 $ helm repo add eks https://aws.github.io/eks-charts
 
 $ helm repo update
 
+# cluster 이름을 정확히 기입해야합니다.
 $ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
-  --set autoDiscoverAwsRegion=true \
-  --set autoDiscoverAwsVpcID=true \
-  --set clusterName=basick8s # EKS clusterName
+  --set region=ap-northeast-2 \
+  --set vpcId=vpc-049ab8e66bf458816 \
+  --set clusterName=education-eks # EKS clusterName
 ```
 
 배포된 ALB ingress controller의 pod 상태 확인합니다.
 
 ```
-kubectl get pods -l "app.kubernetes.io/name=aws-load-balancer-controller"
+$ kubectl get pods -l "app.kubernetes.io/name=aws-load-balancer-controller"
 NAME                                            READY   STATUS    RESTARTS   AGE
 aws-load-balancer-controller-54d848c6cd-jlw44   1/1     Running   0          12s
 aws-load-balancer-controller-54d848c6cd-mbrf5   1/1     Running   0          12s
 ```
-
-### Security Group 수정
-
-Ingress를 배포하기전에, 먼저 EKS main.tf 파일을 수정하여 각 노드에 9443번 포트를 열어주어야합니다.
 
 ### Ingress 배포
 
@@ -552,6 +564,111 @@ spec:
               number: 80
 ```
 
-## terraform destroy
+### 결과확인
+ALB loadbalancer가 프로비저닝된것을 확인할 수 있습니다.
+```bash
+kubectl describe ing
+Name:             hello-kubernetes
+Labels:           <none>
+Namespace:        default
+Address:          {alb_dns_name}
+Ingress Class:    <none>
+Default backend:  <default>
+Rules:
+  Host        Path  Backends
+  ----        ----  --------
+  *           
+              /   hello-kubernetes:80 (<error: endpoints "hello-kubernetes" not found>)
+Annotations:  alb.ingress.kubernetes.io/scheme: internet-facing
+              kubernetes.io/ingress.class: alb
+Events:
+  Type    Reason                  Age                From     Message
+  ----    ------                  ----               ----     -------
+  Normal  SuccessfullyReconciled  10s (x2 over 65s)  ingress  Successfully reconciled
+```
 
+## Terraform으로 EKS를 프로비저닝하는 동시에 , ALB를 같이 설치하는 방안
+EKS를 프로비저닝하면서 , ALB도 같이 설치하는 방안이 있습니다.
+
+### 사전 작업
+이미 aws-load-balancer-controller가 설치되어 있다면, provider로 설치하려 할 때 아래와 같은 에러가발생하기 때문에, 지우고 진행
+```bash
+...
+│ Error: rendered manifests contain a resource that already exists. Unable to continue with install: Secret "aws-load-balancer-tls" in namespace "default" exists and cannot be imported into the current release: invalid ownership metadata; annotation validation error: key "meta.helm.sh/release-name" must equal "ingress": current value is "aws-load-balancer-controller"
+│ 
+│   with helm_release.ingress,
+│   on main.tf line 152, in resource "helm_release" "ingress":
+│  152: resource "helm_release" "ingress" {
+│ 
+```
+제거
+```
+helm uninstall aws-load-balancer-controller
+```
+
+**Terraform의 provider중 Helm provider를 사용하면, Terraform으로 EKS가 프로비저닝되는 동시에, aws-load-balancer-controller chart도 같이 배포시킬 수 있습니다.**
+- 필요한 리소스들을 모두 terraform main.tf에 미리 정의해두고, 필요할떄마다 꺼내다쓸수잇습니다.
+
+### main.tf 수정
+main.tf에, Helm provider를 추가합니다.
+
+```
+provider "helm" {
+  kubernetes {
+    host                   = data.aws_eks_cluster.cluster.endpoint
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
+    token                  = data.aws_eks_cluster_auth.cluster.token
+    }
+}
+
+resource "helm_release" "ingress" {
+  name       = "ingress"
+  chart      = "aws-load-balancer-controller"
+  repository = "https://aws.github.io/eks-charts"
+  version    = "1.6.1"
+
+  set {
+    name  = "region"
+    value = var.region
+  }
+  set {
+    name  = "vpcId"
+    value = eks.vpc_id
+  }
+  set {
+    name  = "clusterName"
+    value = local.cluster_name
+  }
+}
+```
+
+provider가 추가되었기 때문에, Helm provider를 초기화한 뒤 plan으로 확인합니다.
+```bash
+terraform init
+terraform plan
+```
+
+plan 시 문제가 없다면, apply로 진행합니다.
+```bash
+terraform apply
+```
+
+EKS가 프로비저닝됨과 동시에 helm chart로 aws-load-balancer-controller 가 같이 설치된것을 확인할 수 있습니다.
+
+```bash
+# helm list -A
+NAME    NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                                   APP VERSION
+ingress default         1               2023-10-21 00:04:24.98008 +0900 KST     deployed        aws-load-balancer-controller-1.6.1      v2.6.1     
+
+# kubectl get pods
+NAME                                                   READY   STATUS    RESTARTS   AGE
+helloeks-7d9768bb49-tmsgv                              1/1     Running   0          21m
+ingress-aws-load-balancer-controller-9b6b5c567-2h2hm   1/1     Running   0          54s
+ingress-aws-load-balancer-controller-9b6b5c567-cxflq   1/1     Running   0          54s
+```
+
+## terraform destroy
+```bash
+terraform destroy
+```
 destroy 명령어로 테라폼을 통해 프로비저닝한 aws 리소스를 제거합니다.
