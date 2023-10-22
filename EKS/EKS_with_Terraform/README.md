@@ -524,9 +524,10 @@ $ helm repo add eks https://aws.github.io/eks-charts
 $ helm repo update
 
 # cluster 이름을 정확히 기입해야합니다.
+# vpc 이름또한 정확히 기입해야합니다.
 $ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   --set region=ap-northeast-2 \
-  --set vpcId=vpc-049ab8e66bf458816 \
+  --set vpcId=vpc-0ee50c3647e1ad27f \
   --set clusterName=education-eks # EKS clusterName
 ```
 
