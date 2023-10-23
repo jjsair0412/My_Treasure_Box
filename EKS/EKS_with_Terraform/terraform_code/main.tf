@@ -5,14 +5,6 @@ provider "aws" {
   region = var.region
 }
 
-data "aws_eks_cluster" "cluster" {
-  name = module.eks.cluster_name
-}
-
-data "aws_eks_cluster_auth" "cluster" {
-  name = module.eks.cluster_name
-}
-
 
 # Filter out local zones, which are not currently supported 
 # with managed node groups
@@ -26,6 +18,8 @@ data "aws_availability_zones" "available" {
 locals {
   cluster_name = "education-eks"
 }
+
+
 
 resource "random_string" "suffix" {
   length  = 8
@@ -138,33 +132,4 @@ resource "aws_iam_role_policy_attachment" "additional" {
 
   policy_arn = aws_iam_policy.worker_policy.arn
   role       = each.value.iam_role_name
-}
-
-
-provider "helm" {
-  kubernetes {
-    host                   = data.aws_eks_cluster.cluster.endpoint
-    cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
-    token                  = data.aws_eks_cluster_auth.cluster.token
-    }
-}
-
-resource "helm_release" "ingress" {
-  name       = "ingress"
-  chart      = "aws-load-balancer-controller"
-  repository = "https://aws.github.io/eks-charts"
-  version    = "1.6.1"
-
-  set {
-    name  = "region"
-    value = var.region
-  }
-  set {
-    name  = "vpcId"
-    value = module.vpc.vpc_id
-  }
-  set {
-    name  = "clusterName"
-    value = local.cluster_name
-  }
 }
