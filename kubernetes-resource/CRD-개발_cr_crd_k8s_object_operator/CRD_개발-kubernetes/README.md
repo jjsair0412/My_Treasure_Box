@@ -419,7 +419,12 @@ $ tree
 └── V1HelloworldSpec.java
 ```
 
+#### 3.1.3 dependency 설정
+생성된 model java file을 프로젝트에 옮긴 이후, 의존성을 추가합니다.
 
+```bash
+implementation 'io.kubernetes:client-java-spring-integration:17.0.0'
+```
 
 ### 3.2 Kubernetes Custom Controller 생성
 model이 생성되었다면 , 해당 model을 통해 실제 코드를 작성합니다.
@@ -467,23 +472,25 @@ controller에는 필수 요소가 4가지 들어가야 합니다.
         return new Resources();
     }
 
-    // AppsV1Api가 k8s api server에 request를 보내어 k8s resource 관리 수행
+    // AppsV1Api가 Kube-Api-Server에 request 를 보내어 k8s resource 관리 수행
     @Bean
     Reconciler reconciler(SharedIndexInformer<V1Helloworld> shareIndexInformer,
-            AppsV1Api appsV1Api) {
+                          AppsV1Api appsV1Api,
+                          CoreV1Api coreV1Api) {
         return request -> {
             String key = request.getNamespace() + "/" + request.getName();
-            
+
             V1Helloworld resourceInstance = shareIndexInformer
                     .getIndexer()
                     .getByKey(key);
 
-            
             if (resourceInstance != null) {
-                V1Deployment v1Deployment = resources().createDeployment(resourceInstance);
+                V1Service v1Service = beanFactory.resources().creatService(resourceInstance);
+                V1Deployment v1Deployment = beanFactory.resources().createDeployment(resourceInstance);
                 System.out.println("Creating resource deployment...");
 
                 try {
+                    // deployment 생성
                     appsV1Api.createNamespacedDeployment(
                             request.getNamespace(),
                             v1Deployment,
@@ -491,11 +498,12 @@ controller에는 필수 요소가 4가지 들어가야 합니다.
                             null,
                             "",
                             "");
+
                 } catch (ApiException e) {
-                    createErrorCode("createNamespacedDeployment",e);
+                    createErrorCode("createNamespacedDeployment", e);
                     System.out.println("Creating resource failed");
                     if (e.getCode() == 409) { // 생성되어있다면 409 에러 발생 . 생성되어있는데 다시한번 resourceInstance가 들어왔다는건 update
-                        
+
                         System.out.println("Updating resource...");
                         try {
                             appsV1Api.replaceNamespacedDeployment(
@@ -506,19 +514,61 @@ controller에는 필수 요소가 4가지 들어가야 합니다.
                                     null,
                                     "",
                                     "");
-                            
+
                         } catch (ApiException ex) {
-                            createErrorCode("replaceNamespacedDeployment",ex);
+                            createErrorCode("replaceNamespacedDeployment", ex);
                             throw new RuntimeException(ex);
                         }
                     } else {
                         throw new RuntimeException(e);
                     }
-                    
+
+                }
+
+                try {
+                    coreV1Api.createNamespacedService(
+                            request.getNamespace(),
+                            v1Service,
+                            "true",
+                            null,
+                            "",
+                            "");
+                } catch (ApiException service) {
+                    createErrorCode("createNamespacedService", service);
                 }
                 return new Result(false);
-            }else{
-                System.out.println("delete deployment resource..."); // delete는 k8s에서 메타데이터로 리소스들을 관리하기 때문에 , crd로 생성시켜준 이름과 resource 이름이 동일하다면 만들지 않아도 k8s resource가 삭제 된다.
+            } else {
+                System.out.println("delete deployment resource..."); 
+                try {
+                    // deployment 제거
+                    appsV1Api.deleteNamespacedDeployment(
+                            request.getName(),
+                            request.getNamespace(),
+                            null,
+                            null,
+                            0,
+                            null,
+                            null,
+                            null
+                    );
+                } catch (ApiException e) {
+                    createErrorCode("deleteNamespacedDeployment", e);
+                }
+                try {
+                    // service 제거
+                    coreV1Api.deleteNamespacedService(
+                            request.getName(),
+                            request.getNamespace(),
+                            null, // delete options
+                            null, // grace period seconds
+                            0, // orphan dependents
+                            null, // propagation policy
+                            null, // preconditions
+                            null  // dry run
+                    );
+                } catch (ApiException e) {
+                    createErrorCode("deleteNamespacedService", e);
+                }
             }
             return new Result(false);
 
@@ -570,11 +620,13 @@ Shared Index Informer는 SharedInformerFactory를 사용하고 , SharedInformerF
     // AppsV1Api로 kube api server와 통신 . v1api bean required Bean.
     @Bean
     AppsV1Api appsV1Api(ApiClient apiClient) {
-        apiClient.setBasePath("http://127.0.0.1:" + 8001); 
+        apiClient.setBasePath("http://127.0.0.1:" + 8001); // kube-api server와 통신하는부분 .
+        // kube-proxy로 kube-api 서버에 접근할 수 있게끔 오픈하거나, kube-api server 에 접근할 수 있는 권한을 생성하여 인증후 연결
         // apiClient.setDebugging(true); // kube api server와 통신시 debugging option 설정
-        System.out.println("final basepath is + "+ apiClient.getBasePath());
+        System.out.println("AppsV1Api's final basepath is + "+ apiClient.getBasePath());
         return new AppsV1Api(apiClient);
     }
+
 ```
 
 **5. resource 설정 부분**
@@ -651,4 +703,73 @@ api server에 던질 resource는 메서드의 getter.setter로 정의할 수 있
         
         return container;
     }
+```
+
+
+## 4. 결과 확인
+생성한 SpringBoot application 을 실행하고, ```mycr.yml``` 파일을 생성해서 deployment가 프로비저닝되는지 확인합니다.
+
+### 4.1 SpringBoot 로그확인
+application log를 확인해봅니다.
+
+
+```mycr.yml``` 파일이 Kube-api 서버로 요청이 들어가는 순간에 아래 로그가 출력됩니다.
+
+```
+...
+basepath is + http://localhost
+2023-10-26T22:45:56.578+09:00  INFO 41404 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'myApiClient' of type [io.kubernetes.client.openapi.ApiClient] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+hello im sharedIndexInformer method
+AppsV1Api's final basepath is + http://127.0.0.1:8001
+CoreV1Api's final basepath is + http://127.0.0.1:8001
+2023-10-26T22:45:56.642+09:00  INFO 41404 --- [           main] j.c.c.CustomControllerLatestApplication  : Started CustomControllerLatestApplication in 0.411 seconds (process running for 0.62)
+2023-10-26T22:45:56.646+09:00  INFO 41404 --- [er-V1Helloworld] i.k.client.informer.cache.Controller     : informer#Controller: ready to run resync & reflector runnable
+2023-10-26T22:45:56.646+09:00  INFO 41404 --- [er-V1Helloworld] i.k.client.informer.cache.Controller     : informer#Controller: resync skipped due to 0 full resync period
+2023-10-26T22:45:56.649+09:00  INFO 41404 --- [.V1Helloworld-1] i.k.c.informer.cache.ReflectorRunnable   : class jinseong.customcontroller.customcontrollerlatest.CrCrdModel.V1Helloworld#Start listing and watching...
+hello im V1PodTemplate
+deployment spec init com
+hello im V1PodTemplate
+deployment spec init com
+Creating resource deployment...
+```
+
+### 4.2 kubernetes resource 생성 확인
+kubectl 명령어로 아래 kubernetes resource가 생성되는지 확인합니다.
+
+- hello-sample nodeport type service
+- hello-sample deployment
+
+```bash
+$ kubectl get all
+NAME                               READY   STATUS    RESTARTS   AGE
+pod/hello-sample-b597f85fb-8dz2t   1/1     Running   0          5s
+
+NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+service/hello-sample   NodePort    10.99.139.228   <none>        80:31471/TCP   5s
+
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/hello-sample   1/1     1            1           5s
+
+NAME                                     DESIRED   CURRENT   READY   AGE
+replicaset.apps/hello-sample-b597f85fb   1         1         1       5s
+```
+
+### 4.3 kubernetes resource 삭제 확인
+```mycr.yaml``` 파일을 통해 kube-api 서버로 delete 명령어를 수행하여 생성된 리소스가 전부 삭제되는지 확인합니다.
+- delete는 k8s에서 메타데이터로 리소스들을 관리하기 때문에 , crd로 생성시켜준 이름과 resource 이름이 동일하다면 만들지 않아도 k8s resource가 삭제 된다.
+
+#### Application 로그
+```bash
+delete deployment resource...
+```
+
+#### kubernetes resource 확인
+```bash
+kubectl delete -f mycr.yaml 
+helloworld.jjsair0412.example.com "hello-sample" deleted
+
+# mycr.yaml로 생성된 deployment , svc가 제거된 모습
+kubectl get all            
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   92d
 ```

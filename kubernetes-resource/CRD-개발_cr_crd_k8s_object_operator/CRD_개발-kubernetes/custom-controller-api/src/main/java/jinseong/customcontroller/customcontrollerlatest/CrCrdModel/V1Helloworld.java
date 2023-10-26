@@ -11,36 +11,20 @@
  */
 
 
-package com.example.customcontrollercode.CrCrdModel;
+package jinseong.customcontroller.customcontrollerlatest.CrCrdModel;
 
 import java.util.Objects;
-import java.util.Arrays;
-import com.example.*;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.kubernetes.client.openapi.models.V1ListMeta;
-import io.swagger.annotations.ApiModel;
+import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * helloworldList is a list of helloworld
+ * V1Helloworld
  */
-@ApiModel(description = "helloworldList is a list of helloworld")
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2022-12-22T13:32:08.921Z[Etc/UTC]")
-public class V1HelloworldList implements io.kubernetes.client.common.KubernetesListObject {
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2023-10-26T13:21:20.057Z[Etc/UTC]")
+public class V1Helloworld implements io.kubernetes.client.common.KubernetesObject {
   public static final String SERIALIZED_NAME_API_VERSION = "apiVersion";
   @SerializedName(SERIALIZED_NAME_API_VERSION)
   private String apiVersion;
-
-  public static final String SERIALIZED_NAME_ITEMS = "items";
-  @SerializedName(SERIALIZED_NAME_ITEMS)
-  private List<V1Helloworld> items = new ArrayList<>();
 
   public static final String SERIALIZED_NAME_KIND = "kind";
   @SerializedName(SERIALIZED_NAME_KIND)
@@ -48,10 +32,14 @@ public class V1HelloworldList implements io.kubernetes.client.common.KubernetesL
 
   public static final String SERIALIZED_NAME_METADATA = "metadata";
   @SerializedName(SERIALIZED_NAME_METADATA)
-  private V1ListMeta metadata = null;
+  private V1ObjectMeta metadata = null;
+
+  public static final String SERIALIZED_NAME_SPEC = "spec";
+  @SerializedName(SERIALIZED_NAME_SPEC)
+  private V1HelloworldSpec spec;
 
 
-  public V1HelloworldList apiVersion(String apiVersion) {
+  public V1Helloworld apiVersion(String apiVersion) {
     
     this.apiVersion = apiVersion;
     return this;
@@ -74,34 +62,7 @@ public class V1HelloworldList implements io.kubernetes.client.common.KubernetesL
   }
 
 
-  public V1HelloworldList items(List<V1Helloworld> items) {
-    
-    this.items = items;
-    return this;
-  }
-
-  public V1HelloworldList addItemsItem(V1Helloworld itemsItem) {
-    this.items.add(itemsItem);
-    return this;
-  }
-
-   /**
-   * List of helloworlds. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md
-   * @return items
-  **/
-  @ApiModelProperty(required = true, value = "List of helloworlds. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md")
-
-  public List<V1Helloworld> getItems() {
-    return items;
-  }
-
-
-  public void setItems(List<V1Helloworld> items) {
-    this.items = items;
-  }
-
-
-  public V1HelloworldList kind(String kind) {
+  public V1Helloworld kind(String kind) {
     
     this.kind = kind;
     return this;
@@ -124,7 +85,7 @@ public class V1HelloworldList implements io.kubernetes.client.common.KubernetesL
   }
 
 
-  public V1HelloworldList metadata(V1ListMeta metadata) {
+  public V1Helloworld metadata(V1ObjectMeta metadata) {
     
     this.metadata = metadata;
     return this;
@@ -137,13 +98,35 @@ public class V1HelloworldList implements io.kubernetes.client.common.KubernetesL
   @javax.annotation.Nullable
   @ApiModelProperty(value = "")
 
-  public V1ListMeta getMetadata() {
+  public V1ObjectMeta getMetadata() {
     return metadata;
   }
 
 
-  public void setMetadata(V1ListMeta metadata) {
+  public void setMetadata(V1ObjectMeta metadata) {
     this.metadata = metadata;
+  }
+
+
+  public V1Helloworld spec(V1HelloworldSpec spec) {
+    
+    this.spec = spec;
+    return this;
+  }
+
+   /**
+   * Get spec
+   * @return spec
+  **/
+  @ApiModelProperty(required = true, value = "")
+
+  public V1HelloworldSpec getSpec() {
+    return spec;
+  }
+
+
+  public void setSpec(V1HelloworldSpec spec) {
+    this.spec = spec;
   }
 
 
@@ -155,27 +138,27 @@ public class V1HelloworldList implements io.kubernetes.client.common.KubernetesL
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    V1HelloworldList v1HelloworldList = (V1HelloworldList) o;
-    return Objects.equals(this.apiVersion, v1HelloworldList.apiVersion) &&
-        Objects.equals(this.items, v1HelloworldList.items) &&
-        Objects.equals(this.kind, v1HelloworldList.kind) &&
-        Objects.equals(this.metadata, v1HelloworldList.metadata);
+    V1Helloworld v1Helloworld = (V1Helloworld) o;
+    return Objects.equals(this.apiVersion, v1Helloworld.apiVersion) &&
+        Objects.equals(this.kind, v1Helloworld.kind) &&
+        Objects.equals(this.metadata, v1Helloworld.metadata) &&
+        Objects.equals(this.spec, v1Helloworld.spec);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(apiVersion, items, kind, metadata);
+    return Objects.hash(apiVersion, kind, metadata, spec);
   }
 
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class V1HelloworldList {\n");
+    sb.append("class V1Helloworld {\n");
     sb.append("    apiVersion: ").append(toIndentedString(apiVersion)).append("\n");
-    sb.append("    items: ").append(toIndentedString(items)).append("\n");
     sb.append("    kind: ").append(toIndentedString(kind)).append("\n");
     sb.append("    metadata: ").append(toIndentedString(metadata)).append("\n");
+    sb.append("    spec: ").append(toIndentedString(spec)).append("\n");
     sb.append("}");
     return sb.toString();
   }

@@ -1,58 +1,48 @@
-package com.example.customcontrollercode;
+package jinseong.customcontroller.customcontrollerlatest;
+
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.openapi.models.*;
+import jinseong.customcontroller.customcontrollerlatest.CrCrdModel.V1Helloworld;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.example.customcontrollercode.CrCrdModel.V1Helloworld;
-
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.openapi.models.V1Container;
-import io.kubernetes.client.openapi.models.V1Deployment;
-import io.kubernetes.client.openapi.models.V1DeploymentSpec;
-import io.kubernetes.client.openapi.models.V1LabelSelector;
-import io.kubernetes.client.openapi.models.V1ObjectMeta;
-import io.kubernetes.client.openapi.models.V1PodSpec;
-import io.kubernetes.client.openapi.models.V1PodTemplateSpec;
-import io.kubernetes.client.openapi.models.V1Service;
-import io.kubernetes.client.openapi.models.V1ServicePort;
-import io.kubernetes.client.openapi.models.V1ServiceSpec;
-
 public class Resources {
-
 
     public V1Deployment createDeployment(V1Helloworld resourceInstance) {
         V1Deployment deploymentSet = new V1Deployment();
         V1DeploymentSpec deploymentSpec = new V1DeploymentSpec();
-        String applanguageInfo = resourceInstance.getSpec().getLanguage().toString();
+        String languageInfo = resourceInstance.getSpec().getLanguage().toString();
 
-        deploymentSpec.template(podTemplate(resourceInstance, applanguageInfo)); // pod template 들어감
+        deploymentSpec.template(podTemplate(resourceInstance, languageInfo)); // pod template 들어감
         deploymentSpec.replicas(resourceInstance.getSpec().getReplicas());
 
-        deploymentSet.setMetadata( 
-                new V1ObjectMeta() 
+        deploymentSet.setMetadata(
+                new V1ObjectMeta()
                         .name(resourceInstance.getMetadata().getName())
-                        .labels( // deployment lable 지정
+                        .labels( // deployment label 지정
                                 Map.of(
-                                        "app", applanguageInfo,
+                                        "app", languageInfo,
                                         "message", resourceInstance.getSpec().getMessage()
-                                    )
                                 )
-                    );
+                        )
+        );
 
         deploymentSpec.selector(new V1LabelSelector() // deployment  pod selector 지정
-                        .matchLabels(
+                .matchLabels(
                         Map.of(
-                                "app", applanguageInfo,
+                                "app", languageInfo,
                                 "message", resourceInstance.getSpec().getMessage()
-                            )
                         )
-                        
-                    );
+                )
+
+        );
 
         deploymentSet.setSpec(deploymentSpec);
-        
+
         System.out.println("deployment spec init com");
         return deploymentSet;
     }
@@ -64,7 +54,7 @@ public class Resources {
         V1PodTemplateSpec podTemplateSpec = new V1PodTemplateSpec();
 
         List<V1Container> podContainers = new ArrayList<V1Container>();
-        
+
 
         podContainers.add(0,createContainers(resourceInstance));
 
@@ -72,24 +62,24 @@ public class Resources {
                 Map.of(
                         "app", applanguageInfo,
                         "message", resourceInstance.getSpec().getMessage()
-                    )
-                );
+                )
+        );
 
         podMeta.setName("hello" + "-" + UUID.randomUUID()); // pod name 지정 ( required )
 
         podTemplateSpec.setMetadata(podMeta);
-        podTemplateSpec.spec(new V1PodSpec().containers(podContainers)); 
+        podTemplateSpec.spec(new V1PodSpec().containers(podContainers));
 
 
         return podTemplateSpec;
     }
 
-        // pod container 정보 생성
+    // pod container 정보 생성
     private static V1Container createContainers(V1Helloworld resourceInstance){
         V1Container container = new V1Container();
         container.setImage(resourceInstance.getSpec().getImage());
         container.setName(resourceInstance.getSpec().getAppId());
-        
+
         return container;
     }
 
@@ -103,7 +93,7 @@ public class Resources {
         firstPort.setName("http");
         firstPort.setTargetPort(new IntOrString(80));
         firstPort.setPort(80);
-        
+
         ArrayList<V1ServicePort> ports = new ArrayList<>();
         ports.add(firstPort);
 
@@ -117,5 +107,4 @@ public class Resources {
         service.setSpec(serviceSpec);
         return service;
     }
-
 }
