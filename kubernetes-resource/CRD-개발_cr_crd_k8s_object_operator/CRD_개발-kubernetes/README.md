@@ -1,7 +1,7 @@
-# CRD 개발 - golang
+# CRD 개발 - SpringBoot
 해당 폴더에서는 실제 cr , crd를 yaml파일로 정의한 뒤 , ( etcd에 등록 ) 
 
-golang용 operator를 커스터마이징 하여 해당 cr를 통해서 k8s object를 컨트롤하는 실습 입니다.
+Java operator를 커스터마이징 하여 해당 cr를 통해서 k8s object를 컨트롤하는 실습 입니다.
 
 ## INDEX
 - [CRD 생성](#1-crd-생성)
