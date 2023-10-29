@@ -42,3 +42,10 @@ aws cloudformation describe-stacks --stack-name myeks --query 'Stacks[*].Outputs
 ```bash
 ssh -i ~/.ssh/jinseongTest.pem ec2-user@$(aws cloudformation describe-stacks --stack-name myeks --query 'Stacks[*].Outputs[0].OutputValue' --output text)
 ```
+
+## EKS 제거
+- 작업용 bastion EC2에서 아래 명령어 기입
+    - EKS가 제거될 때 까지 ssh 연결 유지 필요
+```bash
+eksctl delete cluster --name $CLUSTER_NAME && aws cloudformation delete-stack --stack-name $CLUSTER_NAME
+```
