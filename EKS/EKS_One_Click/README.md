@@ -73,3 +73,24 @@ kubectl get all -n kube-system aws-load-balancer-controller
 ```
 
 - ExternalDNS 설치
+>ExternalDNS란 Public한 도메인서버를 사용하여 쿠버네티스의 리소스를 쿼리할 수 있게 해주는 오픈소스 솔루션입니다. 
+>
+>도메인서버에 종속되지 않고 쿠버네티스 리소스를 통해 DNS레코드를 동적으로 관리할 수 있는 장점이 있습니다.
+
+```bash
+$ MyDomain=<자신의 도메인>
+$ echo "export MyDomain=<자신의 도메인>" >> /etc/profile
+
+# usecase
+$ MyDomain=jinseong.link
+$ echo "export MyDomain=jinseong.link" >> /etc/profile
+
+$ MyDnsHostedZoneId=$(aws route53 list-hosted-zones-by-name --dns-name "${MyDomain}." --query "HostedZones[0].Id" --output text)
+
+$ echo $MyDomain, $MyDnsHostedZoneId
+
+$ curl -s -O https://raw.githubusercontent.com/cloudneta/cnaeblab/master/_data/externaldns.yaml
+
+# envsubst 사용하여 ExternalDNS 컨트롤러 설치 
+$ MyDomain=$MyDomain MyDnsHostedZoneId=$MyDnsHostedZoneId envsubst < externaldns.yaml | kubectl apply -f -
+```

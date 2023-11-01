@@ -159,8 +159,15 @@ ElasticSearch에선 이러한 문제를 해결하기 위해 , ***노리 (nori) �
 ### ETC - 검색 성능 최적화
 검색 요청은 primary shard와 replica shard 모두 처리할 수 있습니다.
 - 따라서 색인 성능은 충분한데 , 검색 요청의 성능을 높히기 위해선 , `number_of_replica` 를 늘리면서 검색 요청성능을 높힐 수 있습니다.
+- replica 개수를 늘리면, 검색 요청을 더 많은 노드에 분산해서 처리할 수 있게 되어 성능이 향상됩니다.
 - `number_of_replica` 개수는 동적이기에 운영시에 언제든 개수를 늘릴 수 있습니다.
     - `number_of_shards` 개수는 라우팅 정책이 바뀌기에 바꿀수 없습니다.
+
+### ETC - 색인 성능 최적화
+색인 요청은 primary shard에서만 처리가 가능합니다.
+- 색인된 데이터는 자동으로 모든 replica shard에 복제됩니다.
+- 색인 성능을 향상시키기 위해 `number_of_shards` 조정할 수 있습니다. 더 많은 primary shard를 사용하면 색인 작업을 더 많은 노드에 분산시켜 처리할 수 있게 되므로 색인 성능이 향상될 수 있습니다.
+  - ***그러나 `number_of_shards` 개수는 라우팅 정책이 바뀌기에 바꿀수 없습니다. 따라서 처음 설계할때 잘 설계해야만 합니다.***
 
 ## text and keyword type
 둘다 문자열을 나타냅니다.

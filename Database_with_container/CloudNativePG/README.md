@@ -14,8 +14,36 @@ PG DB Instance는 3가지로 나뉘게 되며, 종류는 다음과 같습니다.
 **- RO**
     - 읽기를 위한 standby DB인스턴스 접근
 
-### Read Write Workloads
+### 1. Read Write Workloads
+![RW_Arch](../Images/architecture-rw.png)
 
+아키텍처 상에서 볼 수 있듯이, Application은 RW 요청에 대해 Primary Instance로 접근하여 쿼리를 수행하게 됩니다.
+
+### 2. Read Only and Read Workloads
+![RO_Arch](../Images/architecture-read-only.png)
+
+아키텍처 상에서 볼 수 있듯이, Application은 RO 및 R 요청에 대해 Standby Instance로 접근하여 쿼리를 수행하게 됩니다.
+
+부하분산 기준은 RoundRobin 입니다.
+
+### 3. Multi-cluster deployments
+여러 Kubernetes Cluster에 배포된 CloudNatviePG끼리 동기화 또한 지원합니다.
+
+Multi Cluster Database 환경에서, 비즈니스 연속성을 이루기 위해 다음이 필요합니다.
+
+**1. 전세계 복구 지점 목표(RPO) 축소**
+
+    다양한 위치, 지역에 PostgreSQL 백업 데이터를 저장하고, 가능하다면 다른 제공자를 사용하여 글로벌 복구 지점 목표(RPO)를 줄입니다 (재해 복구).
+
+**2. 글로벌 복구 시간 목표(RTO) 축소**
+
+    기본 Kubernetes 클러스터를 넘어 PostgreSQL 복제를 활용하여 글로벌 복구 시간 목표(RTO)를 줄입니다 (고가용성).
+
+위의 두가지 요구사항을 충족하기 위해 , CloudNatviePG는 PostgreSQL Replica cluster 개념을 사용합니다.
+
+![multi-cluster-Arch](../Images/multi-cluster.png)
+
+아키텍처에서 확인할 수 있듯이, Replica Cluster 에 Designated Primary 는 Primary 클러스터의 Primary 의 Replica로써 동작하게 되며, 고가용성과 재해복구 시간을 축소 시킵니다.
 
 ## OLM - Operator Lifecycle Manager 을 통한 CloudNativePG 설치
 CloudNativePG를 OLM으로 설치합니다.
@@ -433,10 +461,15 @@ RW는 Primary instance로, RO는 Standy로, R은 전체로 요청이 분산되�
 따라서 Client 요구사항에 따라 서비스를 유동적으로 사용하여, 트래픽을 더욱 효율적으로 나누어 보낼 수 있습니다.
 - 예를들어 읽기만 필요하고 많은 트래픽이 예상된다면 R 서비스로, 쓰기를 해야한다면 RW 서비스로..
 
+## 장애 테스트
+### 1. Primary Instance(Pod) 장애시 ..
+
+### 2. Primary Instance(Pod) 가 배포되어있는 Node 자체가 장애시 ..
+
 ## CloudNativePG Scale 및 롤링업데이트 테스트
 PG Cluster의 Scale과 , 버전을 변경하며 롤링업데이트가 잘 수행되는지 테스트 해 봅니다.
 
-### Scale test
+### 1. Scale test
 기존 instance 3대 구성에서 , 5대로 증가시킨 후 CloudNatviePG가 정상 작동하는지 확인합니다.
 
 먼저 cluster정보를 확인합니다.
@@ -528,4 +561,4 @@ $ kubectl patch cluster mycluster --type=merge -p '{"spec":{"instances":3}}' && 
 스케일업 , 스케일다운 모두 잘 작동하는것을 확인할 수 있습니다.
 
 
-### Rolling Update Test
+### 2. Rolling Update Test
