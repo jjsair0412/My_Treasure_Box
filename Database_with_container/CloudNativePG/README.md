@@ -462,9 +462,168 @@ RW는 Primary instance로, RO는 Standy로, R은 전체로 요청이 분산되�
 - 예를들어 읽기만 필요하고 많은 트래픽이 예상된다면 R 서비스로, 쓰기를 해야한다면 RW 서비스로..
 
 ## 장애 테스트
+### 0. 장애 테스트 준비
+장애 테스트를 진행하기 위해 , 테스트용 테이블 ```t1```을 생성하고, 해당 테이블에 데이터들을 Insert 해 놓습니다.
+
+또한 myclient2 pod를 생성하여 모니터링합니다.
+```bash
+#  상단 myclient1 pod 생성 안했을 경우, 아래 스크립트로 생성
+$ curl -s https://raw.githubusercontent.com/gasida/DOIK/main/5/myclient-new.yaml -o myclient.yaml
+$ for ((i=1; i<=3; i++)); do PODNAME=myclient$i VERSION=15.3.0 envsubst < myclient.yaml | kubectl apply -f - ; done
+
+# 파드IP 변수 지정
+$ POD1=$(kubectl get pod mycluster-1 -o jsonpath={.status.podIP})
+$ POD2=$(kubectl get pod mycluster-2 -o jsonpath={.status.podIP})
+$ POD3=$(kubectl get pod mycluster-3 -o jsonpath={.status.podIP})
+
+# query.sql
+$ curl -s -O https://raw.githubusercontent.com/gasida/DOIK/main/5/query.sql
+$ cat query.sql ;echo
+CREATE DATABASE test;
+\c test;
+CREATE TABLE t1 (c1 INT PRIMARY KEY, c2 TEXT NOT NULL);
+INSERT INTO t1 VALUES (1, 'Luis');
+
+# SQL 파일 query 실행
+$ psql -U postgres -h psql.$MyDomain -f query.sql
+
+혹은
+# myclient1 pod의 /tmp 경로에 query.sql 복사
+$ kubectl cp query.sql myclient1:/tmp
+
+# query.sql 쿼리 PG에 반영 (table 생성 및 insert)
+$ kubectl exec -it myclient1 -- psql -U postgres -h mycluster-rw -p 5432 -f /tmp/query.sql
+
+# [터미널2] 모니터링
+$ while true; do kubectl exec -it myclient2 -- psql -U postgres -h mycluster-ro -p 5432 -d test -c "SELECT COUNT(*) FROM t1"; date;sleep 1; done
+
+# insert 결과확인
+$ kubectl exec -it myclient1 -- psql -U postgres -h mycluster-ro -p 5432 -d test -c "SELECT COUNT(*) FROM t1"
+$ kubectl exec -it myclient1 -- psql -U postgres -h mycluster-ro -p 5432 -d test -c "SELECT * FROM t1"
+
+# INSERT 수행
+$ psql -U postgres -h psql.$MyDomain -d test -c "INSERT INTO t1 VALUES (2, 'Luis2');"
+$ psql -U postgres -h psql.$MyDomain -d test -c "SELECT * FROM t1"
+혹은
+$ kubectl exec -it myclient1 -- psql -U postgres -h mycluster-rw -p 5432 -d test -c "INSERT INTO t1 VALUES (2, 'Luis2');"
+$ kubectl exec -it myclient1 -- psql -U postgres -h mycluster-ro -p 5432 -d test -c "SELECT * FROM t1"
+
+# test 데이터베이스에 97개의 데이터 INSERT
+$ for ((i=3; i<=100; i++)); do kubectl exec -it myclient1 -- psql -U postgres -h mycluster-rw -p 5432 -d test -c "INSERT INTO t1 VALUES ($i, 'Luis$i');";echo; done
+kubectl exec -it myclient1 -- psql -U postgres -h mycluster-ro -p 5432 -d test -c "SELECT COUNT(*) FROM t1"
+```
+
+
 ### 1. Primary Instance(Pod) 장애시 ..
+W가 진행되고 있을 때 Primary Pod가 down되었을 경우, 어떤 이슈가 발생하는지 체크해봅니다.
+
+- 먼저 Write는 Primary Pod에서 발생하기 때문에, Primary Pod가 어디에 있는지 찾습니다.
+```bash
+# 프라이머리 파드 정보 확인
+# Primary Pod는 mycluster-1
+$ kubectl cnpg status mycluster
+...
+Instances status
+Name         Database Size  Current LSN  Replication role  Status  QoS         Manager Version  Node
+----         -------------  -----------  ----------------  ------  ---         ---------------  ----
+mycluster-1  29 MB          0/6000060    Primary           OK      BestEffort  1.21.0           ip-192-168-3-89.ap-northeast-2.compute.internal
+mycluster-2  29 MB          0/6000060    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-3-17.ap-northeast-2.compute.internal
+mycluster-3  29 MB          0/6000060    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-1-113.ap-northeast-2.compute.internal
+```
+
+터미널 4대를 켜놓고 모니터링해봅니다.
+- 터미널 1 : pod 상태확인
+```bash
+$ watch kubectl get pod -l cnpg.io/cluster=mycluster
+```
+
+- 터미널 2 : 조회
+```bash
+$ while true; do kubectl exec -it myclient2 -- psql -U postgres -h mycluster-ro -p 5432 -d test -c "SELECT COUNT(*) FROM t1"; date;sleep 1; done
+```
+
+- 터미널 3 : Insert 쿼리 주기적으로 계속수행
+```bash
+$ for ((i=10001; i<=20000; i++)); do kubectl exec -it myclient2 -- psql -U postgres -h mycluster-rw -p 5432 -d test -c "INSERT INTO t1 VALUES ($i, 'Luis$i');";echo; done
+```
+
+- 터미널 4 : 파드 삭제
+```bash
+$ kubectl get pod -l cnpg.io/cluster=mycluster -owide
+
+# Primary Pod 삭제
+$ kubectl delete pvc/mycluster-1 pod/mycluster-1
+
+$ kubectl cnpg status mycluster
+```
+
+- 아래 캡쳐사진처럼, 장애발생순간 Insert가 끊겻다가 바로 다시복구되는것을 확인할 수 있습니다.
+![장애1](../Images/장애테스트1.png)
+
+- 또한 mycluster-4 라는 pod가 순차적으로 다시 생기면서, Cluster의 Instance 개수 3대가 보존되는것을 확인할 수 있으며,
+
+```bash
+NAME                     READY   STATUS      RESTARTS   AGE
+mycluster-2              1/1     Running     0          61m
+mycluster-3              1/1     Running     0          59m
+mycluster-4              0/1     Init:0/1    0          23s
+mycluster-4-join-jnf9x   0/1     Completed   0          62s
+```
+
+- primary Instance(pod) 는 ```mycluster-1``` 바로 다음인 ```mycluster-2``` pod가 Primary로 승격된것을 확인할 수 있습니다.
+```bash
+$ kubectl cnpg status mycluster
+...
+Instances status
+Name         Database Size  Current LSN  Replication role  Status  QoS         Manager Version  Node
+----         -------------  -----------  ----------------  ------  ---         ---------------  ----
+mycluster-2  36 MB          0/A002680    Primary           OK      BestEffort  1.21.0           ip-192-168-3-17.ap-northeast-2.compute.internal
+mycluster-3  36 MB          0/A002680    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-1-113.ap-northeast-2.compute.internal
+mycluster-4  36 MB          0/A002680    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-3-89.ap-northeast-2.compute.internal
+```
+
+재해 복구가 잘 이루어진것을 확인할 수 있습니다.
+- 그러나 Primary Instance가 down된 직후에 잠깐 Insert가 끊긴것을 확인할 수 있었습니다.
 
 ### 2. Primary Instance(Pod) 가 배포되어있는 Node 자체가 장애시 ..
+Primary Pod가 배포되어있는 Node 자체가 장애상태로 돌입된다면 CloudNativePG는 재해복구를 가져가는지 확인하는 테스트 입니다.
+
+- 먼저 , Primary Instance Pod가 어느 Node에 배포되어있는지 확인합니다.
+```bash
+# primary instance는 mycluster-2
+$ kubectl cnpg status mycluster
+... 
+Instances status
+Name         Database Size  Current LSN  Replication role  Status  QoS         Manager Version  Node
+----         -------------  -----------  ----------------  ------  ---         ---------------  ----
+mycluster-2  36 MB          0/B006338    Primary           OK      BestEffort  1.21.0           ip-192-168-3-17.ap-northeast-2.compute.internal
+mycluster-3  36 MB          0/B0063F0    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-1-113.ap-northeast-2.compute.internal
+mycluster-4  36 MB          0/B0063F0    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-3-89.ap-northeast-2.compute.internal
+
+# mycluster-2 pod는 Node ip-192-168-3-17.ap-northeast-2.compute.internal 에 배포되어 있는것을 확인할 수 있습니다.
+$ kubectl get pods -o wide
+kubectNAME          READY   STATUS    RESTARTS   AGE    IP              NODE                                               NOMINATED NODE   READINESS GATES
+mycluster-2   1/1     Running   0          68m    192.168.3.147   ip-192-168-3-17.ap-northeast-2.compute.internal    <none>           <none>
+mycluster-3   1/1     Running   0          66m    192.168.1.162   ip-192-168-1-113.ap-northeast-2.compute.internal   <none>           <none>
+mycluster-4   1/1     Running   0          7m5s   192.168.3.140   ip-192-168-3-89.ap-northeast-2.compute.internal    <none>           <none>
+
+$ kubectl get nodes -owide
+NAME                                               STATUS   ROLES    AGE   VERSION               INTERNAL-IP     EXTERNAL-IP      OS-IMAGE         KERNEL-VERSION                  CONTAINER-RUNTIME
+ip-192-168-1-113.ap-northeast-2.compute.internal   Ready    <none>   95m   v1.27.5-eks-43840fb   192.168.1.113   52.79.41.132     Amazon Linux 2   5.10.192-183.736.amzn2.x86_64   containerd://1.6.19
+ip-192-168-3-17.ap-northeast-2.compute.internal    Ready    <none>   95m   v1.27.5-eks-43840fb   192.168.3.17    54.180.159.250   Amazon Linux 2   5.10.192-183.736.amzn2.x86_64   containerd://1.6.19
+ip-192-168-3-89.ap-northeast-2.compute.internal    Ready    <none>   94m   v1.27.5-eks-43840fb   192.168.3.89    3.34.52.24       Amazon Linux 2   5.10.192-183.736.amzn2.x86_64   containerd://1.6.19
+```
+
+- Primary Instance가 배포되어있는 Node를 Drain 합니다.
+```bash
+$ NODE=<NodeName>
+
+# usecase
+$ NODE=ip-192-168-3-17.ap-northeast-2.compute.internal
+
+$ kubectl drain $NODE --delete-emptydir-data --force --ignore-daemonsets && kubectl get node -w
+```
+
 
 ## CloudNativePG Scale 및 롤링업데이트 테스트
 PG Cluster의 Scale과 , 버전을 변경하며 롤링업데이트가 잘 수행되는지 테스트 해 봅니다.
