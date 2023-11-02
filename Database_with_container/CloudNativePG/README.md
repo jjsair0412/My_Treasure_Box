@@ -987,8 +987,6 @@ spec:
     enablePodMonitor: true
 ```
 
-ㅂ
-
 - CloudNativePG Cluster 모니터링 (터미널1)
 ```bash
 $ watch kubectl get pod -l cnpg.io/cluster=mycluster
