@@ -204,6 +204,19 @@ cnpg 플러그인을 설치하여, 구성한 클러스터의 상세 정보를 �
 ```bash
 # 설치
 $ kubectl krew install cnpg
+Updated the local copy of plugin index.
+Installing plugin: cnpg
+Installed plugin: cnpg
+\
+ | Use this plugin:
+ |      kubectl cnpg
+ | Documentation:
+ |      https://github.com/cloudnative-pg/cloudnative-pg
+/
+WARNING: You installed plugin "cnpg" from the krew-index plugin repository.
+   These plugins are not audited for security by the Krew maintainers.
+   Run them at your own risk.
+
 
 # mycluster 정보확인
 $ kubectl cnpg status mycluster
@@ -242,9 +255,9 @@ No unmanaged replication slots found
 Instances status
 Name         Database Size  Current LSN  Replication role  Status  QoS         Manager Version  Node
 ----         -------------  -----------  ----------------  ------  ---         ---------------  ----
-mycluster-1  29 MB          0/6030FB8    Primary           OK      BestEffort  1.21.0           ip-192-168-1-81.ap-northeast-2.compute.internal
-mycluster-2  29 MB          0/6030FB8    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-2-171.ap-northeast-2.compute.internal
-mycluster-3  29 MB          0/6030FB8    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-3-107.ap-northeast-2.compute.internal
+mycluster-1  29 MB          0/6030FB8    Primary           OK      BestEffort  1.21.0           ip-x-x-1-81.ap-northeast-2.compute.internal
+mycluster-2  29 MB          0/6030FB8    Standby (async)   OK      BestEffort  1.21.0           ip-x-x-2-171.ap-northeast-2.compute.internal
+mycluster-3  29 MB          0/6030FB8    Standby (async)   OK      BestEffort  1.21.0           ip-x-x-3-107.ap-northeast-2.compute.internal
 ```
 
 구성한 mycluster의 -v 및 config 설정 적용이 잘 되었는지 또한 확인합니다..
@@ -435,24 +448,24 @@ CloudNativePG는 ro, r, rw 3가지 서비스로 구성되어 있습니다.
 - 30번 요청 모두 rw 서비스, rw instance primary인 mycluster-1 파드로 요청이 가는것을 확인할 수 있습니다.
 ```bash
 $ for i in {1..30}; do kubectl exec -it myclient1 -- psql -U postgres -h mycluster-rw -p 5432 -c "select inet_server_addr();"; done | sort | uniq -c | sort -nr | grep 192
-30  192.168.1.250
+30  x.x.1.250
 ```
 
 그다음 ro 서비스에 요청을 보냅니다.
 - 30번 요청들이 standby 파드로 요청이 부하분산되는것을 확인할 수 있습니다.
 ```bash
 $ for i in {1..30}; do kubectl exec -it myclient1 -- psql -U postgres -h mycluster-ro -p 5432 -c "select inet_server_addr();"; done | sort | uniq -c | sort -nr | grep 192
-17  192.168.2.202
-13  192.168.3.48
+17  x.x.2.202
+13  x.x.3.48
 ```
 
 마지막으로 r 서비스에 요청을 보냅니다.
 - 전체 파드로 요청이 부하분산되는것을 확인할 수 있습니다.
 ```bash
 $ for i in {1..30}; do kubectl exec -it myclient1 -- psql -U postgres -h mycluster-r -p 5432 -c "select inet_server_addr();"; done | sort | uniq -c | sort -nr | grep 192
-12  192.168.2.202
-10  192.168.3.48
-8  192.168.1.250
+12  x.x.2.202
+10  x.x.3.48
+8  x.x.1.250
 ```
 
 ### 테스트 결과
@@ -526,9 +539,9 @@ $ kubectl cnpg status mycluster
 Instances status
 Name         Database Size  Current LSN  Replication role  Status  QoS         Manager Version  Node
 ----         -------------  -----------  ----------------  ------  ---         ---------------  ----
-mycluster-1  29 MB          0/6000060    Primary           OK      BestEffort  1.21.0           ip-192-168-3-89.ap-northeast-2.compute.internal
-mycluster-2  29 MB          0/6000060    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-3-17.ap-northeast-2.compute.internal
-mycluster-3  29 MB          0/6000060    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-1-113.ap-northeast-2.compute.internal
+mycluster-1  29 MB          0/6000060    Primary           OK      BestEffort  1.21.0           ip-x-x-3-89.ap-northeast-2.compute.internal
+mycluster-2  29 MB          0/6000060    Standby (async)   OK      BestEffort  1.21.0           ip-x-x-3-17.ap-northeast-2.compute.internal
+mycluster-3  29 MB          0/6000060    Standby (async)   OK      BestEffort  1.21.0           ip-x-x-1-113.ap-northeast-2.compute.internal
 ```
 
 터미널 4대를 켜놓고 모니터링해봅니다.
@@ -547,7 +560,7 @@ $ while true; do kubectl exec -it myclient2 -- psql -U postgres -h mycluster-ro 
 $ for ((i=10001; i<=20000; i++)); do kubectl exec -it myclient2 -- psql -U postgres -h mycluster-rw -p 5432 -d test -c "INSERT INTO t1 VALUES ($i, 'Luis$i');";echo; done
 ```
 
-- 터미널 4 : 파드 삭제
+- 터미널 4 : 파드 및 PVC 삭제
 ```bash
 $ kubectl get pod -l cnpg.io/cluster=mycluster -owide
 
@@ -577,9 +590,9 @@ $ kubectl cnpg status mycluster
 Instances status
 Name         Database Size  Current LSN  Replication role  Status  QoS         Manager Version  Node
 ----         -------------  -----------  ----------------  ------  ---         ---------------  ----
-mycluster-2  36 MB          0/A002680    Primary           OK      BestEffort  1.21.0           ip-192-168-3-17.ap-northeast-2.compute.internal
-mycluster-3  36 MB          0/A002680    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-1-113.ap-northeast-2.compute.internal
-mycluster-4  36 MB          0/A002680    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-3-89.ap-northeast-2.compute.internal
+mycluster-2  36 MB          0/A002680    Primary           OK      BestEffort  1.21.0           ip-x-x-3-17.ap-northeast-2.compute.internal
+mycluster-3  36 MB          0/A002680    Standby (async)   OK      BestEffort  1.21.0           ip-x-x-1-113.ap-northeast-2.compute.internal
+mycluster-4  36 MB          0/A002680    Standby (async)   OK      BestEffort  1.21.0           ip-x-x-3-89.ap-northeast-2.compute.internal
 ```
 
 재해 복구가 잘 이루어진것을 확인할 수 있습니다.
@@ -587,6 +600,23 @@ mycluster-4  36 MB          0/A002680    Standby (async)   OK      BestEffort  1
 
 ### 2. Primary Instance(Pod) 가 배포되어있는 Node 자체가 장애시 ..
 Primary Pod가 배포되어있는 Node 자체가 장애상태로 돌입된다면 CloudNativePG는 재해복구를 가져가는지 확인하는 테스트 입니다.
+
+
+터미널 3대를 켜놓고 모니터링해봅니다.
+- 터미널 1 : pod 상태확인
+```bash
+$ watch kubectl get pod -l cnpg.io/cluster=mycluster
+```
+
+- 터미널 2 : 조회
+```bash
+$ while true; do kubectl exec -it myclient2 -- psql -U postgres -h mycluster-ro -p 5432 -d test -c "SELECT COUNT(*) FROM t1"; date;sleep 1; done
+```
+
+- 터미널 3 : Insert 쿼리 주기적으로 계속수행
+```bash
+$ for ((i=10001; i<=20000; i++)); do kubectl exec -it myclient2 -- psql -U postgres -h mycluster-rw -p 5432 -d test -c "INSERT INTO t1 VALUES ($i, 'Luis$i');";echo; done
+```
 
 - 먼저 , Primary Instance Pod가 어느 Node에 배포되어있는지 확인합니다.
 ```bash
@@ -596,22 +626,22 @@ $ kubectl cnpg status mycluster
 Instances status
 Name         Database Size  Current LSN  Replication role  Status  QoS         Manager Version  Node
 ----         -------------  -----------  ----------------  ------  ---         ---------------  ----
-mycluster-2  36 MB          0/B006338    Primary           OK      BestEffort  1.21.0           ip-192-168-3-17.ap-northeast-2.compute.internal
-mycluster-3  36 MB          0/B0063F0    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-1-113.ap-northeast-2.compute.internal
-mycluster-4  36 MB          0/B0063F0    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-3-89.ap-northeast-2.compute.internal
+mycluster-2  36 MB          0/B006338    Primary           OK      BestEffort  1.21.0           ip-x-x-3-17.ap-northeast-2.compute.internal
+mycluster-3  36 MB          0/B0063F0    Standby (async)   OK      BestEffort  1.21.0           ip-x-x-1-113.ap-northeast-2.compute.internal
+mycluster-4  36 MB          0/B0063F0    Standby (async)   OK      BestEffort  1.21.0           ip-x-x-3-89.ap-northeast-2.compute.internal
 
-# mycluster-2 pod는 Node ip-192-168-3-17.ap-northeast-2.compute.internal 에 배포되어 있는것을 확인할 수 있습니다.
+# mycluster-2 pod는 Node ip-x-x-3-17.ap-northeast-2.compute.internal 에 배포되어 있는것을 확인할 수 있습니다.
 $ kubectl get pods -o wide
 kubectNAME          READY   STATUS    RESTARTS   AGE    IP              NODE                                               NOMINATED NODE   READINESS GATES
-mycluster-2   1/1     Running   0          68m    192.168.3.147   ip-192-168-3-17.ap-northeast-2.compute.internal    <none>           <none>
-mycluster-3   1/1     Running   0          66m    192.168.1.162   ip-192-168-1-113.ap-northeast-2.compute.internal   <none>           <none>
-mycluster-4   1/1     Running   0          7m5s   192.168.3.140   ip-192-168-3-89.ap-northeast-2.compute.internal    <none>           <none>
+mycluster-2   1/1     Running   0          68m    x.x.3.147   ip-x-x-3-17.ap-northeast-2.compute.internal    <none>           <none>
+mycluster-3   1/1     Running   0          66m    x.x.1.162   ip-x-x-1-113.ap-northeast-2.compute.internal   <none>           <none>
+mycluster-4   1/1     Running   0          7m5s   x.x.3.140   ip-x-x-3-89.ap-northeast-2.compute.internal    <none>           <none>
 
 $ kubectl get nodes -owide
 NAME                                               STATUS   ROLES    AGE   VERSION               INTERNAL-IP     EXTERNAL-IP      OS-IMAGE         KERNEL-VERSION                  CONTAINER-RUNTIME
-ip-192-168-1-113.ap-northeast-2.compute.internal   Ready    <none>   95m   v1.27.5-eks-43840fb   192.168.1.113   52.79.41.132     Amazon Linux 2   5.10.192-183.736.amzn2.x86_64   containerd://1.6.19
-ip-192-168-3-17.ap-northeast-2.compute.internal    Ready    <none>   95m   v1.27.5-eks-43840fb   192.168.3.17    54.180.159.250   Amazon Linux 2   5.10.192-183.736.amzn2.x86_64   containerd://1.6.19
-ip-192-168-3-89.ap-northeast-2.compute.internal    Ready    <none>   94m   v1.27.5-eks-43840fb   192.168.3.89    3.34.52.24       Amazon Linux 2   5.10.192-183.736.amzn2.x86_64   containerd://1.6.19
+ip-x-x-1-113.ap-northeast-2.compute.internal   Ready    <none>   95m   v1.27.5-eks-43840fb   x.x.1.113   52.79.41.132     Amazon Linux 2   5.10.192-183.736.amzn2.x86_64   containerd://1.6.19
+ip-x-x-3-17.ap-northeast-2.compute.internal    Ready    <none>   95m   v1.27.5-eks-43840fb   x.x.3.17    54.180.159.250   Amazon Linux 2   5.10.192-183.736.amzn2.x86_64   containerd://1.6.19
+ip-x-x-3-89.ap-northeast-2.compute.internal    Ready    <none>   94m   v1.27.5-eks-43840fb   x.x.3.89    3.34.52.24       Amazon Linux 2   5.10.192-183.736.amzn2.x86_64   containerd://1.6.19
 ```
 
 - Primary Instance가 배포되어있는 Node를 Drain 합니다.
@@ -619,11 +649,126 @@ ip-192-168-3-89.ap-northeast-2.compute.internal    Ready    <none>   94m   v1.27
 $ NODE=<NodeName>
 
 # usecase
-$ NODE=ip-192-168-3-17.ap-northeast-2.compute.internal
+$ NODE=ip-x-x-3-17.ap-northeast-2.compute.internal
 
 $ kubectl drain $NODE --delete-emptydir-data --force --ignore-daemonsets && kubectl get node -w
 ```
 
+- Primary pod가 배포되어잇던 노드가 drain되면서, 파드가 쫓겨납니다.
+- 그리고 기존 Primary Pod는 Pending상태로 남으며, Insert와 Select 이벤트는 Insert Event가 잠깐 끊기지만 , 읽기는 standby pod에서 진행되기에 끊김없이 정상 처리됩니다.
+
+![장애테스트2](../Images/장애테스트2.png)
+
+### **왜 Pending일까 ?**
+생각해보면, node가 drain되었기에 해당 노드에 스케줄링된 파드들은 다른 노드에 옮간뒤 재 배포되어야 합니다.
+
+그런데, 특이하게도 Pending상태로 남고 다른노드로 옮겨가지 않습니다.
+
+![장애테스트2-1](../Images/장애테스트2-1.png)
+
+#### 이유찾기 1.
+Primary Pod instnace를 Describe 하여 어떤 이벤트가 발생했는지 확인합니다.
+```bash
+$ kubectl describe pods mycluster-1
+...
+Events:
+  Type     Reason            Age    From               Message
+  ----     ------            ----   ----               -------
+  Warning  FailedScheduling  4m52s  default-scheduler  0/3 nodes are available: 1 node(s) were unschedulable, 2 node(s) had volume node affinity conflict. preemption: 0/3 nodes are available: 3 Preemption is not helpful for scheduling..
+```
+
+해당 에러는, 한 노드가 스케줄링될 상황이 아니라서, CloudNativePG Cluster를 생성할 때 만들어준 PV에 Pod Instance가 붙을 수 없다는 이야기입니다.
+
+EKS 환경에서, StorageClass는 기본적으로 gp2 라는 이름의 StorageClass를 사용하게 됩니다.
+얘는 AWS EBS이고, EKS Cluster EC2 인스턴스에 마운트되어 있습니다.
+
+- PVC의 모습
+```bash
+$ kubectl get pvc -owide
+NAME          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE   VOLUMEMODE
+mycluster-1   Bound    pvc-5ccf2055-e1b1-4264-a99e-dd423724dd15   3Gi        RWO            gp2            25m   Filesystem
+mycluster-2   Bound    pvc-cefb5045-037e-4081-9593-ca9a65f55d50   3Gi        RWO            gp2            23m   Filesystem
+mycluster-3   Bound    pvc-f33e7403-d391-4674-a011-341298a1d407   3Gi        RWO            gp2            23m   Filesystem
+```
+
+- AWS Console에서 본 PVC
+![console pvc](../Images/pvc.png)
+
+EBS는 가용영역에 종속되어 있습니다.
+- 이말은 한 번에 하나의 EC2 Instance에만 마운트할 수 있음을 의미합니다.
+
+***따라서 만약 노드 1번 인스턴스에 1번 PV(EBS)가 할당되고, 해당 PV를 1번 PVC가 요청하고 있는 경우, 1번 PVC를 특정 Pod가 마운트하고 있으면,, 해당 Pod는 다른 노드에 프로비저닝되지 못하게 됩니다.***
+
+## ETC - Pod Volume 증가
+만약 EBS(PV) 용량이 꽉 찬다면, 볼륨을 증가시켜주어야 할것 입니다.
+
+이 작업을,. operator 명령어로 수행할 수 있습니다.
+
+- pod, pvc 모니터링
+```bash
+$ watch kubectl get pod,pvc
+```
+
+- PVC 3G → 5G 로 증가 설정 : 증가 후 감소는 안됨 > AWS EBS 증가 확인
+  - 5Gi 로 EBS 용량이 증설된것을 확인할 수 있습니다.
+```bash
+$ kubectl df-pv
+
+ PV NAME                                   PVC NAME     NAMESPACE  NODE NAME                                         POD NAME     VOLUME MOUNT NAME  SIZE  USED   AVAILABLE  %USED  IUSED  IFREE   %IUSED 
+ pvc-5ccf2055-e1b1-4264-a99e-dd423724dd15  mycluster-1  default    ip-x-x-3-123.ap-northeast-2.compute.internal  mycluster-1  pgdata             2Gi   245Mi  2Gi        8.30   1645   194963  0.84   
+ pvc-cefb5045-037e-4081-9593-ca9a65f55d50  mycluster-2  default    ip-x-x-1-208.ap-northeast-2.compute.internal  mycluster-2  pgdata             2Gi   213Mi  2Gi        7.24   1642   194966  0.84   
+ pvc-f33e7403-d391-4674-a011-341298a1d407  mycluster-3  default    ip-x-x-2-164.ap-northeast-2.compute.internal  mycluster-3  pgdata             2Gi   181Mi  2Gi        6.14   1635   194973  0.83   
+
+# 5Gi로 볼륨 Size 증가
+$ kubectl patch cluster mycluster --type=merge -p '{"spec":{"storage":{"size":"5Gi"}}}'
+cluster.postgresql.cnpg.io/mycluster patched
+
+# cluster describe
+$ kubectl describe cluster mycluster
+```
+
+### 3. Primary Pod 변경
+수동으로 Primary Pod Instance를 standby Pod와 바꾸는것이 가능합니다.
+
+- 현재 Primary Pod는 mycluster-2 인 것을 확인할 수 있습니다.
+```bash
+# 모니터링
+$ watch -d kubectl cnpg status mycluster
+...
+Name         Database Size  Current LSN  Replication role  Status  QoS         Manager Version  Node
+----         -------------  -----------  ----------------  ------  ---         ---------------  ----
+mycluster-2  37 MB          0/10000110   Primary           OK      BestEffort  1.21.0           ip-x-x-1-208.ap-northeast-2.compute.internal
+mycluster-1  36 MB          0/10000110   Standby (async)   OK      BestEffort  1.21.0           ip-x-x-3-123.ap-northeast-2.compute.internal
+mycluster-3  36 MB          0/10000110   Standby (async)   OK      BestEffort  1.21.0           ip-x-x-2-164.ap-northeast-2.compute.internal
+```
+
+- 아래 명령어로 primary pod를 mycluster-3 으로 변경합니다.
+
+```bash
+$ kubectl cnpg promote mycluster mycluster-3
+Node mycluster-3 in cluster mycluster will be promoted
+```
+
+- cnpg 상 Primary pod가 mycluster-3으로 변화한것을 바로 확인할 수 있습니다.
+
+```bash
+Name         Database Size  Current LSN  Replication role  Status  QoS         Manager Version  Node
+----         -------------  -----------  ----------------  ------  ---         ---------------  ----
+mycluster-3  37 MB          0/11001240   Primary           OK      BestEffort  1.21.0           ip-x-x-2-164.ap-northeast-2.compute.internal
+mycluster-1  36 MB          0/11001240   Standby (async)   OK      BestEffort  1.21.0           ip-x-x-3-123.ap-northeast-2.compute.internal
+mycluster-2  36 MB          0/11001240   Standby (async)   OK      BestEffort  1.21.0           ip-x-x-1-208.ap-northeast-2.compute.internal
+```
+
+- rw Service에 접근해서, mycluster-3으로 정상 변경되었는지 확인합니다.
+  - mycluster-3의 pod IP가 출력됩니다.
+
+```bash
+$ kubectl exec -it myclient3 -- psql -U postgres -h mycluster-rw -p 5432 -c "select inet_server_addr();"
+ inet_server_addr 
+------------------
+ x.x.2.56
+(1 row)
+```
 
 ## CloudNativePG Scale 및 롤링업데이트 테스트
 PG Cluster의 Scale과 , 버전을 변경하며 롤링업데이트가 잘 수행되는지 테스트 해 봅니다.
@@ -642,9 +787,9 @@ $ kubectl get cluster mycluster
 Instances status
 Name         Database Size  Current LSN  Replication role  Status  QoS         Manager Version  Node
 ----         -------------  -----------  ----------------  ------  ---         ---------------  ----
-mycluster-1  29 MB          0/7000060    Primary           OK      BestEffort  1.21.0           ip-192-168-1-81.ap-northeast-2.compute.internal
-mycluster-2  29 MB          0/7000060    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-2-171.ap-northeast-2.compute.internal
-mycluster-3  29 MB          0/7000060    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-3-107.ap-northeast-2.compute.internal
+mycluster-1  29 MB          0/7000060    Primary           OK      BestEffort  1.21.0           ip-x-x-1-81.ap-northeast-2.compute.internal
+mycluster-2  29 MB          0/7000060    Standby (async)   OK      BestEffort  1.21.0           ip-x-x-2-171.ap-northeast-2.compute.internal
+mycluster-3  29 MB          0/7000060    Standby (async)   OK      BestEffort  1.21.0           ip-x-x-3-107.ap-northeast-2.compute.internal
 ```
 
 5대로 증가시켜봅니다.
@@ -676,11 +821,11 @@ $ kubectl cnpg status mycluster
 ...
 Name         Database Size  Current LSN  Replication role  Status  QoS         Manager Version  Node
 ----         -------------  -----------  ----------------  ------  ---         ---------------  ----
-mycluster-1  29 MB          0/B000060    Primary           OK      BestEffort  1.21.0           ip-192-168-1-81.ap-northeast-2.compute.internal
-mycluster-2  29 MB          0/B000060    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-2-171.ap-northeast-2.compute.internal
-mycluster-3  29 MB          0/B000060    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-3-107.ap-northeast-2.compute.internal
-mycluster-4  29 MB          0/B000060    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-1-81.ap-northeast-2.compute.internal
-mycluster-5  29 MB          0/B000060    Standby (async)   OK      BestEffort  1.21.0           ip-192-168-3-107.ap-northeast-2.compute.internal
+mycluster-1  29 MB          0/B000060    Primary           OK      BestEffort  1.21.0           ip-x-x-1-81.ap-northeast-2.compute.internal
+mycluster-2  29 MB          0/B000060    Standby (async)   OK      BestEffort  1.21.0           ip-x-x-2-171.ap-northeast-2.compute.internal
+mycluster-3  29 MB          0/B000060    Standby (async)   OK      BestEffort  1.21.0           ip-x-x-3-107.ap-northeast-2.compute.internal
+mycluster-4  29 MB          0/B000060    Standby (async)   OK      BestEffort  1.21.0           ip-x-x-1-81.ap-northeast-2.compute.internal
+mycluster-5  29 MB          0/B000060    Standby (async)   OK      BestEffort  1.21.0           ip-x-x-3-107.ap-northeast-2.compute.internal
 ```
 
 20번 접속 시도하여 각 instance에 접근이 모두 가능한지 확인해 봅니다.
@@ -692,23 +837,23 @@ mycluster-5  29 MB          0/B000060    Standby (async)   OK      BestEffort  1
 
 ```bash
 $ for i in {1..20}; do kubectl exec -it myclient2 -- psql -U postgres -h mycluster-r -p 5432 -c "select inet_server_addr();"; done | sort | uniq -c | sort -nr | grep 192
-6  192.168.1.247
-5  192.168.2.202
-4  192.168.3.57
-3  192.168.3.48
-2  192.168.1.250
+6  x.x.1.247
+5  x.x.2.202
+4  x.x.3.57
+3  x.x.3.48
+2  x.x.1.250
 
 # cluster Instance의 Pod IP를 확인합니다.
 $ kubectl get pods -o wide
 NAME          READY   STATUS    RESTARTS   AGE     IP              NODE                                               NOMINATED NODE   READINESS GATES
-myclient1     1/1     Running   0          20m     192.168.1.233   ip-192-168-1-81.ap-northeast-2.compute.internal    <none>           <none>
-myclient2     1/1     Running   0          20m     192.168.3.243   ip-192-168-3-107.ap-northeast-2.compute.internal   <none>           <none>
-myclient3     1/1     Running   0          20m     192.168.2.39    ip-192-168-2-171.ap-northeast-2.compute.internal   <none>           <none>
-mycluster-1   1/1     Running   0          69m     192.168.1.250   ip-192-168-1-81.ap-northeast-2.compute.internal    <none>           <none>
-mycluster-2   1/1     Running   0          68m     192.168.2.202   ip-192-168-2-171.ap-northeast-2.compute.internal   <none>           <none>
-mycluster-3   1/1     Running   0          68m     192.168.3.48    ip-192-168-3-107.ap-northeast-2.compute.internal   <none>           <none>
-mycluster-4   1/1     Running   0          3m53s   192.168.1.247   ip-192-168-1-81.ap-northeast-2.compute.internal    <none>           <none>
-mycluster-5   1/1     Running   0          3m27s   192.168.3.57    ip-192-168-3-107.ap-northeast-2.compute.internal   <none>           <none>
+myclient1     1/1     Running   0          20m     x.x.1.233   ip-x-x-1-81.ap-northeast-2.compute.internal    <none>           <none>
+myclient2     1/1     Running   0          20m     x.x.3.243   ip-x-x-3-107.ap-northeast-2.compute.internal   <none>           <none>
+myclient3     1/1     Running   0          20m     x.x.2.39    ip-x-x-2-171.ap-northeast-2.compute.internal   <none>           <none>
+mycluster-1   1/1     Running   0          69m     x.x.1.250   ip-x-x-1-81.ap-northeast-2.compute.internal    <none>           <none>
+mycluster-2   1/1     Running   0          68m     x.x.2.202   ip-x-x-2-171.ap-northeast-2.compute.internal   <none>           <none>
+mycluster-3   1/1     Running   0          68m     x.x.3.48    ip-x-x-3-107.ap-northeast-2.compute.internal   <none>           <none>
+mycluster-4   1/1     Running   0          3m53s   x.x.1.247   ip-x-x-1-81.ap-northeast-2.compute.internal    <none>           <none>
+mycluster-5   1/1     Running   0          3m27s   x.x.3.57    ip-x-x-3-107.ap-northeast-2.compute.internal   <none>           <none>
 ```
 
 다시 3대로 감소시킵니다.
@@ -721,3 +866,353 @@ $ kubectl patch cluster mycluster --type=merge -p '{"spec":{"instances":3}}' && 
 
 
 ### 2. Rolling Update Test
+CloudNatviePG cluster 의 PG Version을 , ```postgresql:15.3``` -> ```postgresql:15.4``` 로 업데이트 합니다.
+
+업데이트 시 , Cluster의 Pod Instance들이 Rolling Update가 잘 진행되는지 확인합니다.
+
+Primary Pod는 Rolling Update 시 죽으면 안됩니다.
+- **그런데 Operator가 자동으로 Rolling Update 시 Primary Pod를 SwitchOver 해줌으로써 Primary Pod가 죽지 않도록 방지합니다.**
+
+#### 2.1 primaryUpdateStrategy Option 설정
+```spec.primaryUpdateStrategy``` 옵션은, 유저가 수동으로 Primary Instance Pod에 대한 switchover나 restart를 수행할것인지, 아니면 자동으로 수행할것인지를 지정합니다.
+
+- **primaryUpdateMethod 자동 수행, - spec.primaryUpdateStrategy: unsupervised**
+
+만약 아래와 같이 설정되어있을 경우,., ***switchover (primary pod 가 재시작되기 전 다른 standby Instance pod가 primary를 이어받음) 가 자동으로 이루어집니다.***
+  - ```spec.primaryUpdateStrategy: unsupervised```
+  - ```spec.primaryUpdateMethod: switchover```
+
+- **primaryUpdateMethod 수동 수행, - spec.primaryUpdateStrategy: supervised**
+
+만약 아래와같이 설정되어있을 경우...  ***switchover (primary pod 가 재시작되기 전 다른 standby Instance pod가 primary를 이어받음) 가 수동으로 이루어집니다.***
+  - ```spec.primaryUpdateStrategy: supervised```
+  - ```spec.primaryUpdateMethod: switchover```
+
+- supervised일 경우에, cluster의 Status또한 유저의 동작을 기다립니다.
+```bash
+$ kubectl cnpg status mycluster | grep Status
+Status:              Waiting for user action User must issue a supervised switchover
+```
+
+- 아래 명령어로 수동 Restart 및 Switchover를 명령할 수 있습니다.
+
+```bash
+# switchover
+$ kubectl cnpg promote [cluster] [new_primary]
+# usecase , mycluster-2 pod를 새로운 primary로 지정
+$ kubectl cnpg promote mycluster mycluster-2
+Node mycluster-2 in cluster mycluster will be promoted
+
+
+# restart
+$ kubectl cnpg restart [cluster] [current_primary]
+# usecase , mycluster-2 primary를 재시작
+$ kubectl cnpg restart mycluster mycluster-2
+instance mycluster-2 restarted
+```
+
+
+#### 2.2 primaryUpdateMethod Option 설정
+Cluster를 생성하기위한 Operator 파일을 확인하면, ```spec.primaryUpdateMethod``` 설정이 있습니다.
+
+```bash
+cat mycluster1.yaml | yh
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata: 
+  name: mycluster
+spec: 
+  imageName: ghcr.io/cloudnative-pg/postgresql:15.3
+  instances: 3
+  storage: 
+    size: 3Gi
+  postgresql: 
+    parameters: 
+      max_worker_processes: "40"
+      timezone: "Asia/Seoul"
+    pg_hba: 
+      - host all postgres all trust
+  primaryUpdateMethod: switchover # 여기
+  primaryUpdateStrategy: unsupervised # supervised 일 경우 수동 switchover, unsupervised 자동 switchover
+  enableSuperuserAccess: true
+  bootstrap: 
+    initdb: 
+      database: app
+      encoding: UTF8
+      localeCType: C
+      localeCollate: C
+      owner: app
+  monitoring: 
+    enablePodMonitor: true
+```
+
+```spec.primaryUpdateMethod``` 는 아래 두가지 값을 가질 수 있습니다.
+
+***1. restart:*** 
+- 가능하면 primary 인스턴스가 실행 중인 Pod를 자동으로 재시작합니다. 그렇지 않으면, 재시작 요청은 무시되고 switchover가 실행됩니다. default
+
+***2. switchover:*** 
+- switchover 작업이 자동으로 수행되며, 가장 정렬된 레플리카가 새로운 타겟 primary로 설정되고, 이전 primary Pod가 종료됩니다.
+
+```spec.primaryUpdateMethod``` 을 ```switchover``` 로 변경해 줍니다.
+
+```bash
+cat mycluster1.yaml | yh
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata: 
+  name: mycluster
+spec: 
+  imageName: ghcr.io/cloudnative-pg/postgresql:15.3
+  instances: 3
+  storage: 
+    size: 3Gi
+  postgresql: 
+    parameters: 
+      max_worker_processes: "40"
+      timezone: "Asia/Seoul"
+    pg_hba: 
+      - host all postgres all trust 
+  primaryUpdateMethod: switchover # switchover 반영
+  primaryUpdateStrategy: unsupervised # supervised 일 경우 수동 switchover, unsupervised 자동 switchover
+  enableSuperuserAccess: true
+  bootstrap: 
+    initdb: 
+      database: app
+      encoding: UTF8
+      localeCType: C
+      localeCollate: C
+      owner: app
+  monitoring: 
+    enablePodMonitor: true
+```
+
+ㅂ
+
+- CloudNativePG Cluster 모니터링 (터미널1)
+```bash
+$ watch kubectl get pod -l cnpg.io/cluster=mycluster
+```
+
+- ro Service로 Select 모니터링 (터미널2)
+```bash
+$ while true; do kubectl exec -it myclient2 -- psql -U postgres -h mycluster-ro -p 5432 -d test -c "SELECT COUNT(*) FROM t1"; date;sleep 1; done
+```
+
+- test 데이터베이스에 다량의 데이터 INSERT 수행 (터미널3)
+```bash
+$ for ((i=10000; i<=20000; i++)); do kubectl exec -it myclient3 -- psql -U postgres -h mycluster-rw -p 5432 -d test -c "INSERT INTO t1 VALUES ($i, 'Luis$i');";echo; done
+```
+
+
+- postgresql:15.3 → postgresql:15.4 로 업데이트 >> 순서와 절차 확인 (터미널 4)
+
+```bash
+$  kubectl cnpg status mycluster  | grep Image # Primary 파드와 Image 버전 확인
+PostgreSQL Image:    ghcr.io/cloudnative-pg/postgresql:15.3 
+```
+
+- 15.3 -> 15.4로 Rolling Update 수행 및 파드 모니터링
+```bash
+$ kubectl patch cluster mycluster --type=merge -p '{"spec":{"imageName":"ghcr.io/cloudnative-pg/postgresql:15.4"}}' && kubectl get pod -l postgresql=mycluster -w
+```
+
+```bash
+# 확인
+$ kubectl get cluster mycluster
+$ kubectl cnpg status mycluster | grep Image
+```
+- 아래와같이 설정되어있을 경우 자동으로 switchove(or restart)를 수행
+```yaml
+  primaryUpdateMethod: switchover # or restart
+  primaryUpdateStrategy: unsupervised
+```
+- 아래와같이 설정되어있을 경우 수동 switchover(or restart)를 수행
+```yaml
+  primaryUpdateMethod: switchover # or restart
+  primaryUpdateStrategy: supervised
+```
+- 아래 명령어로 수동 Restart 및 Switchover를 명령할 수 있습니다.
+```bash
+# switchover
+$ kubectl cnpg promote [cluster] [new_primary]
+# usecase , mycluster-2 pod를 새로운 primary로 지정
+$ kubectl cnpg promote mycluster mycluster-2
+Node mycluster-2 in cluster mycluster will be promoted
+
+
+# restart
+$ kubectl cnpg restart [cluster] [current_primary]
+# usecase , mycluster-2 primary를 재시작
+$ kubectl cnpg restart mycluster mycluster-2
+instance mycluster-2 restarted
+```
+
+
+## CloudNativePG ETC - PgBouncer
+### PgBouncer 란?
+CloudNatviePG Cluster에 r, ro, rw Instance로 클라이언트가 엑세스하기 위해서 거쳐가는 데이터베이스 엑세스 레이어 입니다.
+
+![pgbouncer-architecture-rw](../Images/pgbouncer-architecture-rw.png)
+
+PgBouncer는 PostgreSQL 서비스와 클라이언트(Application) 사이에 위치하여 분리관리되며 확장 가능하고, 구성 가능하며, 고가용성을 가진 데이터베이스 액세스 레이어를 생성합니다.
+
+PgBouncer를 사용하면, CloudNatviePG에 엑세스하기 위해 커넥션 풀을 만들어두고, 클라이언트 요청이 발생하면 해당 풀에서 커넥션을 꺼내다 사용하는 커넥션 풀링이 가능하게 되어 기존 연결을 재 사용하기때문에 성능을 향상시킵니다.
+
+또한 PgBouncer가 인증 및 모니터링 책임을 가져갈 수 도 있습니다.
+
+### CloudNatviePG - PgBouncer 사용
+먼저 동기 복제 옵션이 들어간 클러스터를 신규 생성합니다.
+- 지금까지 썻던 cluster는 비동기 복제 옵션 PG 입니다.
+- [비동기복제 방식과 동기복제방식의 차이](#etc-비동기-복제-방식vs동기-복제-방식)
+
+```yaml
+cat <<EOT> mycluster2.yaml
+# Example of PostgreSQL cluster
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: mycluster
+spec:
+  imageName: ghcr.io/cloudnative-pg/postgresql:16.0 # version 16.0
+  instances: 3  
+  storage:
+    size: 3Gi
+  postgresql:
+    pg_hba:
+      - host all postgres all trust
+  enableSuperuserAccess: true
+  minSyncReplicas: 1
+  maxSyncReplicas: 2 
+  monitoring:
+    enablePodMonitor: true
+EOT
+
+$ kubectl apply -f mycluster2.yaml && kubectl get pod -w
+```
+
+동기 복제정보가 정상적으로 출력되는지 확인합니다.
+- 출력된 결과를 확인해보면, Standby instance들의 role이 sync인것을 확인할 수 있으며, Replication status 부분엔 quorum 이 설정되어있는것을 볼 수 있습니다.
+```bash
+$ kubectl cnpg status mycluster
+...
+Streaming Replication status
+Replication Slots Enabled
+Name         Sent LSN   Write LSN  Flush LSN  Replay LSN  Write Lag  Flush Lag  Replay Lag  State      Sync State  Sync Priority  Replication Slot
+----         --------   ---------  ---------  ----------  ---------  ---------  ----------  -----      ----------  -------------  ----------------
+mycluster-2  0/60316B8  0/60316B8  0/60316B8  0/60316B8   00:00:00   00:00:00   00:00:00    streaming  quorum      1              active
+mycluster-3  0/60316B8  0/60316B8  0/60316B8  0/60316B8   00:00:00   00:00:00   00:00:00    streaming  quorum      1              active
+
+Unmanaged Replication Slot Status
+No unmanaged replication slots found
+
+Instances status
+Name         Database Size  Current LSN  Replication role  Status  QoS         Manager Version  Node
+----         -------------  -----------  ----------------  ------  ---         ---------------  ----
+mycluster-1  29 MB          0/60316B8    Primary           OK      BestEffort  1.21.0           ip-x-x-3-123.ap-northeast-2.compute.internal
+mycluster-2  29 MB          0/60316B8    Standby (sync)    OK      BestEffort  1.21.0           ip-x-x-1-208.ap-northeast-2.compute.internal
+mycluster-3  29 MB          0/60316B8    Standby (sync)    OK      BestEffort  1.21.0           ip-x-x-2-164.ap-northeast-2.compute.internal
+```
+
+PgBouncer를 생성해 봅니다.
+- 클러스터와 반드시 동일한 네임스페이스에 PgBouncer 파드 설치
+- yaml setting값을 보면, DB 앞단의 프록시와 비슷한역할을 한다고 알 수 있습니다.
+```yaml
+cat <<EOT> pooler.yaml
+apiVersion: postgresql.cnpg.io/v1
+kind: Pooler
+metadata:
+  name: pooler-rw
+spec:
+  cluster:
+    name: mycluster # CloudNativePG cluster 이름
+  instances: 3 # instance 개수
+  type: rw # rw 앞단에 생성
+  pgbouncer:
+    poolMode: session
+    parameters:
+      max_client_conn: "1000" # max client connection 지정
+      default_pool_size: "10" # pool size
+EOT
+
+$ kubectl apply -f pooler.yaml && kubectl get pod -w
+```
+
+설치결과 확인
+- rw service에 접근할 수 있는 서비스가 하나 배포됩니다.
+```bash
+$ kubectl get pooler
+
+NAME        AGE   CLUSTER     TYPE
+pooler-rw   12s   mycluster   rw
+
+$ kubectl get svc,ep pooler-rw
+NAME                TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+service/pooler-rw   ClusterIP   10.100.217.3   <none>        5432/TCP   42s
+
+NAME                  ENDPOINTS                                                 AGE
+endpoints/pooler-rw   <endpoint-ip:ports>                                       43s
+```
+
+따라서 해당 service로 Application이 접속하게 됩니다.
+- 접속 테스트 결과, rw이기 때문에 primary pod instance로 접근하는것을 확인할 수 있습니다.
+- 현재 priamry instance pod는 mycluster-1
+- 따라서 외부서 PgBouncer에 접근하려면 NLB로 노출시켜서 접근하면됨..
+```bash
+# superuser 계정 암호
+$ kubectl get secrets mycluster-superuser -o jsonpath={.data.password} | base64 -d ; echo
+bKs1tx61bQE6WpyXpofmOvNdb9DRvTiFTqOK1HiYfVzPmCq1po2W54dtIHImSxrV
+
+# 접속 확인 : pooler 인증 설정이 적용됨!, 반복 접속 시 파드가 변경되는지?
+$ for ((i=1; i<=3; i++)); do PODNAME=myclient$i VERSION=15.3.0 envsubst < myclient.yaml | kubectl apply -f - ; done
+kubectl exec -it myclient1 -- psql -U postgres -h pooler-rw -p 5432 -c "select inet_server_addr();"
+Password for user postgres: <superuser_계정_암호>
+ inet_server_addr 
+------------------
+ <mycluster-private-ip>
+(1 row)
+
+# priamry pod ip 확인
+$ kubectl get pods -o wide | grep mycluster-1
+mycluster-1                 1/1     Running   0          14m     <mycluster-private-ip>   ip-x-x-3-123.ap-northeast-2.compute.internal   <none>           <none>
+```
+
+### PgBouncer Monitoring Metrics yaml
+PgBouncer의 메트릭을 Prometheus 로깅하는 메트릭 yaml입니다.
+```bash
+$ kubectl get pod -l cnpg.io/poolerName=pooler-rw -owide
+$ curl <파드IP>:9127/metrics # metrics path 제공, 요청하면 메트릭떨굼
+
+$ cat <<EOT> podmonitor-pooler-rw.yaml # 그대로생성하면됨
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: pooler-rw
+spec:
+  selector:
+    matchLabels:
+      cnpg.io/poolerName: pooler-rw
+  podMetricsEndpoints:
+  - port: metrics
+EOT
+
+$ kubectl apply -f podmonitor-pooler-rw.yaml
+```
+## ETC-비동기 복제 방식vs동기 복제 방식
+CloudNativePG에서 비동기 복제와 동기 복제는 PostgreSQL 데이터베이스의 레플리카 동작 방식을 설정하는 두 가지 다른 옵션입니다.
+
+### 1. 비동기 복제 (Asynchronous Replication):
+비동기 복제에서는 마스터 노드가 트랜잭션을 커밋한 후 즉시 제어를 클라이언트로 반환합니다.
+
+이는 레플리카 노드가 아직 마스터의 변경 사항을 받지 못했을 수도 있음을 의미합니다.
+
+비동기 복제는 높은 성능과 낮은 지연 시간을 제공하지만, 마스터 노드에 장애가 발생하면 최근의 트랜잭션 일부가 손실될 위험이 있습니다.
+
+### 2. 동기 복제 (Synchronous Replication):
+동기 복제에서는 마스터 노드가 트랜잭션을 커밋한 후 레플리카 노드가 해당 변경 사항을 받고 적용할 때까지 클라이언트에게 제어를 반환하지 않습니다.
+
+이는 데이터 일관성을 보장하지만, 네트워크 지연이나 레플리카 노드의 성능 문제로 인해 성능이 저하될 수 있습니다.
+
+마스터 노드에 장애가 발생하더라도 데이터 손실 위험이 없습니다.
+
+비동기 복제는 더 빠른 성능을 제공하지만 데이터 일관성을 완벽하게 보장하지 않습니다. 반면, 동기 복제는 데이터 일관성을 보장하지만 성능이 떨어질 수 있습니다.
