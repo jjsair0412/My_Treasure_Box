@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: aggregate-monitoring-role # 집계될 clusterrole 이름
+aggregationRule:
+  clusterRoleSelectors:
+  - matchLabels:
+      # 집계하기 위해 해당 label을 설정합니다. 
+      # rbac.example.com/aggregate-to-monitoring: "true" 어노테이션이 존재하는 clusterRole을 대상으로 집계한다는 의미
+      rbac.example.com/aggregate-to-monitoring: "true" 
+rules: [] # control plane이 자동으로 clusterrole의 rule들을 여기에 집계합니다.
+

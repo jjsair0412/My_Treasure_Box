@@ -1,0 +1,10 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pod-reader
+  labels: 
+    rbac.example.com/aggregate-to-monitoring: "true"
+rules:
+- apiGroups: [""] # 권한을 부여할 resources가 위치한 api 그룹 지정, "" 으로 두면 core api group인것으로 간주됨
+  resources: ["pods"] # resources 지정
+  verbs: ["get", "list", "watch"] # action 지정

@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: read-pod-service-global
+subjects:
+- kind: ServiceAccount
+  name: service-account-example-sa # service account 이름 
+  namespace: sample # 바인딩 대상 service account의 namespace 
+roleRef:
+  kind: ClusterRole
+  name: aggregate-monitoring-role # 집계 clusterrole 지정
+  apiGroup: rbac.authorization.k8s.io
+

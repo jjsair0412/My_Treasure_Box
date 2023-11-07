@@ -1,0 +1,9 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: sample # namespace 지정, SA와 동일해야 함.
+  name: sa-reader
+rules:
+- apiGroups: [""] # 권한을 부여할 resources가 위치한 api 그룹 지정, "" 으로 두면 core api group인것으로 간주됨
+  resources: ["pods"] # 어떤 리소스에 대해 적용할것인지 나열
+  verbs: ["get", "watch", "list"] # 허용할 Action 나열

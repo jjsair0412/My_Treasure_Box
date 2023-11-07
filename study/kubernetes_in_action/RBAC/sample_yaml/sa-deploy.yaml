@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-account-example
+  namespace: sample
+  labels:
+    app: service-account-example
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-account-example
+  template:
+    metadata:
+      labels:
+        app: service-account-example
+    spec:
+      serviceAccountName: service-account-example-sa # SA 를 지정해줍니다
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+

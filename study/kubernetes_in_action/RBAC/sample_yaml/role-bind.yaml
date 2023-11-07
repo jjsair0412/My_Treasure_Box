@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-pods
+  namespace: sample
+subjects:
+- kind: ServiceAccount # or User
+  name: service-account-example-sa # Service Account Name or User Name 
+  namespace: sample # User or SA가 생성된 Namespace 기입
+roleRef:
+  kind: Role 
+  name: pod-reader # 바인딩할 Role Name
+  apiGroup: rbac.authorization.k8s.io
+

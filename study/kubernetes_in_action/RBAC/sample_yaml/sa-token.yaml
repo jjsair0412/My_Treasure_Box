@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: service-account-example-sa-secret # Secret 이름
+  namespace: sample # 생성 대상 Service Account와 동일한 namespace에 위치해야 함
+  annotations:
+    kubernetes.io/service-account.name: service-account-example-sa # 대상 Service Account 이름 기입
+type: kubernetes.io/service-account-token
+

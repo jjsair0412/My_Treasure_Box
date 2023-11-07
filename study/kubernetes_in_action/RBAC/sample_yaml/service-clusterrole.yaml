@@ -1,0 +1,10 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: service-reader
+  labels: 
+    rbac.example.com/aggregate-to-monitoring: "true" # 이 어노테이션은 이 Role을 aggregate-monitoring-role과 집계되게 합니다.
+rules:
+- apiGroups: ["","discovery.k8s.io"] # endpointslices 는 core api group에 있는게아니라, discovery.k8s.io api group에 있기 때문에 추가해주어야 함
+  resources: ["services", "endpointslices"] # resources 지정
+  verbs: ["get", "list", "watch"] # action 지정
