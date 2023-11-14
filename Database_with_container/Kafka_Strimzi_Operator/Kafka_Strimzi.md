@@ -966,7 +966,8 @@ KEDA는 쿠버네티스 이벤트 기반 오토스케일러 입니다. KEDA를 �
 
 ### 4.1 KEDA with Kafka
 만약 프로듀서와 컨슈머 사이에 LAG이 발생해서 컨슈밍하지 못한 레코드가 쌓일경우에.. KEDA로 컨슈머를 오토스케일링하는 등의 작업을 통해 해당문제를 해결할 수 있습니다.
-- [링크](https://medium.com/@singh.amarendra/kafka-on-kubernetes-using-strimzi-part-4-scalability-59da50575fec)
+- [kafka on kubernetes-Strimzi를 사용하여 스케일링하기 테스트 문서](https://medium.com/@singh.amarendra/kafka-on-kubernetes-using-strimzi-part-4-scalability-59da50575fec)
+- [KEDA 공식문서](https://keda.sh/docs/2.12/concepts/)
 
 - 스케일 대응이 없을 시 : producer 의 traffic rate 를 consumer 이 처리 하지 못해서 문제 발생
 
