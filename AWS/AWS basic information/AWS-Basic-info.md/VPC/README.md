@@ -10,3 +10,5 @@
 7. [VPC Peering](./VPC-Peering.md)
 8. [VPC Endpoints](./VPC-Endpoints.md)
 9. [VPC Flow Log](./VPC_Flow_Logs.md)
+10. [VPN 이란?](./VPN/VPN?.md)
+    - [AWS Site to Site VPN](./VPN/AWS_Site_to_Site_VPN.md)
