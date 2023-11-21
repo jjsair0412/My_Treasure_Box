@@ -3,8 +3,13 @@
 
 ## 0. Repository Map
 - [Taint와 Toleration](#1-node-taint--node-toleration)
+  - 특정 노드에 파드를 허용하는 방법
 - [nodeAffinity](#2-node-affinity)
+  - 파드가 label을 기반으로 파드를 스케줄링할 노드를 선택하는 방법
 - [podAffinity](#3-podaffinity)
+  - 파드가 label을 기반으로 label을 가진 파드가 스케줄링된 동일한 노드에 스케줄링하는 방법
+- [podAntiAffinity](#4-podantiaffinity--파드를-서로-떨어트리기)
+  - 파드가 label을 기반으로 label을 가진 파드가 스케줄링된 노드가 아닌 다른 노드에 스케줄링하는 방법
 
 ## 1. Node Taint , Node Toleration
 어떤 파드가 특정 노드를 사용할 수 있는지를 제한하고자 사용됩니다.
