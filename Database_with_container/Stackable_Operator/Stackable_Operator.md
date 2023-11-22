@@ -12,6 +12,7 @@ Stackable은 계층적 구조를 가지는데, Data 관련 파이프라인(airfl
 
 ![stackable_arch](../Images/Stackable/stackable_operator.png)
 
+
 ### 1.1 배포준비
 Stackable Data Operator는 EKS 환경에서 배포합니다.
 
