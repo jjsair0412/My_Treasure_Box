@@ -999,6 +999,7 @@ Stackable을 통해 리소스를 배포관리할 때 , Stackable docs에서 Oper
 
 ### 2. EKS 제거
 실습 완료 이후 EKS를 제거합니다.
+- 해당 명령어가 완료될 때 까지, 쉘 터미널을 종료하면 안됩니다.
 
 ```bash
 eksctl delete cluster --name $CLUSTER_NAME && aws cloudformation delete-stack --stack-name $CLUSTER_NAME
