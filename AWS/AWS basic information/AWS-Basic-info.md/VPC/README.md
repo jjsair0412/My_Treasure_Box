@@ -12,3 +12,6 @@
 9. [VPC Flow Log](./VPC_Flow_Logs.md)
 10. [VPN 이란?](./VPN/VPN?.md)
     - [AWS Site to Site VPN](./VPN/AWS_Site_to_Site_VPN.md)
+11. [Transit Gateway](./TransitGateway.md)
+12. [Traffic Mirroring](./VPC_Traffic_Mirroring.md)
+13. [Egress 전용 Internet Gateway](./Egress-Only-IGW.md)
