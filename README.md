@@ -3,6 +3,11 @@
 
 ## ***☆ If this document was helpful to you, please give it a star !! ★***
 
+## 차후 정리해야될 목록
+1. [Terraform 모듈화](./Terraform/Terraform_module.md)
+2. [ElasticSearch Scroll API](./DevOps_solutions/Elastic_모음/ElasticSearch/ElasticSearch_Scroll_API.md)
+3. [DNS Server 구축하기](./study/network/DNS_Server_구축해보기.md)
+
 ## storageClass local provisioner information
 Local volumes do not currently support dynamic provisioning, however a StorageClass should still be created to delay volume binding until Pod scheduling.
 
