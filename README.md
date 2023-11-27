@@ -3,9 +3,9 @@
 
 ## ***☆ If this document was helpful to you, please give it a star !! ★***
 
-## 차후 정리해야될 목록
-1. [Terraform 모듈화](./Terraform/Terraform_module.md)
-2. [ElasticSearch Scroll API](./DevOps_solutions/Elastic_모음/ElasticSearch/ElasticSearch_Scroll_API.md)
+## TO - Do - List
+1. [Terraform 모듈화 정리](./Terraform/Terraform_module.md)
+2. [ElasticSearch Scroll API 계념정리 및 Java에서 사용하는 방안 정리](./DevOps_solutions/Elastic_모음/ElasticSearch/ElasticSearch_Scroll_API.md)
 3. [DNS Server 구축하기](./study/network/DNS_Server_구축해보기.md)
 
 ## storageClass local provisioner information
