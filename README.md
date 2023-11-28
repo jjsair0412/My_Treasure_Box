@@ -4,7 +4,7 @@
 ## ***☆ If this document was helpful to you, please give it a star !! ★***
 
 ## TO - Do - List
-1. [Terraform 모듈화 정리](./Terraform/Terraform_module.md)
+1. [Terraform 모듈화 정리](./Terraform/Terraform_module/)
 2. [ElasticSearch Scroll API 계념정리 및 Java에서 사용하는 방안 정리](./DevOps_solutions/Elastic_모음/ElasticSearch/ElasticSearch_Scroll_API.md)
 3. [DNS Server 구축하기](./study/network/DNS_Server_구축해보기.md)
 
