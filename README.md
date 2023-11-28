@@ -4,9 +4,12 @@
 ## ***☆ If this document was helpful to you, please give it a star !! ★***
 
 ## TO - Do - List
-1. [Terraform 모듈화 정리](./Terraform/Terraform_module/)
+1. [ElasticSearch docker 배포 후 성능테스트 (single node vs ES cluster)]()
+    - [관련 문서](https://idjung.tistory.com/m/63)
 2. [ElasticSearch Scroll API 계념정리 및 Java에서 사용하는 방안 정리](./DevOps_solutions/Elastic_모음/ElasticSearch/ElasticSearch_Scroll_API.md)
 3. [DNS Server 구축하기](./study/network/DNS_Server_구축해보기.md)
+4. [Kubernetes calico cni 동작원리 study]()
+    - [참고 블로그](https://velog.io/@200ok/Kubernetes-Calico-CNI-이해하기#calico-기본-통신-과정-확인하기)
 
 ## storageClass local provisioner information
 Local volumes do not currently support dynamic provisioning, however a StorageClass should still be created to delay volume binding until Pod scheduling.
