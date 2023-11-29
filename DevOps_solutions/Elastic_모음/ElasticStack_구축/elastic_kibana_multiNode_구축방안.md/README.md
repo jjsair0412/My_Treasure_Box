@@ -101,3 +101,8 @@ docker compose 명령어로 배포한 뒤 , 포트번호로 접근하여 배포�
 ```bash
 docker compose up
 ```
+
+## ETC 
+참고 문서
+- [docker compose with ES Cluster](https://soyoung-new-challenge.tistory.com/115)
+- [metricbeat with ES cluster](https://quoeamaster.medium.com/deploying-metricbeat-side-by-side-with-elasticsearch-in-docker-42c769d95be)
