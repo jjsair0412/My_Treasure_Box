@@ -1,0 +1,21 @@
+version: '2.2'
+services:
+  create_certs:
+    container_name: create_certs
+    image: stand-buy-main.kr-central-1.kcr.dev/sb-image-registry/standby-elastic:v0.0.1
+    command: >
+      bash -c '
+        if [[ ! -f /certs/bundle.zip ]]; then
+          bin/elasticsearch-certutil cert --silent --pem --in config/certificates/instance.yml -out /certs/bundle.zip;
+          unzip /certs/bundle.zip -d /certs; 
+        fi;
+        chown -R 1000:0 /certs
+      '
+    user: "0"
+    working_dir: /usr/share/elasticsearch
+    volumes: ['certs:/certs', './instance.yml:/usr/share/elasticsearch/config/certificates/instance.yml']
+volumes: {"certs"}
+
+networks:
+  elastic:
+    driver: bridge
