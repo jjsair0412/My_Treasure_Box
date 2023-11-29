@@ -11,6 +11,11 @@ $ tree
 ├── docker-compose.yml
 └── instance.yml
 ```
+
+해당 레포지토리에 있는 Dockerfile은, ES를 Nori analysis가 설치된 상태의 DockerImage를 생성하기 위한 Dockerfile 입니다.
+- 사용하려면 빌드해서 Docker in Docker image를 생성한 이후, private registry에 push한 후 해당 image를 pull해와서 사용하면 됨.
+- [nori_dockerfile](./Dockerfile)
+
 ## 1. 배포방안
 ### 1.0 .env 파일 생성
 .env 파일에, docker-compose.yml 에 들어갈 세팅값을 설정합니다.
