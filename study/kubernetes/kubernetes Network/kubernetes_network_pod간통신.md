@@ -1,4 +1,5 @@
 # Kubernetes network - pod간 통신
+## Kubernetes network 기본 요구사항
 Kubernetes 상 Pod는 Private Network에 위치합니다.
 
 그러나 다른 노드의 Pod또한 Private Network인데, 둘은 통신이 되어야합니다.
@@ -9,10 +10,11 @@ Kubernetes 상 Pod는 Private Network에 위치합니다.
 그러나 , Pod와 외부 Internet간 통신에는 패킷의 출발지 IP를 변경하는것이 필요한데, 그 이유는 Pod IP는 Private Network이기 때문입니다. 외부로 나갈때 패킷의 IP는 파드 IP에서 호스트 워커노드의 IP로 변환됩니다.
 - 파드가 Running중인 Worker Node의 IP로 변환됩니다.
 
-이러한 요구사항을 충족시키기 위해, Kubernetes Network는 아래와 같은 동작방식을 추구합니다.
+***이러한 요구사항을 충족시키기 위해, Kubernetes Network는 아래와 같은 동작방식을 추구합니다.***
 
 ## Kubernetes Network 기본 동작방식
 파드의 IP주소와 네트워크 네임스페이스는 기본적으로 pause 컨테이너에 의해 관리되게 됩니다. 따라서 파드 컨테이너는 pause 컨테이너 네임스페이스를 사용하게 되는데,, 그래서 **파드 네트워크 인터페이스는, Infra 컨테이너인 pause 컨테이너에서 설정된 것임을 알 수 있습니다.**
+- [pasue 컨테이너 관련문서](../kubernetes_pause_container.md)
 
 ![Kubernetes Network](../Images/kubernetes_network.png)
 
