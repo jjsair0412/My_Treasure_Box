@@ -134,7 +134,7 @@ cgroup 관련 설정 ( SystemdCgroup = true ) 이 만약 없다면 , 직접 타�
 
 systemd를 cgroup driver로 사용합니다.
 
-```t
+```bash
 $ vi /etc/containerd/config.toml
 [plugins]
 
@@ -345,7 +345,7 @@ $ systemctl restart kubelet
 
 kubelet이 드디어 active상태인것을 확인 하고 넘어갑니다 .
 active 상태가 아니라면 journalctl -xe나 status를 보고 troubleshooting 진행합니다. 
-```
+```bash
 $ journalctl -xe
 $ systemctl status kubelet
 ```
@@ -784,9 +784,9 @@ $ kubectl apply -f [podnetwork].yaml
 3. 다른 master node k8s cluster에 join시키는 명령어
 
 ```bash
-  kubeadm join m.k8s.jjs:6443 --token ufhdg9.ayvscautn5l5a4qj \
-        --discovery-token-ca-cert-hash sha256:01c5059648197e4699002d41944d8234961d413a671807bb9079dd4e1d5c6758 \
-        --control-plane --certificate-key 889bfd2da196c5a961e1f43b82431f14f191924b90dcaf8f2e1cf5412015bb46
+kubeadm join m.k8s.jjs:6443 --token ufhdg9.ayvscautn5l5a4qj \
+      --discovery-token-ca-cert-hash sha256:01c5059648197e4699002d41944d8234961d413a671807bb9079dd4e1d5c6758 \
+      --control-plane --certificate-key 889bfd2da196c5a961e1f43b82431f14f191924b90dcaf8f2e1cf5412015bb46
 ```
 
 Please note that the certificate-key gives access to cluster sensitive data, keep it secret!
