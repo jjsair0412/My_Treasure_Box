@@ -1,0 +1,26 @@
+version: "2.1"
+services:
+  wireguard:                              
+    image: ghcr.io/linuxserver/wireguard  # dockerhub의 image주소
+    container_name: wireguard             # container의 이름
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000                         # ubuntu user의 uid, gid
+      - PGID=1000
+      - TZ=Asia/Seoul # wireguard Timezone 설정
+      - SERVERURL=3.x.x.x  # wireguard 구축 server의 public ip or domain
+      - SERVERPORT=51820         # default port = 51820 , 변경 가능. 변경하면 ports에 포트포워딩설정을 바꿔주어야 함.(wireguard 컨테이너쪽은 51820 고정)
+      - PEERS=3                  # 접속가능한 peer의 숫자, 3개
+      - PEERDNS=auto #optional
+      - INTERNAL_SUBNET=10.x.x.0/24  # wireguard로 접근할 private subnet의 CIDR 입력.
+      - ALLOWEDIPS=0.0.0.0/0 # VPN을 통할 target 설정, 10.x.x.0/24 로 설정하면 해당 CIDR 대역에 접근할 때만 VPN을 통함, 0.0.0.0/0 으로 세팅시 모든 트래픽이 VPN 서버를 통함
+    volumes:
+      - /opt/wireguard-server/config:/config  # 컨픽디렉터리
+      - /lib/modules:/lib/modules             # 모듈디렉터리
+    ports:
+      - 51820:51820/udp # 포트포워딩설정, SERVERPORT env를 변경했다면 {변경된포트}:51820 으로 세팅,
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1 # IPv4 트래픽 포워딩설정
+    restart: always
