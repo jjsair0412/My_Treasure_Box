@@ -20,6 +20,9 @@
 ## 온프레미스 환경의 데이터 백업 방안
 아래 3가지 모두 주기적 자동화 백업방안이 될 수 있으며, S3나 EBS에 백업된 데이터를 글레이셔로 데이터 라이프사이클을 관리할 수 있음
 
+## 아키텍처
+![Backup_method](../Images/Backup_method.png)
+
 ### 1. S3에 AWS CLI를 이용해 백업
 S3 API Endpoint로 Batch성 Application을 개발하거나, AWS CLI를 주기적으로 작동시키는 cron script를 작성하여 AWS S3 버킷에 백업하는 방안
 
