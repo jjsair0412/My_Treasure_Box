@@ -11,3 +11,7 @@ k8s 위에 설치된 jenkins에서 , **jenkins agent가 어떤 방식으로 동�
 
 또한 jenkins ci 스크립트에서 빌드된 docker image가 배포될 argocd helm chart도 포함되어 있습니다.
 
+## 2. Dockerfile 최적화 관련
+docker를 통해 cicd를 구축할 때, Dockerfile을 경량화하는 방안이나 잘 작성하는방안들을 정리해둔 문서입니다.
+
+### 2.1 
