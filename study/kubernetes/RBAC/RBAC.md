@@ -199,7 +199,7 @@ $ curl -X GET https://$KUBERNETES_SERVICE_HOST/api/v1/namespaces/default/pods --
 
 그러한 이유는 , **생성한 Nginx Deployment에 할당된 Service Account인 service-account-example-sa 가, 자격 증명만 가능할 뿐 kubernetes 리소스에 대한 어떠한 액션(생성, 조회, 삭제, 수정) 권한도 없기 때문입니다.**
 
-**이때 Role과 RoleBinding, ClusterRole과 ClusterRoleBinding을 권한 부여를 위해 사용하게 됩니다.**
+**이때 Role과 RoleBinding 혹은 ClusterRole과 ClusterRoleBinding을 권한 부여를 위해 사용하게 됩니다.**
 
 ## Role과 RoleBinding 사용
 먼저 Namepsace에 종속적인 Role과 RoleBinding으로 권한을 부여해 봅니다.
