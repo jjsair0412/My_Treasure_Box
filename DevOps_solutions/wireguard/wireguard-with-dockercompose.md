@@ -13,6 +13,7 @@ Docker Compose version v2.17.3
 wireguard를 구축할 Bastion Host는 Public subent에 위치해야 하며, **51820 번 포트가 security group에 열려있어야 합니다.**
 - 51820번 포트를 사용하여 client가 wireguard로 연결하기 떄문, 
 - docker compose environment에서 SERVERPORT 를 변경하면 변경된 포트를 열어주어야만 합니다.
+- **51820번 포트를 TCP / UDP 프로토콜 모두 열어줍니다.**
 
 wireguard VPN을 통해 ssh 연결할 private subnet은, public subnet과 22번 포트로 연결이 가능해야 합니다.
 
@@ -113,5 +114,5 @@ key 등 연결정보 출력(ip 포함)
 ## 5. peer 변동
 peer 개수를 늘리거나 줄이는 등의 작업을 docker-compose.yml 파일을 수정함으로써 진행한 다음, 아래 명령어로 재 배포하면 반영됩니다.
 ```bash
-$ docker-compose up -d --force-recreate
+$ docker compose up -d --force-recreate
 ```
