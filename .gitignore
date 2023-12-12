@@ -7,3 +7,4 @@ node_modules
 *.terraform*
 terraform.*
 kubeconfig_basick8s
+*.helmignore
