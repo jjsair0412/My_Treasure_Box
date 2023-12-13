@@ -250,7 +250,7 @@ elasticsearch-certutil cert \
       --out /usr/share/elasticsearch/config/certs-gen/keystore.p12
 ```
 
-yaml 코드는 다음과 같습니다.
+InitContainer 전체 yaml 코드는 다음과 같습니다.
 ```yaml
 extraInitContainers:
 - name: setup-tls-cert
