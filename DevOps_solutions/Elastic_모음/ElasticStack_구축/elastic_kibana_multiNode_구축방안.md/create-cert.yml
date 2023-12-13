@@ -2,7 +2,7 @@ version: '2.2'
 services:
   create_certs:
     container_name: create_certs
-    image: stand-buy-main.kr-central-1.kcr.dev/sb-image-registry/standby-elastic:v0.0.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
     command: >
       bash -c '
         if [[ ! -f /certs/bundle.zip ]]; then
