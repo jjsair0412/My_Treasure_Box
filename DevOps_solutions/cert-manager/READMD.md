@@ -6,8 +6,12 @@ cert-manager 트러블슈팅 과정
 따라서 트러블슈팅이 발생한다면, 아래 공식 document를 확인하고 과정을 따라가며 메세지를 확인한뒤 에러를 해결하면 됩니다.
 - [공식 docs-trobleshooting](https://cert-manager.io/docs/troubleshooting/acme/)
 
+또한 ClusterIssuer 및 Issuer를 생성할 때, HTTP-01 와, DNS-01 방식중 하나를 선택해야 합니다. 둘은 사용에 있어, 네트워크 구성에 있어 민감하기때문에 잘 선택해야 합니다. 관련방법에대해선 아래 문서를 참고해야합니다.
+- [nginx 문서- 맨아래확인](https://nginxstore.com/blog/kubernetes/kubernetes-%ED%99%98%EA%B2%BD%EC%97%90%EC%84%9C-%EC%9D%B8%EC%A6%9D%EC%84%9C-%EA%B4%80%EB%A6%AC-%EC%9E%90%EB%8F%99%ED%99%94/)
+
 ##  Precondition
 해당 문서는 cert-manager를 설치하고 , 기본 사용 방안에 대해 기술합니다.
+- HTTP-01 방법을 사용하게 됩니다.
 
 설치 환경은 Docker Desktop을 이용한 one node k8s 환경에서 설치합니다.
 - [cert-manager 공식 문서](https://cert-manager.io/docs/configuration/selfsigned/)
