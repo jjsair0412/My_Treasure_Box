@@ -1,4 +1,11 @@
 # cert-manager install and basic usecase
+## ETC
+cert-manager 트러블슈팅 과정
+- cert-manager는 private subnet에 위치한 k8s일 경우, 에러가 발생할확률이 높습니다. **이유는 tls key를 생성하기 위해 challenge 리소스를 생성합니다. 이 challenge는 DNS로 접근하게 되는데, ClusterIssuer가 설정된 nginx로 http 요청을 보낼경우 해당 nginx가 DNS에 닿지 못한다면 에러가 발생합니다.
+
+따라서 트러블슈팅이 발생한다면, 아래 공식 document를 확인하고 과정을 따라가며 메세지를 확인한뒤 에러를 해결하면 됩니다.
+- [공식 docs-trobleshooting](https://cert-manager.io/docs/troubleshooting/acme/)
+
 ##  Precondition
 해당 문서는 cert-manager를 설치하고 , 기본 사용 방안에 대해 기술합니다.
 
