@@ -128,6 +128,9 @@ $ kubectl apply -f my-issuer.yaml
 ## 5. ingress생성
 cert-manager의 annotation을 사용하여 ingress를 생성함으로써 key값을 관리하는 secret과 ingress를 같이 생성합니다.
 
+### 5.1 일반 Issuer일 경우
+namespace에 종속적인 Issuer일 경우 ```cert-manager.io/issuer``` 를 사용합니다.
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -136,6 +139,36 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "nginx"
     cert-manager.io/issuer: "letsencrypt-prod" # issure 등록
+spec:
+  tls:
+    - hosts:
+      - test2.jjsair0412.xyz
+      secretName: stage-test-prod-4 # 생성한 인증서가 저장되는 secret
+  rules:
+  - host: test2.jjsair0412.xyz
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: nginx
+            port:
+              number: 80
+```
+
+
+### 5.2 일반 ClusterIssuer일 경우
+ClusterIssuer일 경우 ```cert-manager.io/cluster-issuer``` 를 사용합니다.
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: test
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod" # cluster-issure 등록
 spec:
   tls:
     - hosts:
