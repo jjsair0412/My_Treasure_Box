@@ -79,8 +79,13 @@ k8s 내부에서 사용하기 위한 certificate를 생성하기 위해서 , elf
 
 Issuer가 certificate를 생성해 줍니다.
 
-
 email부분에만 작성하고 그대로 사용합니다.
+
+- 주요 부분은 ACME Server 입니다.
+  - Production SERVER : https://acme-v02.api.letsencrypt.org/directory
+  - Test Staging SERVER : https://acme-staging-v02.api.letsencrypt.org/directory
+
+신뢰할 수 있는 인증서를 받기 위해선, 꼭 Production Server인 https://acme-v02.api.letsencrypt.org/directory 을 spec.acme.server 에 등록해야 합니다. Staging Server 주소를 입력하면, ssl 인증서가 신뢰할 수 없다는 에러가 발생합니다.
 - ClusterIssuer
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -90,7 +95,7 @@ metadata:
 spec:
   acme:
     # The ACME server URL
-    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    server: https://acme-v02.api.letsencrypt.org/directory
     # Email address used for ACME registration
     email: <your@email>
     # Name of a secret used to store the ACME account private key
