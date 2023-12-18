@@ -95,7 +95,7 @@ metadata:
 spec:
   acme:
     # The ACME server URL
-    server: https://acme-v02.api.letsencrypt.org/directory
+    server: https://acme-v02.api.letsencrypt.org/directory # Production ACME 서버주소 기입 !! 중요
     # Email address used for ACME registration
     email: <your@email>
     # Name of a secret used to store the ACME account private key
@@ -120,7 +120,7 @@ metadata:
 spec:
   acme:
     # The ACME server URL
-    server: https://acme-v02.api.letsencrypt.org/directory
+    server: https://acme-v02.api.letsencrypt.org/directory # Production ACME 서버주소 기입 !! 중요
     # Email address used for ACME registration
     email: <your@email>
     # Name of a secret used to store the ACME account private key
