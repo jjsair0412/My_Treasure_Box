@@ -74,7 +74,8 @@ $ helm template install/kubernetes/helm/istio \
 --set global.mtls.enabled=true \
 --set grafana.enabled=true \
 --set kiali.enabled=true \
---set servicegraph.enabled=true
+--set servicegraph.enabled=true \
+| kubectl apply -f -
 ```
 
 ### 3.2 istio profile 설치
