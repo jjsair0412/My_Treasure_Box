@@ -59,6 +59,7 @@ $ istioctl # 설치 확인
 ```
 ### 3.1 istio helm 설치
 helm 설치 방안은 아래와 같습니다.
+- helm template을 통해 설치합니다.
 
 helm pull로 values.yaml파일을 꺼내와서 상세 설정을 변경시킬 수 있습니다.
 ```
@@ -66,7 +67,7 @@ $ helm repo add istio https://istio-release.storage.googleapis.com/charts
 $ helm repo update
 
 
-$ helm install install/kubernetes/helm/istio \
+$ helm template install/kubernetes/helm/istio \
 --name istio \
 --namespace istio-system \
 --set tracing.enabled=true \
