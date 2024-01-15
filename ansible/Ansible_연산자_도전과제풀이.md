@@ -39,3 +39,18 @@
 ## 2. 조건문
 ### 2.1 Ubuntu OS이면서 fqdn으로 tnode1 인 경우, debug 모듈을 사용하여 OS 정보와 fqdn 정보를 출력해보자
 
+```yaml
+--- 
+- hosts: all
+  
+  tasks:
+
+    - name: Print os Type and fqdn info
+      ansible.builtin.debug:
+        msg: >-
+              OS Type : {{ ansible_facts['distribution'] }}
+              fqdn : {{ ansible_facts['fqdn'] }}
+      when: 
+        - ansible_facts['distribution'] == "Ubuntu"
+        - ansible_facts['hostname'] == "tnode1"
+```
