@@ -54,3 +54,9 @@
         - ansible_facts['distribution'] == "Ubuntu"
         - ansible_facts['hostname'] == "tnode1"
 ```
+
+## 3. 핸들러
+### 3.1 apache2 패키지를 apt 모듈을 통해서 설치 시, 핸들러를 호출하여 service 모듈로 apache2를 재시작 해보자
+
+## 4. block
+### 4.1 block rescure always 키워드를 사용한 플레이북을 작성하여 테스트 해보자
