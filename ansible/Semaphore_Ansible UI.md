@@ -154,21 +154,21 @@ semaphore user list
 Semaphore는 3000번 포트로 open됩니다. 웹에 접근하여 설치 결과를 확인합니다.
 - Semaphore를 웹을 통해 이용할 수 도 있지만, CLI를 통해 사용하는것 또한 가능합니다.
 
-![./Images/Semaphore_1](./Images/Semaphore_1)
+![./Images/Semaphore_1](./Images/Semaphore_1.png)
 
 설치 시 설정했던 ID , PWD 를 통해 웹에 로그인 합니다.
 
-![./Images/Semaphore_2](./Images/Semaphore_2)
+![./Images/Semaphore_2](./Images/Semaphore_2.png)
 
 기본적으로 Semaphore는 프로젝트 단위의 격리를 지원합니다.
 
 따라서 , 가장 먼저 프로젝트를 생성해야 합니다.
 
-![./Images/Semaphore_3](./Images/Semaphore_3)
+![./Images/Semaphore_3](./Images/Semaphore_3.png)
 
 프로젝트를 생성하면 다음과 같은 페이지로 이동합니다.
 
-![./Images/Semaphore_4](./Images/Semaphore_4)
+![./Images/Semaphore_4](./Images/Semaphore_4.png)
 
 
 ## Semaphore 사용
@@ -178,7 +178,7 @@ Semaphore는 3000번 포트로 open됩니다. 웹에 접근하여 설치 결과�
 Semaphore dashboard의 좌측 버튼중 Key Store에 접근합니다.
 - [Key Store 공식문서](https://docs.semui.co/user-guide/key-store)
 
-![./Images/Semaphore_5](./Images/Semaphore_5)
+![./Images/Semaphore_5](./Images/Semaphore_5.png)
 
 
 여기서 Key를 설정하는것은 다음과같은 목적이 있습니다.
@@ -216,23 +216,23 @@ cat /home/ubuntu/.ssh/id_rsa
 
 key를 생성합니다.
 
-![./Images/Semaphore_6](./Images/Semaphore_6)
+![./Images/Semaphore_6](./Images/Semaphore_6.png)
 
 sudo 권한을 위한 root 계정의 Login 정보도 등록합니다.
 
-![./Images/Semaphore_7](./Images/Semaphore_7)
+![./Images/Semaphore_7](./Images/Semaphore_7.png)
 
 remote repository 에 연결하기 위한 정보도 등록합니다.
 - repo에 접근할 때 정보가 필요하지않기에 none으로 생성
 
-![./Images/Semaphore_8](./Images/Semaphore_8)
+![./Images/Semaphore_8](./Images/Semaphore_8.png)
 
 
 ### 2. Repositories 생성
 Semaphore dashboard의 좌측 버튼중 Repositories에 접근합니다.
 - [Repositories 공식문서](https://docs.semui.co/user-guide/repositories)
 
-![./Images/Semaphore_9](./Images/Semaphore_9)
+![./Images/Semaphore_9](./Images/Semaphore_9.png)
 
 Repositories 는 Playbook과 role들이 위치한곳을 등록합니다.
 
@@ -254,7 +254,7 @@ mkdir /tmp/semaphore
 이후 생성한 로컬 경로를 바라보는 Repository를 생성합니다.
 - 이때 Branch가 자동으로 비활성화되고 URL or path 창의 구분이 자동으로 local path로 적용되는것을 확인할 수 있습니다.
 
-![./Images/Semaphore_10](./Images/Semaphore_10)
+![./Images/Semaphore_10](./Images/Semaphore_10.png)
 
 
 ### 3. Environment 생성
@@ -263,7 +263,7 @@ Semaphore dashboard의 좌측 버튼중 Environment에 접근합니다.
 
 인벤토리에 추가 변수를 저장하는 곳으로 JSON 포멧으로 작성합니다.
 
-![./Images/Semaphore_11](./Images/Semaphore_11)
+![./Images/Semaphore_11](./Images/Semaphore_11.png)
 
 빈 값과 user 정보 2가지 변수를 생성합니다.
 
@@ -292,15 +292,15 @@ Semaphore dashboard의 좌측 버튼중 Inventory에 접근합니다.
 
 Ansible Inventory를 설정하는곳으로, Yaml , Json , Toml 포멧을 지원합니다.
 
-![./Images/Semaphore_12](./Images/Semaphore_12)
+![./Images/Semaphore_12](./Images/Semaphore_12.png)
 
 Inventory를 설정할 땐 , Static , Static Yaml , File Type을 지원하기 때문에 다양한 형태로 Inventory를 지정할 수 있습니다. 또한 해당 Host를 접근할 때 어떤 Credential을 사용해야할지 이전에 Key Store에서 생상한 Key를 선택하며 , Playbook 상황에 따라 Sudo가 필요할 경우 Sudo 권한을 위한 Credentials도 선택이 가능합니다.
 
-![./Images/Semaphore_13](./Images/Semaphore_13)
+![./Images/Semaphore_13](./Images/Semaphore_13.png)
 
 먼저 Static Type으로 Host를 단순 나열하는 형태로 Inventory를 생성합니다.
 
-![./Images/Semaphore_14](./Images/Semaphore_14)
+![./Images/Semaphore_14](./Images/Semaphore_14.png)
 
 두번째로 env라는 이름의 Inventory를 생성합니다.
 - 특이점이 있는데, 해당 Inventory는 user=study 라는 변수를 가집니다. 위에 Environment 를 생성할 때도 변수를 만들어주었는데, 우선순위는 Environment가 최상위고, 그다음이 Inventory 입니다.
@@ -321,7 +321,7 @@ db
 user=study
 ```
 
-![./Images/Semaphore_15](./Images/Semaphore_15)
+![./Images/Semaphore_15](./Images/Semaphore_15.png)
 
 
 ### 5. Task Templates 설정
@@ -330,7 +330,7 @@ Semaphore dashboard의 좌측 버튼중 Task Templates에 접근합니다.
 
 실제 Playbook을 생성하는 부분입니다. 특장점으로 Semaphore는 Cron을 지원하기때문에 따로 스크립트를 만들지 않더라도 Playbook을 주기별 자동실행할 수 있습니다.
 
-![./Images/Semaphore_16](./Images/Semaphore_16)
+![./Images/Semaphore_16](./Images/Semaphore_16.png)
 
 3가지 Type을 지원합니다.
 
@@ -342,13 +342,13 @@ Semaphore에서 각 Playbook Task 별 버전관리를 수행하는 타입
 
 버전관리는 지원하지만 Semaphore가 기본적으로 빌드 결과물이나 실행 파일 같은 아티팩트를 생성하고 관리하는 기능을 내장하고 있지 않습니다. 따라서 사용자가 생성된 아티팩트들을 관리하기 위해서 추가적인 작업을 수행해야만 합니다.
 
-![./Images/Semaphore_17](./Images/Semaphore_17)
+![./Images/Semaphore_17](./Images/Semaphore_17.png)
 
 
 #### 3. Deploy
 Semaphore에서 Build 에서 생성된 특정 아티팩트 버전을 파라미터들로 실행하는 타입
 
-![./Images/Semaphore_18](./Images/Semaphore_18)
+![./Images/Semaphore_18](./Images/Semaphore_18.png)
 
 
 간단한 Test를 위해서 Task Type으로 진행합니다.
@@ -391,20 +391,20 @@ EOT
 - 위에 생성했었던 정보들을 바탕으로 대상 Inventory , target Repository , Environment 를 설정하고 생성합니다.
     - CronTab 을 통해 주기를 설정합니다. (매 5분주기)
 
-![./Images/Semaphore_19](./Images/Semaphore_19)
+![./Images/Semaphore_19](./Images/Semaphore_19.png)
 
 두번째 ```user.yml``` Playbook을 사용하는 Task를 생성합니다.
 - ***특징으로 users Playbook에는 user 변수를 사용합니다. 그런데 , Environment , Inventory 모두 user 변수를 갖고있습니다. 이때 우선순위는 Environment 입니다.***
 
-![./Images/Semaphore_20](./Images/Semaphore_20)
+![./Images/Semaphore_20](./Images/Semaphore_20.png)
 
 RUN 버튼을 클릭하여 생성한 Task를 실행합니다. Task Debug 창이 보이게 됩니다.
 
-![./Images/Semaphore_21](./Images/Semaphore_21)
+![./Images/Semaphore_21](./Images/Semaphore_21.png)
 
 Task 기록또한 각 task를 클릭하여 확인할 수 있습니다.
 
-![./Images/Semaphore_22](./Images/Semaphore_22)
+![./Images/Semaphore_22](./Images/Semaphore_22.png)
 
 또한 Task가 수행될 때 마다 Inventory 정보가 파일로 생성됩니다.
 
@@ -424,23 +424,23 @@ total 20
 두번째 ```user.yml``` Task를 수행합니다.
 - ***Fail 되게 됩니다. 그러한 이유는 env를 생성할 때, root 유저에 대한 user명을 설정해주지 않았기 때문***
 
-![./Images/Semaphore_23](./Images/Semaphore_23)
+![./Images/Semaphore_23](./Images/Semaphore_23.png)
 
 Key Store에 돌아가서, 설정한 login-root key를 수정합니다.
 - Override 버튼 클릭하면 덮어씌워집니다. 
 
 
-![./Images/Semaphore_24](./Images/Semaphore_24)
+![./Images/Semaphore_24](./Images/Semaphore_24.png)
 
 Task를 재 실행하면, **성공하고 변수는 Environment 가 더 높은 우선순위를 갖기 때문에 cloudneta 으로 등록된것을 확인할 수 있습니다.**
 
-![./Images/Semaphore_25](./Images/Semaphore_25)
+![./Images/Semaphore_25](./Images/Semaphore_25.png)
 
 두번째 Task를 수정해서 , 추가변수를 생성해 봅니다.
 - Semaphore에서는 추가변수를 설정할 때, 아래처럼 Allow CLI args in Tasks 버튼을 클릭하고 ```["-e", ~~]``` 형태로 추가 변수를 설정해야만 합니다.
 
-![./Images/Semaphore_26](./Images/Semaphore_26)
+![./Images/Semaphore_26](./Images/Semaphore_26.png)
 
 Save 하고 재 실행하면, 가장높은 우선순위를 가지는 추가 변수 (-e) 가 변수로 들어가는것을 확인할 수 있습니다.
 
-![./Images/Semaphore_27](./Images/Semaphore_27)
+![./Images/Semaphore_27](./Images/Semaphore_27.png)
