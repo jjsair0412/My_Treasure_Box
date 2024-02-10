@@ -1,4 +1,4 @@
-# ./Images/Semaphore_Ansible UI
+# .Semaphore_Ansible UI
 - [공식문서](https://docs.semui.co)
 
 Semaphore란 Ansible Playbook UI 입니다.
