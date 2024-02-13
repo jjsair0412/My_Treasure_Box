@@ -4,8 +4,9 @@
 ## Repository RoadMap
 ### 1. [연구용(Research) ML vs 상품용(Production) ML](./연구용_ML_vs_상품화_ML.md)
     연구용 ML과 상품용 ML을 비교함으로써 AI의 주요 특성을 이해하고 ML 이 무엇인지 파악함.
-    
-### 2. 
+
+### 2. [Software vs ML](./Software_vs_ML.md)
+    Software와 머신러닝을 비교하면서 머신러닝이 무엇이고 어떤 원칙을 가지는지 확인하고 MLOps와 DevOps를 비교함.
 
 ## OverView
 ### 용어정리
