@@ -106,7 +106,7 @@ podTemplate(label: 'test',
         stage('docker clean'){
             container('docker'){
                 sh '''
-                docker rmi $(docker images | grep jjsair0412/test |  awk 'NR > 1 {print $3}') --force
+                docker rmi $(docker images | grep jjsair0412/test |  awk '{print $3}') --force
                 
                 docker images
                 '''
