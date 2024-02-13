@@ -3,8 +3,8 @@
 
 ## Repository RoadMap
 ### 1. [연구용(Research) ML vs 상품용(Production) ML](./연구용_ML_vs_상품화_ML.md)
-    연구용 ML과 상품용 ML을 비교함으로써 MLOps은 무엇인가 파악하고 MLOps의 중요성을 파악함.
-
+    연구용 ML과 상품용 ML을 비교함으로써 AI의 주요 특성을 이해하고 ML 이 무엇인지 파악함.
+    
 ### 2. 
 
 ## OverView
