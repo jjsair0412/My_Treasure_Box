@@ -20,6 +20,13 @@
 ### 6. [Data Labeling](./Data_Labeling.md)
     MLOps 구현 전 , 데이터 라벨링에 대해 학습하고 라벨링 기준 또는 일반적인 다양한 학습 유형에 대해 파악함.
 
+### 7. [Class Imbalance](./Class_Imbalance/Class_Imbalance.md)
+    Class 불균형, 즉 데이터 불균형 문제에 대해 학습함.
+
+- ### 7.1 [데이터 접근 방법론](./Class_Imbalance/데이터_접근_방법론_(Resampling).md)
+        클래스 불균형 문제를 해결하기 위해서, 데이터 자체를 조작하는 여러가지 알고리즘 방법론에 대해 파악함.
+
+
 ## OverView
 ### 용어정리
 ***AI의 목표는 인간 수준의 학습과 추론 능력을 컴퓨터에게 부여하는 것***
