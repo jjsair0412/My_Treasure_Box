@@ -21,10 +21,19 @@
     MLOps 구현 전 , 데이터 라벨링에 대해 학습하고 라벨링 기준 또는 일반적인 다양한 학습 유형에 대해 파악함.
 
 ### 7. [Class Imbalance](./Class_Imbalance/Class_Imbalance.md)
-    Class 불균형, 즉 데이터 불균형 문제에 대해 학습함.
+    Class Imbalance, 즉 데이터 불균형 문제에 대해 학습함.
 
 - ### 7.1 [데이터 접근 방법론](./Class_Imbalance/데이터_접근_방법론_(Resampling).md)
         클래스 불균형 문제를 해결하기 위해서, 데이터 자체를 조작하는 여러가지 알고리즘 방법론에 대해 파악함.
+
+- ### 7.2 [ML 알고리즘 방법론](./Class_Imbalance/ML_알고리즘_방법론.md)
+        ML 알고리즘을 통해 클래스 불균형 문제를 해결하기 위한 방법론에 대해 파악함.
+
+- ### 7.3 [대표적 Class Imbalance 성능평가 지표](./Class_Imbalance/Class_Imbalance_성능평가_및_선택.md)
+        대표적인 모델 성능평가 지표를 확인하고, Class Imbalance 문제가 발생했을 경우 어떤 Metric(성능평가 지표) 가 적합한지 학습함.
+
+- ### 7.4 [MLOps 와 Class Imbalance](./Class_Imbalance/MLOps_와_Class_Imbalacne.md)
+        MLOps 관점에서 Class Imbalacne 문제를 어떻게 이해하고 파악하고있어야 하는지, 대응은 어떻게하는것이 좋을지 생각하고 학습함.
 
 
 ## OverView
@@ -71,3 +80,6 @@ CD : 소프트웨어 버전 업데이트를 빠르게하여 사용자에게 제�
 
 #### Labeling
 라벨링 혹은 레이블링 , 특정 객체에 의미를 부여하는 프로세스.
+
+#### Threshold
+모델이 어떠한 추론을했을때, 특정 확률값이 나옴. 이 확률값을 보통 50%로 두고, 50% 이상이면 정답, 50% 이상이면 오답이라 생각하는데 이 확률값을 **Threshold** 이라 함.
