@@ -2,6 +2,10 @@
 해당 폴더는 MLOps에 대해 공부한 이력을 작성해둔 폴더 입니다.
 
 ## MLOps Study Mindmap
+- 초록색 : 시작
+- 파란색 : 중요정보 시작
+- 빨간색 : 하위 계층까지 모두 중요
+
 ![ML_Study_MindMap](./Images/mindmap.png)
 
 ## Repository RoadMap
