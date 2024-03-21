@@ -1,3 +1,13 @@
+---
+# Post Title
+# String | *REQUIRED*
+# Ex: Top 4 React UI Libraries for 2023
+title: Example title here
+subtitle: test
+tags: reactjs, css, python, nodejs
+domain: example.hashnode.dev
+---
+
 # EKS info
 - EKS 정보 & 설치 방안
 ## EKS 상태도
