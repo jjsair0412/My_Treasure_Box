@@ -5,7 +5,7 @@
 title: Example title here
 subtitle: test
 tags: reactjs, css, python, nodejs
-domain: example.hashnode.dev
+domain: jjsair0412.hashnode.dev
 ---
 
 # EKS info
