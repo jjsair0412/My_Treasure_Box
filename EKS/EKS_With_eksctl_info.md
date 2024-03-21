@@ -15,7 +15,7 @@ domain: jjsair0412.hashnode.dev
 
 [EKS_info_1]:./images/EKS_info_1.PNG
 
-_**EKS는 aws에서 쿠버네티스의 master node ( control plane )**_ 이다.
+_**EKS는test aws에서 쿠버네티스의 master node ( control plane )**_ 이다.
 사진처럼 외부에서 EKS를 조작하는 시스템 ( ubuntu , linux 등 .. ) 에서 kubectl 명령어를 작성하면 ,
 
 EKS로 전달하게되고 , EKS는 만들어준 worker node에 스케줄링 시켜주는 등의 명령어를 수행한다.
