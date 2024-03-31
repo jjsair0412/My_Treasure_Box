@@ -1,7 +1,7 @@
 ---
 title: Apache Kafka 기본 용어정리
 subtitle: Apache Kafka Study RoadMap
-tags: Kafka, DevOps, Platform Engineering
+tags: DevOps, Open Source
 domain: jjsair0412.hashnode.dev
 ---
 
