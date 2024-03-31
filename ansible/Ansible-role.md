@@ -1,3 +1,9 @@
+---
+title: Ansible Role
+subtitle: Ansible Role을 통한 협업
+tags: devops, opensource, ansible
+domain: jjsair0412.hashnode.dev
+---
 
 # 앤서블을 통한 협업 방안
 앤서블은 협업을 위한 방법이 있습니다. 작성한 플레이북을 공유하거나 다른사람의 플레이북을 가지고와서 활용할 수 있습니다.

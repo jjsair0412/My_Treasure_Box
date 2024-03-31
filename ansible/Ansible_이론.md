@@ -1,3 +1,11 @@
+---
+title: Ansible 기본 이론
+subtitle: Ansible 사용 전 기본이론 정리
+tags: devops, opensource, ansible
+domain: jjsair0412.hashnode.dev
+---
+
+
 # Ansible 이론
 
 ## 참고 링크

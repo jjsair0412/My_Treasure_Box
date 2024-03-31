@@ -1,3 +1,10 @@
+---
+title: Ansible 기본 사용방안
+subtitle: Ansible 기본 사용 방안
+tags: devops, opensource, ansible
+domain: jjsair0412.hashnode.dev
+---
+
 
 # Ansible 사용 방안
 해당 문서의 Ansible 실습은, 아래 환경에서 수행합니다.

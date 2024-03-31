@@ -1,3 +1,11 @@
+---
+title: Ansible 연산자
+subtitle: Ansible에서 특정 연산자들을 사용하는 방안들
+tags: devops, opensource, ansible
+domain: jjsair0412.hashnode.dev
+---
+
+
 # 반복문
 앤서블 플레이북에서 반복문을 사용함으로써 동일한 모듈을 사용하는 작업을 여러변 작성하지 않아도 됩니다.
 

@@ -1,3 +1,10 @@
+---
+title: Ansible Facts
+subtitle: Ansible Facts 이론 및 사용방안
+tags: devops, opensource, ansible
+domain: jjsair0412.hashnode.dev
+---
+
 
 # Facts
 앤서블이 관리 호스트에서 자동으로 검색한 변수(자동 예약 변수)입니다.

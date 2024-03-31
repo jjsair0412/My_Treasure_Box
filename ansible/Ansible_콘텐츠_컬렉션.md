@@ -1,3 +1,11 @@
+---
+title: Ansible 콘텐츠 컬렉션
+subtitle: Ansible 콘텐츠 컬렉션
+tags: devops, opensource, ansible
+domain: jjsair0412.hashnode.dev
+---
+
+
 # 콘텐츠 컬렉션
 Asible 자체 업데이트와 핵심 Ansible 코드 업데이트를 분리시켜서 많은 벤더사와 개발자가 독립적으로 컬렉션을 자신의 속도에 맞게 유지관리 배포할 수 있는 기능.
 

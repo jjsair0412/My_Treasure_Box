@@ -1,3 +1,9 @@
+---
+title: Ansible 변수
+subtitle: Ansible 에서 변수 사용방안
+tags: devops, opensource, ansible
+domain: jjsair0412.hashnode.dev
+---
 
 # Ansible 사용 방안 - 변수
 

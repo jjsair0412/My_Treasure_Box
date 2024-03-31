@@ -1,7 +1,7 @@
 ---
 title: Semaphore Ansible
 subtitle: Semaphore_Ansible UI
-tags: devops, opensource
+tags: devops, opensource, ansible
 domain: jjsair0412.hashnode.dev
 ---
 

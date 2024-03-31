@@ -1,3 +1,10 @@
+---
+title: Ansible Galaxy
+subtitle: Ansible Galaxy 이론 및 사용방안
+tags: devops, opensource, ansible
+domain: jjsair0412.hashnode.dev
+---
+
 # Ansible Galaxy
 Ansible-Galaxy는 사용자가 생성한 롤들을 공유하고 공유된 롤들을 가지고 와 롤을 개발합니다.
 

@@ -1,3 +1,10 @@
+---
+title: Ansible jinja2
+subtitle: Ansible jinja2를 통한 변수 확장방법
+tags: devops, opensource, ansible
+domain: jjsair0412.hashnode.dev
+---
+
 # jinja2 변수확장법
 앤서블에서는 변수의 확장을 위해서 파이썬에서 템플릿을 위해 정의된 엔진인 jinja2를 사용합니다.
 

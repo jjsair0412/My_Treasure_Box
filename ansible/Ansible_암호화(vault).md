@@ -1,3 +1,10 @@
+---
+title: Ansible Vault
+subtitle: Ansible 변수 암호화 방안
+tags: devops, opensource, ansible
+domain: jjsair0412.hashnode.dev
+---
+
 
 # Ansible Vault
 앤서블을 사용할 때 패스워드나 API 키 등 주요 데이터에 대한 엑세스 권한이 필요할 수 있습니다. 이런 정보들은 변수로써 텍스트 파일로 저장되는데, 이는 보안상에 취약한 위험을 야기합니다.
