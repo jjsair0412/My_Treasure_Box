@@ -1,10 +1,3 @@
----
-title: Apache Kafka Basic Wording
-subtitle: Apache Kafka Study RoadMap..
-tags: devops, opensource
-domain: jjsair0412.hashnode.dev
----
-
 # Aapache Kafka
 ## Directory Map
 - [Kafka-basic-start](./kafka-quickstart-tutorial/)
