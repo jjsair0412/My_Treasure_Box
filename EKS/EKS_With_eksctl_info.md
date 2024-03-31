@@ -1,10 +1,7 @@
 ---
-# Post Title
-# String | *REQUIRED*
-# Ex: Top 4 React UI Libraries for 2023
-title: Example title here
-subtitle: test
-tags: reactjs, css, python, nodejs
+title: EKS Basic Info
+subtitle: EKS Basic Study and how to install EKS ?
+tags: AWS, Kubernetes, EKS
 domain: jjsair0412.hashnode.dev
 ---
 
@@ -198,3 +195,12 @@ $ eksctl delete cluster --name k8s-demo
 
 파드에 접근하고싶다면 , EKS 인스턴스중 하나로 들어가서 접근해야 한다. 들어가는 방법은 ,
 aws gui에서 eks 의 pulic ip를 확인하고 ip주소와 key를 넣어주면서 들어가면 된다.
+
+
+# TroubleShooting
+## 1. VPC IP 할당 에러
+```bash
+Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "92712bb7ddf47e95718e22e12efbbf022dcf5e759b189cd4c56291eccdf28b72": plugin type="aws-cni" name="aws-cni" failed (add): add cmd: failed to assign an IP address to container
+```
+
+EKS에서 해당 pod에 할당할 Subnet IP 개수가 모자랄때 나는 에러..

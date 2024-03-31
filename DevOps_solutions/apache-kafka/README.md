@@ -1,3 +1,10 @@
+---
+title: Apache Kafka 기본 용어정리
+subtitle: Apache Kafka Study RoadMap
+tags: Kafka, DevOps, Platform Engineering
+domain: jjsair0412.hashnode.dev
+---
+
 # Aapache Kafka
 ## Directory Map
 - [Kafka-basic-start](./kafka-quickstart-tutorial/)
