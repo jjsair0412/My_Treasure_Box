@@ -1,3 +1,10 @@
+---
+title: Semaphore Ansible
+subtitle: Semaphore_Ansible UI
+tags: devops, opensource
+domain: jjsair0412.hashnode.dev
+---
+
 # Semaphore_Ansible UI
 - [공식문서](https://docs.semui.co)
 
