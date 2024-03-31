@@ -1,7 +1,7 @@
 ---
 title: EKS Basic Info
 subtitle: EKS Basic Study and how to install EKS ?
-tags: AWS, Kubernetes
+tags: aws, kubernetes
 domain: jjsair0412.hashnode.dev
 ---
 
