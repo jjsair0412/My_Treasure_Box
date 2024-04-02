@@ -3,6 +3,7 @@ title: Linux top Command에 대한 이해
 subtitle: top 명령어로 더욱 안정적인 시스템 구성하기
 tags: devops, linux, linux-kernel
 domain: jjsair0412.hashnode.dev
+cover: https://cdn.hashnode.com/res/hashnode/image/upload/v1712077534722/j8XNw1WwJ.png?auto=format
 ---
 
 
