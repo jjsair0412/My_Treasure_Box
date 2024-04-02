@@ -8,11 +8,12 @@ domain: jjsair0412.hashnode.dev
 
 # Linux top Command에 대한 이해 - top 명령어로 더욱 안정적인 시스템 구성하기
 - #### ***해당 문서는 책 'DevOps와 SE를 위한 리눅스 커널 이야기' 를 읽고 정리한 내용 입니다.***
+
 ## OverView
 
 저는 container 환경을 좋아합니다. DockerFile만 코드에 갖고있다면 어디서든 빠르게 배포하고 어떠한 구조로 Application이 동작하는지 간편하게 확인할 수 있기 때문입니다. 
 
-심지어는 Private Image Repository 건 , Public Image Repository 건 상관 없이 Docker Image만 Repository에 push 되어 있다면, 간단한 docker 명령어로 배포할수 있다는점도 너무 좋습니다. (프로세서 종류는.. 논외입니다..)
+심지어는 Private Image Repository 건 , Public Image Repository 건 상관 없이 Docker Image만 Repository에 push 되어 있다면, 간단한 docker 명령어로 배포할수 있다는점도 너무 좋습니다.
 
 허나 이렇게 간편하고 좋은 Docker container 또한 알고보면 linux 프로세스입니다.
 
@@ -105,7 +106,7 @@ VIRT 값은 가상메모리의 전체 용량을 의미합니다. 따라서 값�
     리눅스 프로세스가 대부분 사용하는 라이브러리중 glibc 라는 친구가 있습니다. 이를 모든 프로세스가 메모리에 올려서 사용하는것은 메모리 낭비이기에. 
     
     리눅스는 shared memory 공간을 따로 만들어서 공유되는 라이브러리들을 이 공간에 넣어두고 프로세스들이 참조해서 사용하게끔 합니다.
-    
+
     - like spring bean factory ?
 
 그리고 SHR은 실제 사용중인 물리 메모리의 양을 나타냅니다. **따라서 메모리 점유율이 높은 프로세스를 찾는다면, SHR 값이 높은 프로세스를 찾는것이 적합합니다.**
