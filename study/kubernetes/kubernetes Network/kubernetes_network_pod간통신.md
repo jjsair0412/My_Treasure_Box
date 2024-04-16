@@ -14,7 +14,7 @@ Kubernetes 상 Pod는 Private Network에 위치합니다.
 
 ## Kubernetes Network 기본 동작방식
 파드의 IP주소와 네트워크 네임스페이스는 기본적으로 pause 컨테이너에 의해 관리되게 됩니다. 따라서 파드 컨테이너는 pause 컨테이너 네임스페이스를 사용하게 되는데,, 그래서 **파드 네트워크 인터페이스는, Infra 컨테이너인 pause 컨테이너에서 설정된 것임을 알 수 있습니다.**
-- [pasue 컨테이너 관련문서](../kubernetes_pause_container.md)
+- [pasue 컨테이너 관련문서](./kubernetes_pause_container.md)
 
 ![Kubernetes Network](../Images/kubernetes_network.png)
 
