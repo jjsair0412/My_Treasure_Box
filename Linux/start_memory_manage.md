@@ -3,7 +3,7 @@ title: Linux Memory 관리의 시작 - free , cache , Swap
 subtitle: Linux 커널의 Memory 할당 방식을 이해하여 잘 관리해 보자 !
 tags: devops, Linux, Linux-kernel
 domain: jjsair0412.hashnode.dev
-cover: https://cdn.hashnode.com/res/hashnode/image/upload/v1712077534722/j8XNw1WwJ.png?auto=format
+cover: https://cdn.hashnode.com/res/hashnode/image/upload/v1713633130303/UHnFq_ROI.jpeg?auto=format
 ---
 
 # Linux Memory 관리의 시작  - free , cache , Swap
