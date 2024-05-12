@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-websrv
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: deploy-websrv
+  template:
+    metadata:
+      labels:
+        app: deploy-websrv
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: deploy-websrv
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: foo-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: deploy-websrv
+  ports:
+  # Default port used by the image
+  - port: 5678
