@@ -17,3 +17,11 @@ Terraform을 통해 vm instance를 프로비저닝 할 때, user_data 를 스크
 ### 4. Terraform test code
 Terraform을 study 하면서 생성한 test code
 - [test code](./terraform_test_code/)
+
+### 5. Terraform remoget state 관리방안
+Terraform의 state 파일들을 원격으로 관리하여 충돌을 방치하는 방안에 대해 기술
+- [terraform state 관리방안](./terraform_state_관리방안.md)
+
+### 6. Terraform Datasource
+Terraform에서 AWS와 같은 특정 프로바이더를 사용했을 경우, API로 제공되는 다양한 데이터 소스를 사용하는 방법에 대해 기술
+- [terraform data source](./Terraform_data_resource.md)
