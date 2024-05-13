@@ -63,6 +63,7 @@ terraform {
 해당 코드를 실행하기 위해선 S3에 접근할 자격이 있는 IAM 계정으로 자격증명이 이루어져야 하는데, 이 과정은 ```aws configure``` 로 수행하는것이 좋습니다.
 
 이유는 ```variable``` 을 사용한다면, ```terraform init``` , 초기화 단계 이후에 사용되게 되는데, 이 backend 구성 과정은 ```terraform init``` , 즉 초기화 단계에서 AWS S3에 접근해야 하기 때문입니다.
+- backend 가 초기화되는 단계에서는 variable을 사용하지 못함.
 
 만약 코드로 넣는다면 , ```ACCESS_KEY``` , ```SECRET_ACCESS_KEY``` 값이 그대로 노출되게 됩니다.
 
