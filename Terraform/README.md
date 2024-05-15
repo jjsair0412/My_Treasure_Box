@@ -2,6 +2,10 @@
 해당 폴더는 Terraform 관련 정보를 저장해둔 폴더 입니다.
 
 ## Repository Map
+### 0. Terraform Command List
+Terraform의 다양한 명령어들을 정리해 두었습니다.
+- [Terraform Command List](./Terraform_command.md)
+
 ### 1. Terraform basic info
 Terraform에 대한 기초적인 이론을 정리해 두었습니다.
 - [Terraform basic info 링크](./Terraform_basic_info.md)
