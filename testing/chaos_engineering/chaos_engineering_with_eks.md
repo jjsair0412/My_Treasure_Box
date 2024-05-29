@@ -81,7 +81,7 @@ eksctl 명령어로 EKS Cluster를 생성합니다.
 eksctl 명령어를 사용하며, 테스트 목적이기 때문에 [해당 가이드](https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html) 를 통해 프로비저닝된 eks로 테스트합니다.
 
 ```eks.yml``` 파일은 같은 레포지토리에 있는 ```eks.yml``` 파일을 사용합니다.
-- [eks.yml](./eks.yml)
+- [eks.yml](.//eks.yml)
 
 ```bash
 # eksctl 사용 사례
