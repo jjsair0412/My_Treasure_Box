@@ -7,7 +7,7 @@ vpc:
   cidr: "172.31.0.0/16" # 클러스터에서 사용할 VPC의 CIDR
 nodeGroups:
   - name: eks-cluster-ng # 클러스터의 노드 그룹명
-    instanceType: t3a.large # 클러스터 워커 노드의 인스턴스 타입
+    instanceType: t2.medium # 클러스터 워커 노드의 인스턴스 타입
     desiredCapacity: 1 # 클러스터 워커 노드의 갯수
     volumeSize: 10  # 클러스터 워커 노드의 EBS 용량 (단위: GiB)
     iam:
@@ -17,3 +17,14 @@ nodeGroups:
     ssh:
       allow: true # 워커 노드에 SSH 접속 허용
       publicKeyName: myKeyPair # 워커 노드에 SSH 접속을 위해 사용할 pem키 명(aws key pairs에 등록되어 있어야함. .pem 확장자 제외한 이름)
+  - name: spot-ng
+    minSize: 1
+    maxSize: 3
+    instancesDistribution:
+      maxPrice: 0.2
+      instanceTypes: ["t2.small", "t3.small"]
+      onDemandBaseCapacity: 0
+      onDemandPercentageAboveBaseCapacity: 50
+    ssh: 
+      allow: true # 워커 노드에 SSH 접속 허용
+      publicKeyName: myKeyPair
