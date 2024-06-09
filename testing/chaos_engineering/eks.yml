@@ -3,13 +3,17 @@ kind: ClusterConfig
 metadata:
   name: eks-cluster # 생성할 EKS 클러스터명
   region: ap-northeast-2 # 클러스터를 생성할 리젼
+
+iam:
+  withOIDC: true # AWS IAM은 EKS에게 외부 인증서버이기 때문에, OIDC를 true로 설정하여 AWS Resource를 관리할 수 있게끔 구성함.
+
 vpc:
   cidr: "172.31.0.0/16" # 클러스터에서 사용할 VPC의 CIDR
 nodeGroups:
   - name: eks-cluster-ng # 클러스터의 노드 그룹명
     instanceType: t2.medium # 클러스터 워커 노드의 인스턴스 타입
     desiredCapacity: 1 # 클러스터 워커 노드의 갯수
-    volumeSize: 10  # 클러스터 워커 노드의 EBS 용량 (단위: GiB)
+    volumeSize: 20  # 클러스터 워커 노드의 EBS 용량 (단위: GiB)
     iam:
       withAddonPolicies:
         ImageBuilder: true # AWS ECR에 대한 권한 추가
@@ -19,7 +23,10 @@ nodeGroups:
       publicKeyName: myKeyPair # 워커 노드에 SSH 접속을 위해 사용할 pem키 명(aws key pairs에 등록되어 있어야함. .pem 확장자 제외한 이름)
   - name: spot-ng
     minSize: 1
-    maxSize: 3
+    maxSize: 5
+    tags:
+      k8s.io/cluster-autoscaler/eks-cluster: "true" # 해당 노드그룹만 CA에서 스케일링 대상.
+      k8s.io/cluster-autoscaler/enabled: "true"
     instancesDistribution:
       maxPrice: 0.2
       instanceTypes: ["t2.small", "t3.small"]

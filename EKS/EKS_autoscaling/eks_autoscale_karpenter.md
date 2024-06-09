@@ -15,6 +15,46 @@ EKS Cluster를 Auto Scaling 하기 위한 방법은 하기 3가지로 나뉨.
 
 위 3가지 방법들을 각기 테스트 해보고, 각자의 장단점을 구분하기 위한 문서.
 
+아래모든 실습은 아래와 같은 ClusterConfig EKS yaml파일을 통해 진행하였음.
+```yaml
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: eks-cluster # 생성할 EKS 클러스터명
+  region: ap-northeast-2 # 클러스터를 생성할 리젼
+
+iam:
+  withOIDC: true # AWS IAM은 EKS에게 외부 인증서버이기 때문에, OIDC를 true로 설정하여 AWS Resource를 관리할 수 있게끔 구성함.
+
+vpc:
+  cidr: "172.31.0.0/16" # 클러스터에서 사용할 VPC의 CIDR
+nodeGroups:
+  - name: eks-cluster-ng # 클러스터의 노드 그룹명
+    instanceType: t2.medium # 클러스터 워커 노드의 인스턴스 타입
+    desiredCapacity: 1 # 클러스터 워커 노드의 갯수
+    volumeSize: 20  # 클러스터 워커 노드의 EBS 용량 (단위: GiB)
+    iam:
+      withAddonPolicies:
+        ImageBuilder: true # AWS ECR에 대한 권한 추가
+        albIngress: true  # alb ingress에 대한 권한 추가
+    ssh:
+      allow: true # 워커 노드에 SSH 접속 허용
+      publicKeyName: myKeyPair # 워커 노드에 SSH 접속을 위해 사용할 pem키 명(aws key pairs에 등록되어 있어야함. .pem 확장자 제외한 이름)
+  - name: spot-ng
+    minSize: 1
+    maxSize: 5
+    tags:
+      k8s.io/cluster-autoscaler/eks-cluster: "true" # 해당 노드그룹만 CA에서 스케일링 대상.
+      k8s.io/cluster-autoscaler/enabled: "true"
+    instancesDistribution:
+      maxPrice: 0.2
+      instanceTypes: ["t2.small", "t3.small"]
+      onDemandBaseCapacity: 0
+      onDemandPercentageAboveBaseCapacity: 50
+    ssh: 
+      allow: true # 워커 노드에 SSH 접속 허용
+      publicKeyName: myKeyPair
+```
 ## 1. HPA (Horizontal Pod Autoscaler)
 - [HPA_문서](https://kubernetes.io/ko/docs/tasks/run-application/horizontal-pod-autoscale/#horizontalpodautoscaler%EB%8A%94-%EC%96%B4%EB%96%BB%EA%B2%8C-%EC%9E%91%EB%8F%99%ED%95%98%EB%8A%94%EA%B0%80)
 
@@ -473,6 +513,7 @@ $ kubectl describe pods
 
 ## 3. CA (Cluster Autoscaler)
 - [Cluster Autoscaler docs](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md)
+- [Cluster Autoscaler FAQ](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#when-does-cluster-autoscaler-change-the-size-of-a-cluster)
 
 Cluster Autoscaler는 EKS에서 지원하는 노드 오토스케일링 기능입니다.
 
@@ -481,4 +522,295 @@ Pending되어있는 파드가 Cluster에 존재할 경우, 노드를 수평확�
 
 ***기본적으로 Auto Scaling Group을 통해서 Node Group을 오토스케일링 하게 됩니다.***
 
-따라서 작업을 진행할 때에 , EKS NodeGroup에 대해서 필수 어노테이션을 추가해야 합니다.
+또한 Cluster Autoscaler는 특정 시간을 간격으로 스케일 인/스케일 아웃 을 수행합니다. 그리고 AWS에서는 ***AutoScalingGroup(ASG)*** 를 사용하여 Cluster AutoScaler를 적용합니다.
+
+### 3.1 CA 실습
+#### 3.1.1 Role 생성
+EKS Cluster가 AWS 리소스(NodeGroup , EC2 등 ...) 에 접근하기 위한 Iam Role을 생성해야 합니다.
+
+ClusterAutoscaler를 사용하기 위한 Policy를 하나 생성합니다.
+- []()
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "autoscaling:DescribeAutoScalingGroups",
+        "autoscaling:DescribeAutoScalingInstances",
+        "autoscaling:DescribeLaunchConfigurations",
+        "autoscaling:DescribeScalingActivities",
+        "autoscaling:DescribeTags",
+        "ec2:DescribeImages",
+        "ec2:DescribeInstanceTypes",
+        "ec2:DescribeLaunchTemplateVersions",
+        "ec2:GetInstanceTypesFromInstanceRequirements",
+        "eks:DescribeNodegroup"
+      ],
+      "Resource": ["*"]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "autoscaling:SetDesiredCapacity",
+        "autoscaling:TerminateInstanceInAutoScalingGroup"
+      ],
+      "Resource": ["*"]
+    }
+  ]
+}
+```
+
+aws command를 이용해서 policy를 하나 생성합니다.
+- **생성한 뒤 발생한 ARN을 통해 Role을 생성해야 하니, 기억해둡니다.***
+```bash
+aws iam create-policy \
+    --policy-name AmazonEKSClusterAutoscalerPolicy \
+    --policy-document file://cluster-autoscaler-policy.json
+```
+
+생성한 Policy로 IAM Role을 생성합니다.
+
+```bash
+eksctl create iamserviceaccount \
+  --cluster=eks-cluster \
+  --namespace=kube-system \
+  --name=cluster-autoscaler \
+  --attach-policy-arn=<위에서 생성한 policy의 arn> \
+  --override-existing-serviceaccounts \
+  --approve
+```
+
+eksctl 명령어를 사용하지 않고, ServiceAccount와 Role을 수동으로 생성할수도 있습니다.
+
+```bash                    
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cluster-autoscaler
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/managed-by: eksctl 
+  annotations:
+    eks.amazonaws.com/role-arn: <Role_ARN>
+```
+
+service Account가 생성된것을 확인할 수 있습니다.
+```bash
+$ kubectl get sa -n kube-system | grep cluster-autoscaler
+cluster-autoscaler                     0         88s
+
+$ kubectl describe sa cluster-autoscaler -n kube-system               
+Name:                cluster-autoscaler
+Namespace:           kube-system
+Labels:              app.kubernetes.io/managed-by=eksctl
+Annotations:         eks.amazonaws.com/role-arn: <iam:ARN>
+Image pull secrets:  <none>
+Mountable secrets:   <none>
+Tokens:              <none>
+Events:              <none>
+```
+
+실제 AWS Console에서 확인해 보면, ***eksctl-eks-cluster-addon-iamserviceaccount-...*** 이름을 가진 Role이 하나 생성된것을 볼 수 있습니다.
+
+#### ETC . EKS Cluster OIDC 관리
+- [관련_내용_참고블로그](https://aws-diary.tistory.com/129)
+EKS에서 AWS 리소스들을 관리하기 위해서는 , 위처럼 특정 Role을 생성한 뒤, 해당 Role의 이름을 annotation으로 등록해서 생성한 serviceAccount를 kubernetes 안에 생성하여 권한을 부여합니다.
+
+예를들어 LoadBalacner를 생성하기 위해서 , LB 생성권한이 있는 Role을 생성하고, 해당 Role의 이름을 가진 Service Account를 생성하여 사용합니다.
+
+신뢰관계는 AWS EKS Cluster의 OIDC를 대상으로 합니다.
+- Role 신뢰관계 예
+```bash
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Federated": "<EKS_OIDC_ARN>"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+                "StringEquals": {
+                    "oidc.eks.ap-northeast-2.amazonaws.com/id/<EKS_OIDC_ARN>:aud": "sts.amazonaws.com"
+                }
+            }
+        }
+    ]
+}
+```
+
+여기에서 "StringEquals" 조건은 OIDC 토큰의 aud (대상) 클레임을 검사합니다. sts.amazonaws.com으로 설정된 경우에만 IAM 역할에 대한 웹 신원 연결이 수락됩니다. 이는 클러스터 내의 파드 또는 서비스 계정이 AWS 자격 증명을 통해 AWS API에 액세스할 때 요청된 대상이 AWS STS 서비스인지 확인합니다.
+
+#### 3.1.2 Cluster Autoscaler 배포
+먼저 cluster autoscaler deployment 파일을 다운로드 합니다.
+
+```bash
+curl -o cluster-autoscaler-autodiscover.yaml https://raw.githubusercontent.com/kubernetes/autoscaler/master/cluster-autoscaler/cloudprovider/aws/examples/cluster-autoscaler-autodiscover.yaml
+```
+
+이후 <YOUR CLUSTER NAME> 부분을 찾아서 나의 EkS Cluster 이름으로 수정해야 합니다.
+```bash
+# Mac 일 경우
+sed -i '' 's/<YOUR CLUSTER NAME>/eks-cluster/g' cluster-autoscaler-autodiscover.yaml
+
+# Linux 일 경우
+sed -i '' 's/<YOUR CLUSTER NAME>/eks-cluster/g' cluster-autoscaler-autodiscover.yaml
+```
+
+CA가 노드를 스케일업, 스케일다운 하기 위해서 EKS Cluster의 NodeGroup을 식별해야 합니다.
+
+따라서 cluster-autoscaler Deployment의 command를 확인해 보면, 아래 명령어가 있습니다.
+```bash
+  - --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/eks-cluster
+```
+
+위처럼 설정하게 되면, NodeGroup에 ```tag=k8s.io/cluster-autoscaler/enabled``` 또는  ```tag=k8s.io/cluster-autoscaler/eks-cluster``` 태그가 정의되어 있다면, ClusterAutoscaler는 해당 노드가 eks-cluster에 위치한다고 인식합니다.
+
+아래처럼 수동으로 넣어줄수도 있습니다.
+- ***1:10, 1:3 은 스케일링 될 최소, 최대 노드 개수를 의미합니다.***
+```bash
+  - --nodes=1:10:eks-cluster-ng
+  - --nodes=1:3:spot-ng
+```
+
+또한 먼저 cluster-autosclaer 이름의 serviceaccount를 생성했기 때문에,해당 섹션을 yaml파일에서 지워줍니다.
+```bash
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    k8s-app: cluster-autoscaler
+  name: cluster-autoscaler
+  namespace: kube-system
+---
+...
+```
+
+
+변경된 파일을 배포합니다.
+```bash
+$ kubectl apply -f cluster-autoscaler-autodiscover.yaml
+```
+
+이후 cluster-autoscaler Deployment에 ```cluster-autoscaler.kubernetes.io.safe-to-evict``` Annotation을 하나 추가해 주어야 합니다.
+- 해당 Annotation은 Cluster Autocaler가 파드를 안전하게 종료할 수 있는지에 대한 Annotation 입니다. 
+  true로 설정된 파드는 CA에 의해 다른 노드로 옮겨가거나, 종료될 수 있지만, false로 설정된 파드는 주요 작업을 수행중이거나 옮겨지면 안되는 경우로 간주되어 종료되지 않습니다.
+
+patch 명령어로 추가해 줍니다.
+```bash
+$ kubectl patch deployment cluster-autoscaler \
+   -n kube-system \
+   -p '{"spec":{"template":{"metadata":{"annotations":{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false"}}}}}'
+```
+
+그리고 CA의 최신 릴리즈 버전명을 GitHub에서 확인한 뒤[CA_Git](https://github.com/kubernetes/autoscaler/releases) deployment의 Image 버전을 수정합니다.
+- 2024/06/09 일자 latest version : 1.30.1
+```bash
+$ kubectl set image deployment cluster-autoscaler -n kube-system cluster-autoscaler=k8s.gcr.io/autoscaling/cluster-autoscaler:v1.30.1
+```
+
+#### 3.1.3 정상 설치 확인
+cluster autocaler 로그를 확인하여 정상 작동중인지 확인합니다.
+```bash
+$ kubectl -n kube-system logs -f deployment.apps/cluster-autoscaler
+```
+
+### 3.2 AutoScaling Test
+아래 deployment를 사용하여 테스트 해봅니다.
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-test
+spec:
+  selector:
+    matchLabels:
+      run: nginx-test
+  replicas: 10
+  template:
+    metadata:
+      labels:
+        run: nginx-test
+    spec:
+      containers:
+      - name: nginx-test
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 500m
+            memory: 512Mi
+```
+
+resource.request 에서 요구한 메모리나 cpu 보다 node 스팩이 부족하기 때문에 스케일링되는것을 확인할 수 있습니다.
+
+```bash
+$ kubectl apply -f test_deployment.yaml
+```
+
+초기에는 Pending 파드를 확인할 수 있습니다.
+
+```bash                                                     
+NAME                              READY   STATUS    RESTARTS   AGE
+pod/nginx-test-596c69dbc5-2j92v   0/1     Pending   0          13s
+pod/nginx-test-596c69dbc5-47jx9   1/1     Running   0          13s
+pod/nginx-test-596c69dbc5-7ddcm   1/1     Running   0          13s
+pod/nginx-test-596c69dbc5-8lq87   1/1     Running   0          13s
+pod/nginx-test-596c69dbc5-c7nq5   0/1     Pending   0          13s
+pod/nginx-test-596c69dbc5-dcvg6   0/1     Pending   0          13s
+pod/nginx-test-596c69dbc5-j6p8w   1/1     Running   0          13s
+pod/nginx-test-596c69dbc5-lk9mq   0/1     Pending   0          13s
+pod/nginx-test-596c69dbc5-nl8h2   0/1     Pending   0          13s
+pod/nginx-test-596c69dbc5-pzrtt   0/1     Pending   0          13s
+```
+
+CA가 Pending 파드를 확인하고, 노드를 추가합니다.
+```bash 
+$ kubectl get nodes
+NAME                                               STATUS     ROLES    AGE    VERSION
+ip-172-31-20-132.ap-northeast-2.compute.internal   Ready      <none>   100m   v1.29.3-eks-ae9a62a
+ip-172-31-29-145.ap-northeast-2.compute.internal   Ready      <none>   88m    v1.29.3-eks-ae9a62a
+ip-172-31-47-82.ap-northeast-2.compute.internal    NotReady   <none>   1s     v1.29.3-eks-ae9a62a
+
+# 시간경과
+...
+NAME                                               STATUS     ROLES    AGE    VERSION
+ip-172-31-20-132.ap-northeast-2.compute.internal   Ready      <none>   101m   v1.29.3-eks-ae9a62a
+ip-172-31-20-99.ap-northeast-2.compute.internal    NotReady   <none>   65s    v1.29.3-eks-ae9a62a
+ip-172-31-29-145.ap-northeast-2.compute.internal   Ready      <none>   89m    v1.29.3-eks-ae9a62a
+ip-172-31-42-143.ap-northeast-2.compute.internal   NotReady   <none>   65s    v1.29.3-eks-ae9a62a
+ip-172-31-47-82.ap-northeast-2.compute.internal    NotReady   <none>   77s    v1.29.3-eks-ae9a62a
+ip-172-31-49-250.ap-northeast-2.compute.internal   NotReady   <none>   70s    v1.29.3-eks-ae9a62a
+```
+
+eks를 생성할 때, spot-ng 노드그룹만 CA 대상이었기 때문에, Spot instance가 생성되어 스케일링된것을 확인할 수 있습니다.
+
+### 3.3 장단점
+#### 3.3.1 장점
+CA는 기본적으로 자동 스케일링을 지원합니다.
+
+파드 resource, 리소스가 부족할때, (Pending) 노드가 확장하며 , 리소스가 충분히 사용되지 않는 경우, 불필요한 파드를 자동으로 제거합니다.
+
+또한 다양한 스케일링 설정을 지원하기 때문에, 클러스터 동작을 맞춤형으로 바꿀 수 있습니다. 예를들어 특정 조건에서만 확장/축소 하도록 설정할 수 있습니다.
+
+#### 3.3.2 단점
+CA는 하나의 자원에 대해 여러군대에서 관리하다 보니, 관리정보가 서로 동기화되지 않아 다양한 문제가 발생합니다.
+
+예를들어 ***EKS에서 노드를 제거하더라도, 실제로 노드를 프로비저닝시킨곳은 ASG이기 때문에 인스턴스는 제거되지 않습니다.***
+
+또한 스케일링 속도가 매우 느립니다.
+
+그리고 가장큰 함정이 있는데, CA는 언뜻 보기에 클러스터 전체의 CPU, Memory 부하가 높아졋을 때 확장하는것처럼 보이지만, 아닙니다.
+
+***CA는 Pending 상태의 파드가 생기는 타이밍에 CA가 동작합니다.***
+- 이는 Request , Limits를 적절히 설정하지 않은 상태에서는, 실제 노드부하가 낮더라도 잘못된 Resource 할당으로 인해 Pending Pod가 발생할 수 있습니다. 이말은 ***부하 평균이 낮은데도 스케일링시킬수 있고, 부하 평균이 높은데도 스케일 아웃이 되지 않을수 있다는 의미가 됩니다.(부하는 높은데 Pending 파드가 없을때)***
+
