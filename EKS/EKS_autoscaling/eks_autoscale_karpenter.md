@@ -814,3 +814,148 @@ CA는 하나의 자원에 대해 여러군대에서 관리하다 보니, 관리�
 ***CA는 Pending 상태의 파드가 생기는 타이밍에 CA가 동작합니다.***
 - 이는 Request , Limits를 적절히 설정하지 않은 상태에서는, 실제 노드부하가 낮더라도 잘못된 Resource 할당으로 인해 Pending Pod가 발생할 수 있습니다. 이말은 ***부하 평균이 낮은데도 스케일링시킬수 있고, 부하 평균이 높은데도 스케일 아웃이 되지 않을수 있다는 의미가 됩니다.(부하는 높은데 Pending 파드가 없을때)***
 
+## 4. Karpenter
+CA의 단점들을 극복하기 위해 Karpenter를 사용할 수 있습니다.
+
+Karpenter는 으폰스소로 , 노드의 수명주기를 관리할 수 있는 솔루션입니다.
+
+### 4.1 Karpenter 사용
+먼저 Karpenter 또한 AWS 리소스를 사용해야하기 때문에 , CA 사용과 동일하게 OIDC를 통해 인증처리를 해주어야 합니다.
+
+Role에게 부여할 Policy는 다음과 같습니다.
+```bash
+
+
+echo '{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "ec2.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+        }
+    ]
+}' > node-trust-policy.json
+
+aws iam create-role --role-name "KarpenterNodeRole-${CLUSTER_NAME}" \
+    --assume-role-policy-document file://node-trust-policy.json
+
+
+cat << EOF > controller-policy.json
+{
+    "Statement": [
+        {
+            "Action": [
+                "ssm:GetParameter",
+                "ec2:DescribeImages",
+                "ec2:RunInstances",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeLaunchTemplates",
+                "ec2:DescribeInstances",
+                "ec2:DescribeInstanceTypes",
+                "ec2:DescribeInstanceTypeOfferings",
+                "ec2:DescribeAvailabilityZones",
+                "ec2:DeleteLaunchTemplate",
+                "ec2:CreateTags",
+                "ec2:CreateLaunchTemplate",
+                "ec2:CreateFleet",
+                "ec2:DescribeSpotPriceHistory",
+                "pricing:GetProducts"
+            ],
+            "Effect": "Allow",
+            "Resource": "*",
+            "Sid": "Karpenter"
+        },
+        {
+            "Action": "ec2:TerminateInstances",
+            "Condition": {
+                "StringLike": {
+                    "ec2:ResourceTag/karpenter.sh/nodepool": "*"
+                }
+            },
+            "Effect": "Allow",
+            "Resource": "*",
+            "Sid": "ConditionalEC2Termination"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "iam:PassRole",
+            "Resource": "arn:${AWS_PARTITION}:iam::${AWS_ACCOUNT_ID}:role/KarpenterNodeRole-${CLUSTER_NAME}",
+            "Sid": "PassNodeIAMRole"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "eks:DescribeCluster",
+            "Resource": "arn:${AWS_PARTITION}:eks:${AWS_REGION}:${AWS_ACCOUNT_ID}:cluster/${CLUSTER_NAME}",
+            "Sid": "EKSClusterEndpointLookup"
+        },
+        {
+            "Sid": "AllowScopedInstanceProfileCreationActions",
+            "Effect": "Allow",
+            "Resource": "*",
+            "Action": [
+            "iam:CreateInstanceProfile"
+            ],
+            "Condition": {
+            "StringEquals": {
+                "aws:RequestTag/kubernetes.io/cluster/${CLUSTER_NAME}": "owned",
+                "aws:RequestTag/topology.kubernetes.io/region": "${AWS_REGION}"
+            },
+            "StringLike": {
+                "aws:RequestTag/karpenter.k8s.aws/ec2nodeclass": "*"
+            }
+            }
+        },
+        {
+            "Sid": "AllowScopedInstanceProfileTagActions",
+            "Effect": "Allow",
+            "Resource": "*",
+            "Action": [
+            "iam:TagInstanceProfile"
+            ],
+            "Condition": {
+            "StringEquals": {
+                "aws:ResourceTag/kubernetes.io/cluster/${CLUSTER_NAME}": "owned",
+                "aws:ResourceTag/topology.kubernetes.io/region": "${AWS_REGION}",
+                "aws:RequestTag/kubernetes.io/cluster/${CLUSTER_NAME}": "owned",
+                "aws:RequestTag/topology.kubernetes.io/region": "${AWS_REGION}"
+            },
+            "StringLike": {
+                "aws:ResourceTag/karpenter.k8s.aws/ec2nodeclass": "*",
+                "aws:RequestTag/karpenter.k8s.aws/ec2nodeclass": "*"
+            }
+            }
+        },
+        {
+            "Sid": "AllowScopedInstanceProfileActions",
+            "Effect": "Allow",
+            "Resource": "*",
+            "Action": [
+            "iam:AddRoleToInstanceProfile",
+            "iam:RemoveRoleFromInstanceProfile",
+            "iam:DeleteInstanceProfile"
+            ],
+            "Condition": {
+            "StringEquals": {
+                "aws:ResourceTag/kubernetes.io/cluster/${CLUSTER_NAME}": "owned",
+                "aws:ResourceTag/topology.kubernetes.io/region": "${AWS_REGION}"
+            },
+            "StringLike": {
+                "aws:ResourceTag/karpenter.k8s.aws/ec2nodeclass": "*"
+            }
+            }
+        },
+        {
+            "Sid": "AllowInstanceProfileReadActions",
+            "Effect": "Allow",
+            "Resource": "*",
+            "Action": "iam:GetInstanceProfile"
+        }
+    ],
+    "Version": "2012-10-17"
+}
+EOF
+```
