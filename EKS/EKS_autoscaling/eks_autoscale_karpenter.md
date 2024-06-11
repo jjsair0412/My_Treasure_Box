@@ -822,10 +822,11 @@ Karpenter는 으폰스소로 , 노드의 수명주기를 관리할 수 있는 �
 ### 4.1 Karpenter 사용
 먼저 Karpenter 또한 AWS 리소스를 사용해야하기 때문에 , CA 사용과 동일하게 OIDC를 통해 인증처리를 해주어야 합니다.
 
-Role에게 부여할 Policy는 다음과 같습니다.
+#### 4.1.1 IAM 권한부여 수행
+Karpenter는 Karpenter Node와 Karpenter Controller가 각기 다른 Policy와 신뢰관계를 가지고 작동합니다.
+
+먼저 **Karpenter Node**에 부여할 신뢰 관계를 다음과 같이 생성합니다.
 ```bash
-
-
 echo '{
     "Version": "2012-10-17",
     "Statement": [
@@ -839,10 +840,64 @@ echo '{
     ]
 }' > node-trust-policy.json
 
-aws iam create-role --role-name "KarpenterNodeRole-${CLUSTER_NAME}" \
-    --assume-role-policy-document file://node-trust-policy.json
+# Role 생성
+aws iam create-role --role-name "KarpenterNodeRole" \
+    --assume-role-policy-document file://KarpenterNodePolicy.json
+```
 
+이후 아래 4개의 AWS 관리형 Policy를 생성한 Karpenter Node Role에 부여합니다.
+- arn은 환경에 맞게 조절합니다.
+```bash
+aws iam attach-role-policy --role-name "KarpenterNodeRole" \
+    --policy-arn "arn:${AWS_PARTITION}:iam::aws:policy/AmazonEKSWorkerNodePolicy"
 
+aws iam attach-role-policy --role-name "KarpenterNodeRole" \
+    --policy-arn "arn:${AWS_PARTITION}:iam::aws:policy/AmazonEKS_CNI_Policy"
+
+aws iam attach-role-policy --role-name "KarpenterNodeRole" \
+    --policy-arn "arn:${AWS_PARTITION}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+
+aws iam attach-role-policy --role-name "KarpenterNodeRole" \
+    --policy-arn "arn:${AWS_PARTITION}:iam::aws:policy/AmazonSSMManagedInstanceCore"
+```
+
+그리고 Karpenter Controller의 Role을 생성해주는데, 아래와 같은 신뢰관계를 가지고 생성합니다.
+- OIDC Endpoint는 환경에 맞게끔 구성합니다.
+- sub의 sa는 차후 karpenter용 service account 정보를 넣어주게됩니다.
+  - 아래 예시의 ServiceAccount 정보 
+    - namespace : ${KARPENTER_NAMESPACE}
+    - ServiceAccount : karpenter
+```json
+cat << EOF > controller-trust-policy.json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Federated": "arn:${AWS_PARTITION}:iam::${AWS_ACCOUNT_ID}:oidc-provider/${OIDC_ENDPOINT#*//}"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+                "StringEquals": {
+                    "${OIDC_ENDPOINT#*//}:aud": "sts.amazonaws.com",
+                    "${OIDC_ENDPOINT#*//}:sub": "system:serviceaccount:${KARPENTER_NAMESPACE}:karpenter"
+                }
+            }
+        }
+    ]
+}
+EOF
+
+// Role 생성
+aws iam create-role --role-name "KarpenterControllerRole-${CLUSTER_NAME}" \
+    --assume-role-policy-document file://controller-trust-policy.json
+```
+
+KarpenterController Role이 사용할 Policy 생성해 줍니다.
+- Policy에 작성할 Resources들은 환경에 맞게끔 ARN을 부여해서 생성합니다.
+```json
+# role에 부여할 policy 생성
 cat << EOF > controller-policy.json
 {
     "Statement": [
@@ -958,4 +1013,10 @@ cat << EOF > controller-policy.json
     "Version": "2012-10-17"
 }
 EOF
+
+// Policy KarpenterController Role에 부여
+aws iam put-role-policy --role-name "KarpenterControllerRole-${CLUSTER_NAME}" \
+    --policy-name "KarpenterControllerPolicy-${CLUSTER_NAME}" \
+    --policy-document file://controller-policy.json
 ```
+
