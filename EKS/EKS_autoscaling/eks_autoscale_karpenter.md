@@ -815,6 +815,9 @@ CA는 하나의 자원에 대해 여러군대에서 관리하다 보니, 관리�
 - 이는 Request , Limits를 적절히 설정하지 않은 상태에서는, 실제 노드부하가 낮더라도 잘못된 Resource 할당으로 인해 Pending Pod가 발생할 수 있습니다. 이말은 ***부하 평균이 낮은데도 스케일링시킬수 있고, 부하 평균이 높은데도 스케일 아웃이 되지 않을수 있다는 의미가 됩니다.(부하는 높은데 Pending 파드가 없을때)***
 
 ## 4. Karpenter
+- [참고_블로그](https://techblog.gccompany.co.kr/karpenter-7170ae9fb677)
+- [karpenter_공식문서](https://karpenter.sh/docs/getting-started/migrating-from-cas/)
+
 CA의 단점들을 극복하기 위해 Karpenter를 사용할 수 있습니다.
 
 Karpenter는 으폰스소로 , 노드의 수명주기를 관리할 수 있는 솔루션입니다.
@@ -1018,5 +1021,54 @@ EOF
 aws iam put-role-policy --role-name "KarpenterControllerRole-${CLUSTER_NAME}" \
     --policy-name "KarpenterControllerPolicy-${CLUSTER_NAME}" \
     --policy-document file://controller-policy.json
+```
+
+#### 4.1.2 Karpenter Tag 정보 구성
+다음으로 tag 정보를 구성해야 합니다.
+
+Karpenter는 WorkerNode를 생성할 때 , AWSNodeTemplate에 구성되어있는 tag를 기반으로 동작합니다.
+
+Karpenter가 사용할 , 혹은 사용하고 있는 Subnet과 Security Group에 Tag 작업을 진행합니다.
+
+```bash
+for NODEGROUP in $(aws eks list-nodegroups --cluster-name "${CLUSTER_NAME}" --query 'nodegroups' --output text); do
+    aws ec2 create-tags \
+        --tags "Key=karpenter.sh/discovery,Value=${CLUSTER_NAME}" \
+        --resources $(aws eks describe-nodegroup --cluster-name "${CLUSTER_NAME}" \
+        --nodegroup-name "${NODEGROUP}" --query 'nodegroup.subnets' --output text )
+done```
+
+
+Add tags to our security groups.
+This command only tags the security groups for the first nodegroup in the cluster.
+If you have multiple nodegroups or multiple security groups you will need to decide which one Karpenter should use.
+
+
+```bash
+# eks cluster 이름 환경변수 등록
+export CLUSTER_NAME=$(eksctl get cluster --output json | jq -r '.[].Name')
+
+# Karpenter 대상 Node Group 지정
+# 해당 예제에서는 0번째 NodeGroup을 지정함
+NODEGROUP=$(eksctl get nodegroup --cluster "${CLUSTER_NAME}" -o json | jq -r '.[0].Name')
+
+# NodeGroup에 Launch Template이 등록된 경우만 수행
+LAUNCH_TEMPLATE=$(aws eks describe-nodegroup --cluster-name "${CLUSTER_NAME}" \
+    --nodegroup-name "${NODEGROUP}" --query 'nodegroup.launchTemplate.{id:id,version:version}' \
+    --output text | tr -s "\t" ",")
+
+# Karpenter worker node Cluster에 부여할 security Group
+SECURITY_GROUPS=$(aws eks describe-cluster --name "${CLUSTER_NAME}" | jq -r '.cluster.resourcesVpcConfig.securityGroupIds.[0]')
+
+# Managed Node Group의 Launch Template에 보안 그룹을 사용하는 설정이 되어 있는 경우, Launch Template에서 보안 그룹 ID를 가져오기
+SECURITY_GROUPS="$(aws ec2 describe-launch-template-versions \
+    --launch-template-id "${LAUNCH_TEMPLATE%,*}" --versions "${LAUNCH_TEMPLATE#*,}" \
+    --query 'LaunchTemplateVersions[0].LaunchTemplateData.[NetworkInterfaces[0].Groups||SecurityGroupIds]' \
+    --output text)"
+
+# Tag 부여
+aws ec2 create-tags \
+    --tags "Key=karpenter.sh/discovery,Value=${CLUSTER_NAME}" \
+    --resources "${SECURITY_GROUPS}"
 ```
 
