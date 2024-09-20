@@ -11,19 +11,19 @@
 
 [4. 가상 머신을 사용하는 이유](#4-가상-머신을-사용하는-이유-1)
 
-[5. 가상 머신과 hypervisor](#5-가상-머신과-hypervisor)
-- [hypervisor의 유형](#51-hypervisor-유형)
+[5. 가상 머신과 Hypervisor](#5-가상-머신과-Hypervisor)
+- [Hypervisor의 유형](#51-Hypervisor-유형)
 
 [6. 가상 머신의 문제점](#6-가상-머신의-문제점-1)
 
 [7. 가상머신과 클라우드](#7-가상머신과-클라우드-1)
 
-[8. 가상머신과 컨테이너, Hypervisor vs Docker Engine](#8-가상머신과-컨테이너-hypervisor-vs-docker-engine-1)
+[8. 가상머신과 컨테이너, Hypervisor vs Docker Engine](#8-가상머신과-컨테이너-Hypervisor-vs-docker-engine-1)
 
 [9. 참고자료](#9-참고자료-1)
 
 ## 1. 개요
-가상 머신은 일종의 컴퓨팅 환경으로, 격리된 시스템으로 작동하며 하드웨어 리소스 풀에서 만들어진 자신의 CPU, Memory, network interface, storage를 포함합니다. hypervisor라 불리는 소프트웨어가 필수 컴퓨팅 리소스를 격리하고 VM 생성과 관리를 지원합니다.
+가상 머신은 일종의 컴퓨팅 환경으로, 격리된 시스템으로 작동하며 하드웨어 리소스 풀에서 만들어진 자신의 CPU, Memory, network interface, storage를 포함합니다. Hypervisor라 불리는 소프트웨어가 필수 컴퓨팅 리소스를 격리하고 VM 생성과 관리를 지원합니다.
 
 가상화 기술을 통해 물리적 하드웨어 상에서 생성된 논리적 컴퓨터입니다.
 
@@ -71,7 +71,7 @@
 물리적 서버를 사용한 경우엔 교체하거나 고치기 위한 시간이 몇 시간에서 며칠까지 늘어날 수 있지만, 물리 서버가 가상화된 경우엔 이러한 작업을 몇 분 안에 완료할 수 있습니다.
 
 ### 2.3 예시
-**hypervisor(ex: VMware, KVM, Hyper-V)**
+**Hypervisor(ex: VMware, KVM, Hyper-V)**
 - 여러 운영체제를 하나의 물리 서버에서 동시에 실행합니다.
 
 **컨테이너 가상화**(Docker 등)
@@ -95,24 +95,24 @@
 
 가상 머신과 가상 머신 구성요소는 가상으로 존재하며 다른 가상 머신과 격리됩니다. 다른 가상 머신에 문제가 발생하더라도, 다른 게스트 VM(가상 머신)은 정상 작동합니다. 또한 물리적 호스트 OS는 영향을 받지 않습니다.
 
-## 5. 가상 머신과 hypervisor
-가상 머신은 hypervisor라는 소프트웨어를 통해 가상화 기술로 만들어진 논리적인 물리 컴퓨터입니다. 여러 개의 가상 머신(VM)을 하나의 물리 서버(호스트 OS)에서 실행할 수 있습니다.
+## 5. 가상 머신과 Hypervisor
+가상 머신은 Hypervisor라는 소프트웨어를 통해 가상화 기술로 만들어진 논리적인 물리 컴퓨터입니다. 여러 개의 가상 머신(VM)을 하나의 물리 서버(호스트 OS)에서 실행할 수 있습니다.
 
-hypervisor는 가상 머신을 호스트 컴퓨터에서 실행하고 모든 VM에 프로세서, 메모리 및 스토리지를 배포할 수 있도록 해주는 소프트웨어 계층입니다. 물리적 자원을 가상 머신에 할당하고, 각각의 가상 머신이 독립적으로 운영체제를 실행할 수 있도록 지원합니다.
+Hypervisor는 가상 머신을 호스트 컴퓨터에서 실행하고 모든 VM에 프로세서, 메모리 및 스토리지를 배포할 수 있도록 해주는 소프트웨어 계층입니다. 물리적 자원을 가상 머신에 할당하고, 각각의 가상 머신이 독립적으로 운영체제를 실행할 수 있도록 지원합니다.
 
-### 5.1 hypervisor 유형
-**1. type 1 (네이티브 또는 베어메탈 hypervisor)**
+### 5.1 Hypervisor 유형
+**1. type 1 (네이티브 또는 베어메탈 Hypervisor)**
 
 물리적 하드웨어 위에서 바로 실행되며, 가상머신을 바로 관리합니다. 성능이 높고, 대규모 서버 가상화에 적합합니다. (ex: VMware ESXi, Microsoft Hyper-V, KVM)
 
-**2. type 2 (호스트형 hypervisor)**
+**2. type 2 (호스트형 Hypervisor)**
 
 기존 호스트 OS의 운영체제 위에서 실행되며, 그 위에서 가상 머신을 관리합니다. 개발자 테스트 환경이나 데스크톱 가상화에 주로 사용됩니다. (ex: VMware Workstation, Oracle VirtualBox)
 
 ## 6. 가상 머신의 문제점
 가상 머신을 사용할 경우, 호스트 OS 성능에 매우 의존적이라는 문제점이 있습니다.
 
-여러 운영체제와 hypervisor 레이어를 실행하기 때문에 성능을 높이기 위한 비용이 발생할 수 있습니다.
+여러 운영체제와 Hypervisor 레이어를 실행하기 때문에 성능을 높이기 위한 비용이 발생할 수 있습니다.
 
 ## 7. 가상머신과 클라우드
 기본적으로 가상화 기술은 클라우드 컴퓨팅을 가능하게 합니다. 
@@ -136,22 +136,22 @@ hypervisor는 가상 머신을 호스트 컴퓨터에서 실행하고 모든 VM�
 컨테이너 기술 또한 가상화 기술의 한 종류입니다. 리소스를 격리한다는 차원에서 보면 둘은 비슷해 보이지만, 그렇지 않습니다.
 
 
-![hypervisor_vs_container](../images/hypervisor_vs_container.png)
+![Hypervisor_vs_container](../images/Hypervisor_vs_container.png)
 
 Hypervisor로 가상화된 가상 머신(VM)은 각각 독립적인 운영 체제를 가지고 있으며 물리적 하드웨어 자원을 직접 할당받아 작동합니다. (이는 각 VM마다 커널을 갖고 있다는 것을 의미합니다.) 따라서 **Hypervisor로 격리된 가상 머신(VM)은 하드웨어 차원에서 격리**됩니다.
 
 컨테이너 또한 가상화 기술에 일부입니다. 그러나 호스트 운영체제의 커널을 공유하고, 각 컨테이너는 독립된 애플리케이션 환경을 제공합니다. 따라서 **컨테이너, Docker Engine은 OS 레벨에서의 격리**만 지원합니다.
 
-hypervisor는 격리된 가상 머신마다 OS를 가지기 때문에 무겁고 성능 오버헤드가 상대적으로 크다는 단점이 있지만, 하드웨어 차원에서 격리되기 때문에 안정성과 보안적 이점이 컨테이너보다 높습니다.
+Hypervisor는 격리된 가상 머신마다 OS를 가지기 때문에 무겁고 성능 오버헤드가 상대적으로 크다는 단점이 있지만, 하드웨어 차원에서 격리되기 때문에 안정성과 보안적 이점이 컨테이너보다 높습니다.
 
-컨테이너는 호스트 운영 체제와 커널을 공유하고 애플리케이션만 격리하여 경량화되어 가볍지만, 격리 수준이 hypervisor보다 낮기 때문에 호스트 커널에 의존적이라는 단점이 있습니다.
+컨테이너는 호스트 운영 체제와 커널을 공유하고 애플리케이션만 격리하여 경량화되어 가볍지만, 격리 수준이 Hypervisor보다 낮기 때문에 호스트 커널에 의존적이라는 단점이 있습니다.
 
-결론으로 Docker Engine은 컨테이너 기반 가상화를 관리하고, hypervisor는 가상 머신(VM) 기반 가상화를 관리합니다.
+결론으로 Docker Engine은 컨테이너 기반 가상화를 관리하고, Hypervisor는 가상 머신(VM) 기반 가상화를 관리합니다.
 
 ## 9. 참고자료
-- [사진 참고 : Docker is NOT a Hypervisor](https://blog.mikesir87.io/2017/05/docker-is-not-a-hypervisor/)
+- [사진 참고 : Docker is NOT a Hypervisor](https://blog.mikesir87.io/2017/05/docker-is-not-a-Hypervisor/)
 - [이론 참고 : AWS 문서 - 가상화란 무엇인가요?](https://aws.amazon.com/ko/what-is/virtualization/)
 - [이론 참고 : oracle 문서 - VM(가상 머신)이란 무엇입니까?](https://www.oracle.com/kr/cloud/compute/virtual-machines/what-is-virtual-machine/#virtualization)
 - [이론 참고 : Red Hat 문서 - What is a virtual machine (VM)?](https://www.redhat.com/en/topics/virtualization/what-is-a-virtual-machine)
 - [이론 참고 : Google Cloud 문서 - 가상 머신이란?](https://cloud.google.com/learn/what-is-a-virtual-machine?hl=ko#what-is-a-virtual-machine)
-- [이론 참고 : Red Hat 문서 - What is a hypervisor?](https://www.redhat.com/en/topics/virtualization/what-is-a-hypervisor)
+- [이론 참고 : Red Hat 문서 - What is a Hypervisor?](https://www.redhat.com/en/topics/virtualization/what-is-a-Hypervisor)
