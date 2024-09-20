@@ -220,6 +220,6 @@ tmpfs            24308    14   24294    1% /run/user/1000
 
 ## 5. 참고 문서
 - [이론 참조 : Linux 파일 Link (하드 Link / 심볼릭 Link / inode)](https://inpa.tistory.com/entry/LINUX-%F0%9F%93%9A-%ED%95%98%EB%93%9C-%EB%A7%81%ED%81%ACHard-link-%EC%8B%AC%EB%B3%BC%EB%A6%AD-%EB%A7%81%ED%81%ACsymbolic-link-%EC%95%84%EC%9D%B4%EB%85%B8%EB%93%9Cinode)
-- [이론 참조 : Linux 시스템의 아이노드(inode), 심볼릭 Link(Symbolic Link), 하드 Link(Hard Link)에 대해서.](https://i5i5.tistory.com/341)
+- [이론,사진 참조 : Linux 시스템의 아이노드(inode), 심볼릭 Link(Symbolic Link), 하드 Link(Hard Link)에 대해서.](https://i5i5.tistory.com/341)
 - [사진 참조 : Hard Link and Symbolic Link](https://velog.io/@jinh2352/Hard-Link-and-Symbolic-Link)
 - Chat GPT
