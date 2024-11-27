@@ -24,6 +24,9 @@
             <Host name="localhost"  appBase="webapps"
                   unpackWARs="true" autoDeploy="true">
                 <Context path="/" docBase="/usr/local/tomcat/webapps/app" reloadable="true" />
+
+                <Manager className="org.apache.catalina.ha.session.DeltaManager" />
+
                 <Cluster className="org.apache.catalina.ha.tcp.SimpleTcpCluster">
                     <Channel className="org.apache.catalina.tribes.group.GroupChannel">
                         <Membership className="org.apache.catalina.tribes.membership.cloud.CloudMembershipService"/>

@@ -19,13 +19,16 @@ spec:
     spec:
       containers:
         - name: tomcat-cluster-test
-          image: kubemembertest:1.1
+          image: kubemembertest:1.2
           command: ["/bin/sh", "-c"]
           args: ["printf '%s' $API_TOKEN > $SA_TOKEN_FILE  && catalina.sh run"]
           ports:
             - name: http
               protocol: TCP
               containerPort: 8080
+            - name: session-tcp
+              protocol: TCP
+              containerPort: 4000
           env:
             - name: SA_TOKEN_FILE
               value: /usr/local/tokenFile
