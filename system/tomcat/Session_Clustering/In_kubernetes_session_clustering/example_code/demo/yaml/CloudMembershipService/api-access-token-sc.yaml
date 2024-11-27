@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-namespace
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: test-namespace
+  name: api-access-token #Name of the api token that is used to connect to the k8s cluster
+  annotations:
+    kubernetes.io/service-account.name: default
+type: kubernetes.io/service-account-token

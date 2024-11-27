@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: test-namespace
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: tomcat-cluster-test
+      tier: backend
+      track: stable
+  template:
+    metadata:
+      labels:
+        app: tomcat-cluster-test
+        tier: backend
+        track: stable
+    spec:
+      containers:
+        - name: tomcat-cluster-test
+          image: kubemembertest:1.1
+          command: ["/bin/sh", "-c"]
+          args: ["printf '%s' $API_TOKEN > $SA_TOKEN_FILE  && catalina.sh run"]
+          ports:
+            - name: http
+              protocol: TCP
+              containerPort: 8080
+          env:
+            - name: SA_TOKEN_FILE
+              value: /usr/local/tokenFile
+              ## Namespace 이름
+            - name: KUBERNETES_NAMESPACE
+              value: test-namespace
+            - name: API_TOKEN
+              valueFrom:
+                # token 가지고 있는 secret 이름
+                secretKeyRef:
+                  name: "api-access-token"
+                  key: "token"
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+      volumes:
+        - name: serverxml
+          configMap:
+            name: testconfig # This uses the configMap

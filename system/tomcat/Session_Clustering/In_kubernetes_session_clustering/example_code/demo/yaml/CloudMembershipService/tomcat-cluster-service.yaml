@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tomcat-service
+  namespace: test-namespace
+spec:
+  selector:
+    app: tomcat-cluster-test
+    tier: backend
+    track: stable
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: NodePort
+  
