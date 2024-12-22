@@ -11,3 +11,4 @@
 아키텍처는 다음과 같습니다.
 
 ![KubernetesMemberShipProvider](../images/KubernetesMemberShipProvider.png)
+F92C98BBAC74EDC028D910BA596DEA15
