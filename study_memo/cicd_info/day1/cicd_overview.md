@@ -6,7 +6,8 @@
 3. Tool Chain
 4. 핵심 사례
 5. SUSE Ranche와 CI/CD
-6. 참고 문서
+6. 결론
+7. 참고 문서
 
 ## 0. 개요
 CI/CD의 개념과 적용 사례, 동작 원리의 이해를 목적으로 합니다.
@@ -173,7 +174,21 @@ Rancher Fleet을 통한 GitOps 구현이 가능합니다.
 
 ***Code 통합, Test, Monitoring 등은 추가 Tool Chain을 기획/구축해야만 합니다.***
 
-## 6. 참고문서
+## 6. 결론
+![cicd-image](../images/day1/cicd_image.webp)
+
+CI/CD는 현대 애플리케이션 환경에서 사용자 요구사항을 빠르게 수용하고 피드백을 반영하여 비즈니스 목표를 달성하는데 중요한 역할을 합니다.
+
+모니터링, 협업 툴, 보안, 다양한 PaaS 플랫폼과의 연동 등 CI/CD는 유연하고 확장 가능하며, 애플리케이션 계층뿐만 아니라 인프라 계층도 효과적으로 관리할 수 있습니다. 
+
+이는 개발자의 편의성을 높힐 뿐만 아니라, 자동화된 인프라 및 배포 프로세스 관리로 인프라 담당자의 휴먼 에러를 줄일 수 있습니다.
+나아가 CI/CD를 기반으로 한 인프라 아키텍처 자동화 관리는 비용 최적화와 서비스 품질 향상이라는 결과를 가져옵니다.
+
+하지만, 지나치게 복잡한 CI/CD 구성은 관리의 어려움을 초래하고 최종 목표인 비즈니스 성과 달성에 장애물이 될 수 있습니다. 
+따라서, 솔루션 도입과 구성은 환경에 맞춰 신중히 검토하고, 현재 애플리케이션 및 인프라 아키텍처를 면밀히 분석하여 최적의 CI/CD 아키텍처를 설계하는 것이 중요합니다.
+
+
+## 7. 참고문서
 - [이미지_DevOps](https://velog.io/@wisdxx/DevOps%EB%9E%80)
 - [이미지_Continuous_Integration](https://www.pagerduty.com/resources/learn/what-is-continuous-integration/)
 - [이미지_Continuous_delivery](https://www.altexsoft.com/blog/continuous-delivery-and-integration-rapid-updates-by-automating-quality-assurance/)
@@ -185,3 +200,4 @@ Rancher Fleet을 통한 GitOps 구현이 가능합니다.
 - [이미지_Serverless_cicd#2](https://medium.com/@shakamuri.n/aws-fully-serverless-architecture-with-ci-cd-f1729839635d)
 - [이미지_cicd_code_test](https://pesin.space/talks/2018-rew-cicd/)
 - [이미지_fleet](https://ranchermanager.docs.rancher.com/integrations-in-rancher/fleet/architecture)
+- [이미지_cicd_final_image](https://www.testaify.com/blog/a-comprehensive-history-of-cicd)
