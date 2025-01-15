@@ -149,6 +149,7 @@ CI/CD는 지속적 통합(Continuous Integration : CI)과 지속적 배포(Conti
 - **Notification :** Slack... ETC
 
 ### 4.5 서버리스(Serverless) 환경의 CI/CD
+![code_build](../images/day1/codeBuild.png)
 ![Serverless_cicd](../images/day1/Serverless_CICD.gif)
 - **CI :** AWS CodeBuilder(CodePipeline)
 - **CD :** AWS CodeDeploy(CodePipeline)
@@ -180,6 +181,7 @@ Rancher Fleet을 통한 GitOps 구현이 가능합니다.
 - [이미지_Jenkins_Argo를_통한_k8s_배포](https://medium.com/@lilnya79/gitops-argocd-continuous-delivery-with-jenkins-and-github-8d19ac5ece4c)
 - [이미지_GitOps를_통한_K8s_상태관리](https://blog.pages.kr/2882)
 - [이미지_CICD_Observability](https://www.linkedin.com/pulse/kubernetes-monitoring-prometheus-registfy-mj0be/)
-- [이미지_Serverless_cicd](https://medium.com/@shakamuri.n/aws-fully-serverless-architecture-with-ci-cd-f1729839635d)
+- [이미지_Serverless_cicd#1](https://hi1280.hatenablog.com/entry/2021/06/15/225055)
+- [이미지_Serverless_cicd#2](https://medium.com/@shakamuri.n/aws-fully-serverless-architecture-with-ci-cd-f1729839635d)
 - [이미지_cicd_code_test](https://pesin.space/talks/2018-rew-cicd/)
 - [이미지_fleet](https://ranchermanager.docs.rancher.com/integrations-in-rancher/fleet/architecture)
