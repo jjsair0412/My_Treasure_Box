@@ -1,6 +1,7 @@
 # envoy 기능 문서
 ## 0. OverView
 Envoy Proxy의 다양한 기능들을 명시한 문서입니다.
+- [Envoy 버전 별 docs](https://www.envoyproxy.io/docs)
 
 ## 1. Service Discovery
 클라이언트 측의 서비스 디스커버리를 구현하기 위해, 다른 런타임별로 전용 라이브러리를 사용할 필요 없이 Envoy로만 서비스 디스커버리 수행 가능. 이는 Envoy가 디스커버리 API를 찾기만 하면, Application은 서비스 엔드포인트 찾는 방법을 몰라도 됨.
