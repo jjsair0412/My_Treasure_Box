@@ -16,12 +16,12 @@ chmod +x mac_basic_setting.sh
 ## 결과
 #### Mac User 명, 디렉토리 위치, Kube context 이름, Default NS, Random Emoji 출력
 
-![result_1](./result_1.png)
+![result_1](../images/result_1.png)
 
 #### 명령어 자동입력
 
-![result_2](./result_2.png)
+![result_2](../images/result_2.png)
 
 #### 잘못된 명령어 기입 시 빨간색으로 하이라이트
 
-![result_3](./result_3.png)
+![result_3](../images/result_3.png)
