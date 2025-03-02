@@ -5,6 +5,14 @@
 - [Usage Guide](https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/docs/how-to-use.md)
 - [Multus-cni Configuration Reference](https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/docs/configuration.md)
 
+## 0. 목차
+- [1. Multus CNI](#1-multus-cni)
+- [2. 기능 List](#2-기능-list)
+- [3. Multus 사용 방법](#3-multus-사용-방법)
+- [4. calico vs Multus : 역할과 차이점](#4-calico-vs-multus-역할과-차이점)
+- [5. 사용 사례](#5-사용-사례)
+- [6. 클라우드 별 Multus 사례](#6-클라우드-별-multus-사례)
+
 ## 1. Multus CNI
 Multus CNI는 Kubernetes Pod에 복수개의 NIC를 등록할 수 있는 CNI 입니다.
 
@@ -36,7 +44,7 @@ Multus Plugin을 통해 Flannel CNI와 IPVLAN을 사용하게끔 설정합니다
 
 ## 2. 기능 List
 아래 명시된 기능은 NetworkAttachmentDefinition 를 정의하여 사용이 가능합니다.
-- [2.4_기능_사용_방법_참고](#24-기능-사용-방법)
+- [3. Multus 사용방법](#3-multus-사용-방법) 참고
 
 ### 2.1 Multus에서 지원하는 CNI List
 [참고 Link-CNI](https://www.cni.dev/plugins/current/main/)
@@ -66,8 +74,14 @@ Pod에 IP 주소 할당을 관리합니다.
 - sbr : source based routing, 소스 기반 라우팅 관련 설정 → 트래픽 통신 경로 분리에 유리 ⇒ 추후에는 VRF 기능으로 발전 예정
 - firewall : iptables or firewalld 에 rules 추가를 통한 컨테이너 in/out 트래픽 통제
 
-### 2.4 기능 사용 방법
-MACVLAN을 사용하여 Pod에 추가 NIC를 설정하는 NetworkAttachmentDefinition
+### 3. Multus 사용 방법
+Multus는 위 [기능 List](#2-기능-list)에 명시된 기능을 사용하기 위해 아래와 같은 WorkFlow를 가집니다.
+
+1. NetworkAttachmentDefinition 생성
+2. Pod에 Annotation으로 NetworkAttachmentDefinition 등록
+
+#### 3.1 예시
+**MACVLAN을 사용하여 Pod에 추가 NIC를 설정하는 NetworkAttachmentDefinition**
 
 - type: "macvlan" → Multus를 통해 MACVLAN CNI 플러그인을 사용
 - master: "eth0" → 물리 네트워크 인터페이스와 연결
@@ -113,7 +127,7 @@ spec:
       command: ["sleep", "3600"]
 ```
 
-## 2. Calico vs. Multus: 역할과 차이점
+## 4. Calico vs. Multus: 역할과 차이점
 calico와 Multus를 비교하는 것은 기능별 관점이 너무 상이하여 기능별 비교는 의미가 없습니다. 그러나 함께 사용되는 주체로써 이해를 돕기 위해 비교해 보면 다음 표와 같습니다.
 
 |  | **Calico** | **Multus** |
@@ -130,12 +144,12 @@ calico와 Multus를 비교하는 것은 기능별 관점이 너무 상이하여 
 ✅ **Multus는 자체적으로 네트워크를 제공하지 않고, 다른 CNI(예: Calico, Flannel, MACVLAN 등)를 사용함**  
 ✅ **따라서 Multus는 Calico와 경쟁하는 것이 아니라, 함께 사용할 수 있음**  
 
-## 3. 사용 사례
+## 5. 사용 사례
 1. 호스트의 다른 Network Interface에 접근해야 할 때
 2. Pod 별 IP 대역을 분리하는 등의 고급 네트워킹 정책이 필요할 때(타 CNI도 지원할 수 있으니 요구사항 정제하여 확인필요)
 3. 사내 컴플라이언스를 지키기 위해 외부 네트워크 통신과 내부 통신을 격리시켜야 할 때
 
-## 4. 클라우드 별 Multus 사례
+## 6. 클라우드 별 Multus 사례
 Multus CNI는 Kubernetes 환경에서 단일 Pod에 여러 네트워크 인터페이스를 연결하여 고급 네트워크 구성을 가능하게 하는 오픈 소스 CNI 플러그인입니다. 이는 특히 트래픽 분리, 패킷 가속화, 그리고 특정 네트워크 요구 사항을 충족시키기 위해 사용됩니다. 아래는 Multus CNI를 활용한 몇 가지 실제 사례입니다.
 
 1. [AWS EKS에서 Multus 지원](https://aws.amazon.com/ko/about-aws/whats-new/2021/08/amazon-eks-now-supports-multus/?utm_source=chatgpt.com)
