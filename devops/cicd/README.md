@@ -16,4 +16,4 @@ docker를 통해 cicd를 구축할 때, Dockerfile을 경량화하는 방안이�
 
 ## 3. Jenkins와 ArgoCD를 이용한 GitOps
 Java Application을 docker로 빌드하고, 빌드된 이미지를 helm chart로 배포하는 일련의 과정을 자동화하는 방안에 대해 기술한 문서입니다.
-- [gitops](./jenkins_argocd_cicdworkload/)
+- [gitops](./pipeline/jenkins_argocd_cicdworkload/)

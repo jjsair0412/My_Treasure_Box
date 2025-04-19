@@ -1,0 +1,130 @@
+pipeline {
+    agent {
+        kubernetes {
+            yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: jinseong
+  labels:
+    app: jinseong-jenkins-agent
+spec:
+  containers:
+    - name: jnlp
+      image: jenkins-agent:latest
+      args: ["\$(JENKINS_SECRET)", "\$(JENKINS_NAME)"]
+    - name: dind
+      image: dockerindockerImage:latest
+      securityContext:
+        privileged: true
+      args:
+        - "--storage-driver=overlay2"
+    - name: maven
+      image: maven:3.8.6-openjdk-11
+      command:
+      - cat
+      tty: true
+"""
+        }
+    }
+    
+    environment {
+        // Jenkins Agent Root Path
+        ROOT_PATH = '/home/jenkins/agent/workspace/jin-test'
+        
+        // Image 정의
+        IMAGE_NAME = 'jin-test'
+
+        // Image Registry 정의
+        // Registry URL 환경에 맞게끔 수정
+        REGISTRY_URL = 'jinseong.registry.url'
+        K8S_DEPLOYMENT_FILE = '/deploy/jin-test-deployment.yaml'
+
+        // SVN 정의
+        SVN_REPO_URL = 'svn://1.1.1.1/'
+        SVN_CODE_REPO_NAME = 'jinrepo'
+        SVN_DEVOPS_REPO_NAME = 'devops'
+    }
+    
+    stages {
+        stage('Code Checkout') {
+            steps {
+                container('dind') {
+                    checkout([$class: 'SubversionSCM', 
+                            locations: [[credentialsId: 'svn-code-credentials', 
+                                        local: '.', 
+                                        remote: "${SVN_REPO_URL}/${SVN_CODE_REPO_NAME}"]],
+                            quietOperation: true])
+                    
+                    script {
+                        sh 'svn upgrade || true'
+                        sh "svn list ${SVN_CODE_REPO_NAME}"
+
+                        // import SVN Commit Hash
+                        def svnInfo = sh(script: 'svn info --show-item revision', returnStdout: true).trim()
+                        env.SVN_REVISION = svnInfo
+                        
+                        env.COMMIT_HASH = "r${svnInfo}"
+                        
+                        echo "SVN Revision: ${env.SVN_REVISION}"
+                        echo "Commit Hash: ${env.COMMIT_HASH}"
+                    }
+                }
+            }
+        }
+        
+        stage('Build with Maven') {
+            steps {
+                container('maven') {
+                    sh 'mvn -B clean package -DskipTests'
+                    
+                    sh 'mkdir -p target/docker'
+                    sh 'cp target/*.jar target/docker/'
+                }
+            }
+        }
+        
+        stage('Build Docker') {
+            steps {
+                container('dind') {
+                    dir('target/docker') {
+                      
+                        sh "docker build -t ${REGISTRY_URL}/${IMAGE_NAME}:${env.COMMIT_HASH} ."
+                        
+                        withCredentials([usernamePassword(credentialsId: 'docker-registry-credentials', 
+                                                          passwordVariable: 'DOCKER_PASSWORD', 
+                                                          usernameVariable: 'DOCKER_USERNAME')]) {
+                            sh "echo $DOCKER_PASSWORD | docker login ${DOCKER_REGISTRY} -u $DOCKER_USERNAME --password-stdin"
+                            sh "docker push ${DOCKER_REGISTRY}/${IMAGE_NAME}:${env.COMMIT_HASH}"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('modify Deployment File') {
+            steps {
+                container('dind') {
+                    checkout([$class: 'SubversionSCM', 
+                        locations: [[credentialsId: 'svn-devops-credentials', 
+                                    local: '.', 
+                                    remote: "${SVN_REPO_URL}/${SVN_DEVOPS_REPO_NAME}"]],
+                        quietOperation: true])
+
+
+                    // Image tag update
+                    sh '''
+                        svn update
+                        cat ./helm/app/values.yaml
+                        previousTAG = $(sed -n 's/.*repository: ${DOCKER_REGISTRY}\\/${IMAGE_NAME}:\\(.*\\)/\\1/p' ./helm/app/values.yaml", returnStdout: true).trim())
+                        
+                        sed -i 's|repository: jsair0412/test:$previousTAG|repository: jsair0412/test:${env.BUILD_NUMBER}|g' ./helm/app/values.yaml
+                        
+                        svn add *
+                        svn commit -m "[e] ${env.COMMIT_HASH} version release"
+                    '''
+                }
+            }
+        }
+    }
+}
