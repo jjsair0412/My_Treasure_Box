@@ -1,6 +1,8 @@
 # Jenkins와 ArgoCD를 이용한 CICD Workload 구축
 해당 문서는 Gradle 기반의 Sample Java Application을 Jenkins를 이용하여 Docker Image를 생성하고, ArgoCD를 이용해 해당 Image로 Kubernetes에 배포하는 과정에 대해 기술하였습니다.
 
+    Jenknis 스크립트 파이프라인 사용
+
 ## 1. 사전 설치작업
 storageClass는 구축되어있다는 가정 하에 설치를 진행합니다.
 ```bash

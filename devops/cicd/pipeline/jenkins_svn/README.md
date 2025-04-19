@@ -2,6 +2,8 @@
 ## overview
 SVN을 사용하는 환경에서 Jenkins Pipeline을 통해 Java App 배포
 
+    Jenknis 선언적 파이프라인 사용
+
 ## ENV
 - Source Repo : SVN
 - Build Tool : Maven
