@@ -1,0 +1,76 @@
+# .gitlab-ci.yml
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  NODE_VERSION: "16"
+  DOCKER_REGISTRY: "registry.example.com"
+  APP_NAME: "my-app"
+
+# 캐시 설정, node_modules 폴더 캐시처리
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+
+# 빌드 스테이지
+build_app:
+  stage: build
+  image: node:${NODE_VERSION}
+  script:
+    - npm ci
+    - npm run build
+  artifacts:
+    # 1주일 기간동안 dist/ 디렉토리와 하위 파일을 아티펙트로 저장.
+    # 이들은 파이프라인이 완료된 이후에도 GitLab에 저장되어, 다운로드하거나 다른 작업에 사용 가능
+    paths:
+      - dist/
+    expire_in: 1 week
+
+# 테스트 스테이지
+unit_test:
+  stage: test
+  image: node:${NODE_VERSION}
+  script:
+    - npm ci
+    - npm run test:unit
+  dependencies:
+    - build_app
+
+# Dev 환경 배포 (dev 브랜치에 마지될 경우)
+deploy_dev:
+  stage: deploy
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t ${DOCKER_REGISTRY}/${APP_NAME}:dev-${CI_COMMIT_SHORT_SHA} .
+    - docker push ${DOCKER_REGISTRY}/${APP_NAME}:dev-${CI_COMMIT_SHORT_SHA}
+    - kubectl set image deployment/${APP_NAME} ${APP_NAME}=${DOCKER_REGISTRY}/${APP_NAME}:dev-${CI_COMMIT_SHORT_SHA} --namespace=dev
+  environment:
+    # development 환경에 배포, Gitlab UI에서 확인하기 편하도록 설정
+    name: development
+    # 해당 환경에 접근 가능한 URL, 파이프라인 실행 후 GitLab이 제공하는 "View app" 버튼의 링크로 사용
+    url: https://dev.example.com
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
+
+# Production 환경 배포 (prod 브랜치에 마지될 경우)
+deploy_prod:
+  stage: deploy
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t ${DOCKER_REGISTRY}/${APP_NAME}:prod-${CI_COMMIT_SHORT_SHA} .
+    - docker push ${DOCKER_REGISTRY}/${APP_NAME}:prod-${CI_COMMIT_SHORT_SHA}
+    - kubectl set image deployment/${APP_NAME} ${APP_NAME}=${DOCKER_REGISTRY}/${APP_NAME}:prod-${CI_COMMIT_SHORT_SHA} --namespace=prod
+  environment:
+    # production 환경에 배포, Gitlab UI에서 확인하기 편하도록 설정
+    name: production
+    # 해당 환경에 접근 가능한 URL, 파이프라인 실행 후 GitLab이 제공하는 "View app" 버튼의 링크로 사용
+    url: https://prod.example.com
+  rules:
+    - if: $CI_COMMIT_BRANCH == "prod"

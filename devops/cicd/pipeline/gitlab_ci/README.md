@@ -8,8 +8,12 @@ gitlab ci 스크립트
 - 배포 환경 : Container
 - Gilab 구축 : SaaS
 
-## Requirements
+## gitlab-ci.yml 예시
+- [gitlab-ci.yml](../gitlab_ci/gitlab-ci.yaml)
 
+Gitlab CI는 사전정의된 변수가 상당히 많고, 파이프라인 병렬 수행 등 추가 기능들이 많기 때문에 확장성이 뛰어남.
+
+따라서 해당 예시는 가장 단순한 [basic-pipeline](#21-basic-pipeline)임. 필요에 따라 확장시키면 됨.
 
 ## 주요 사항
 ### 0. ETC
