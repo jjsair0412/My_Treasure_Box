@@ -17,7 +17,7 @@
 ***vx.x.x 규칙 준수***
 
 차례대로 v{prod}.{develop}.{release} 별로 배포될 때 마다 +1씩 증가
-- [auto-tag.sh](./auto-tag.sh)
+- [auto-tag.sh](./scripts/auto-tag.sh)
 
 ### 1. Jenkins
 - [JenkinsFile](./scripts/JenkinsFile)
