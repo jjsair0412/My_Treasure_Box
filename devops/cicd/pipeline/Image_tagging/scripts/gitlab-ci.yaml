@@ -1,0 +1,130 @@
+stages:
+  - build
+  - test
+  - deploy_dev
+  - deploy_stage
+  - deploy_prod
+
+variables:
+  DOCKER_REGISTRY: "your-registry.com"
+  IMAGE_NAME: "your-app"
+
+# 공통 빌드 작업
+build:
+  stage: build
+  script:
+    - |
+      # 현재 브랜치 확인
+      if [[ "$CI_COMMIT_BRANCH" == "develop" ]]; then
+        ENV="dev"
+        # 최신 dev 태그 조회 및 패치 버전 증가
+        LATEST_TAG=$(git tag -l "v*-dev" | sort -V | tail -n 1 || echo "v0.0.0-dev")
+        LATEST_VERSION=${LATEST_TAG%-dev}
+        VERSION_PARTS=(${LATEST_VERSION//./ })
+        NEW_PATCH=$((VERSION_PARTS[2] + 1))
+        NEW_TAG="v${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.${NEW_PATCH}-dev"
+      elif [[ "$CI_COMMIT_BRANCH" =~ ^release/.* ]]; then
+        ENV="stage"
+        # 최신 dev 태그에서 마이너 버전 증가
+        LATEST_TAG=$(git tag -l "v*-dev" | sort -V | tail -n 1 || echo "v0.0.0-dev")
+        LATEST_VERSION=${LATEST_TAG%-dev}
+        VERSION_PARTS=(${LATEST_VERSION//./ })
+        NEW_MINOR=$((VERSION_PARTS[1] + 1))
+        NEW_TAG="v${VERSION_PARTS[0]}.${NEW_MINOR}.0-stage"
+      elif [[ "$CI_COMMIT_BRANCH" == "master" || "$CI_COMMIT_BRANCH" == "main" ]]; then
+        ENV="prod"
+        # 최신 stage 태그에서 메이저 버전 증가 (중요 릴리스인 경우)
+        # 또는 stage 태그와 동일한 버전 사용 (일반 릴리스)
+        LATEST_STAGE_TAG=$(git tag -l "v*-stage" | sort -V | tail -n 1 || echo "v0.0.0-stage")
+        LATEST_VERSION=${LATEST_STAGE_TAG%-stage}
+        VERSION_PARTS=(${LATEST_VERSION//./ })
+        # MAJOR_RELEASE 변수는 중요 릴리스인 경우 CI/CD 변수로 설정됨
+        if [[ "$MAJOR_RELEASE" == "true" ]]; then
+          NEW_MAJOR=$((VERSION_PARTS[0] + 1))
+          NEW_TAG="v${NEW_MAJOR}.0.0-prod"
+        else
+          NEW_TAG="v${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.${VERSION_PARTS[2]}-prod"
+        fi
+      elif [[ "$CI_COMMIT_BRANCH" =~ ^hotfix/.* ]]; then
+        ENV="hotfix"
+        # 최신 prod 태그에서 패치 버전 증가
+        LATEST_TAG=$(git tag -l "v*-prod" | sort -V | tail -n 1 || echo "v0.0.0-prod")
+        LATEST_VERSION=${LATEST_TAG%-prod}
+        VERSION_PARTS=(${LATEST_VERSION//./ })
+        NEW_PATCH=$((VERSION_PARTS[2] + 1))
+        NEW_TAG="v${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.${NEW_PATCH}-hotfix"
+      else
+        echo "Feature 브랜치는 태깅하지 않습니다."
+        exit 0
+      fi
+      
+      # Docker 이미지 빌드 및 태깅
+      echo "Building image: ${DOCKER_REGISTRY}/${IMAGE_NAME}:${NEW_TAG}"
+      docker build -t ${DOCKER_REGISTRY}/${IMAGE_NAME}:${NEW_TAG} .
+      
+      docker tag ${DOCKER_REGISTRY}/${IMAGE_NAME}:${NEW_TAG}
+      
+      # 레지스트리에 푸시
+      docker push ${DOCKER_REGISTRY}/${IMAGE_NAME}:${NEW_TAG}
+      
+      # Git 태그 생성 및 푸시 (CI_SERVER_HOST가 GitLab인 경우)
+      git config --global user.name "GitLab CI"
+      git config --global user.email "gitlab-ci@example.com"
+      git tag -a ${NEW_TAG} -m "Automated tag by CI/CD pipeline"
+      git push origin ${NEW_TAG}
+      
+      # 버전 정보 저장 (다음 단계에서 사용)
+      echo "NEW_TAG=${NEW_TAG}" >> build.env
+      echo "ENV=${ENV}" >> build.env
+  artifacts:
+    reports:
+      dotenv: build.env
+
+# 테스트 단계 (모든 브랜치에 적용)
+test:
+  stage: test
+  script:
+    - echo "Running tests for image ${DOCKER_REGISTRY}/${IMAGE_NAME}:${NEW_TAG}"
+    - # 여기에 테스트 명령어 추가
+
+# 개발 환경 배포
+deploy_dev:
+  stage: deploy_dev
+  script:
+    - |
+      if [[ "$ENV" == "dev" ]]; then
+        echo "Deploying ${NEW_TAG} to development environment"
+        # 개발 환경 배포 스크립트
+        # kubectl set image deployment/app-dev app=${DOCKER_REGISTRY}/${IMAGE_NAME}:${NEW_TAG}
+      fi
+  only:
+    - develop
+
+# 스테이징 환경 배포
+deploy_stage:
+  stage: deploy_stage
+  script:
+    - |
+      if [[ "$ENV" == "stage" ]]; then
+        echo "Deploying ${NEW_TAG} to staging environment"
+        # 스테이징 환경 배포 스크립트
+        # kubectl set image deployment/app-stage app=${DOCKER_REGISTRY}/${IMAGE_NAME}:${NEW_TAG}
+      fi
+  only:
+    - /^release\/.*$/
+
+# 프로덕션 환경 배포
+deploy_prod:
+  stage: deploy_prod
+  script:
+    - |
+      if [[ "$ENV" == "prod" || "$ENV" == "hotfix" ]]; then
+        echo "Deploying ${NEW_TAG} to production environment"
+        # 프로덕션 환경 배포 스크립트
+        # kubectl set image deployment/app-prod app=${DOCKER_REGISTRY}/${IMAGE_NAME}:${NEW_TAG}
+      fi
+  only:
+    - master
+    - main
+    - /^hotfix\/.*$/
+  when: manual  # 수동 승인 후 배포

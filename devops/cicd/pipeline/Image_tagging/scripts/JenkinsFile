@@ -1,0 +1,274 @@
+pipeline {
+    agent {
+        kubernetes {
+            yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: jinseong
+  labels:
+    app: jinseong-jenkins-agent
+spec:
+  containers:
+    - name: jnlp
+      image: jenkins-agent:latest
+      args: ["\$(JENKINS_SECRET)", "\$(JENKINS_NAME)"]
+    - name: dind
+      image: dockerindockerImage:latest
+      securityContext:
+        privileged: true
+      args:
+        - "--storage-driver=overlay2"
+    - name: gradle
+      image: gradle:7.6.1-jdk11
+      command:
+      - cat
+      tty: true
+"""
+        }
+    }
+    
+    environment {
+        // Jenkins Agent Root Path
+        ROOT_PATH = '/home/jenkins/agent/workspace/jin-test'
+        
+        // Image 정의
+        IMAGE_NAME = 'jin-test'
+
+        // Image Registry 정의
+        REGISTRY_URL = 'jinseong.registry.url'
+        K8S_DEPLOYMENT_FILE = '/deploy/jin-test-deployment.yaml'
+
+        // Git 정보
+        GIT_CREDENTIALS_ID = 'git-credentials'
+    }
+    
+    stages {
+        stage('Code Checkout') {
+            steps {
+                container('dind') {
+                    checkout scm
+                    
+                    script {
+                        // 현재 브랜치 가져오기
+                        env.BRANCH_NAME = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
+                        echo "Current branch: ${env.BRANCH_NAME}"
+                    }
+                }
+            }
+        }
+        
+        stage('Generate Semantic Version') {
+            steps {
+                container('dind') {
+                    script {
+                        // 시맨틱 버전 생성 스크립트 실행
+                        sh '''
+                        #!/bin/bash
+                        set -e
+
+                        # 현재 브랜치 가져오기
+                        BRANCH_NAME=${BRANCH_NAME}
+
+                        # 특정 브랜치에 따른 환경 설정
+                        if [[ "$BRANCH_NAME" == "develop" ]]; then
+                          ENV="dev"
+                          # 최신 dev 태그 찾기
+                          LATEST_TAG=$(git tag -l "v*-dev" | sort -V | tail -n 1 || echo "v0.0.0-dev")
+                          LATEST_VERSION=${LATEST_TAG%-dev}
+                          
+                          # 버전 파싱 및 증가
+                          VERSION_PARTS=(${LATEST_VERSION//./ })
+                          NEW_PATCH=$((VERSION_PARTS[2] + 1))
+                          NEW_TAG="v${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.${NEW_PATCH}-dev"
+
+                        elif [[ "$BRANCH_NAME" =~ ^release/.* ]]; then
+                          ENV="stage"
+                          # 최신 dev 태그 찾기
+                          LATEST_TAG=$(git tag -l "v*-dev" | sort -V | tail -n 1 || echo "v0.0.0-dev")
+                          LATEST_VERSION=${LATEST_TAG%-dev}
+                          
+                          # 버전 파싱 및 마이너 버전 증가
+                          VERSION_PARTS=(${LATEST_VERSION//./ })
+                          NEW_MINOR=$((VERSION_PARTS[1] + 1))
+                          NEW_TAG="v${VERSION_PARTS[0]}.${NEW_MINOR}.0-stage"
+
+                        elif [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
+                          ENV="prod"
+                          # 최신 stage 태그 찾기
+                          LATEST_TAG=$(git tag -l "v*-stage" | sort -V | tail -n 1 || echo "v0.0.0-stage")
+                          LATEST_VERSION=${LATEST_TAG%-stage}
+                          
+                          # 자동 릴리스 여부에 따라 메이저 버전 증가 결정 (Jenkins 환경 변수로 제공)
+                          MAJOR_RELEASE=${MAJOR_RELEASE:-false}
+                          
+                          # 버전 파싱 및 증가
+                          VERSION_PARTS=(${LATEST_VERSION//./ })
+                          
+                          if [[ "$MAJOR_RELEASE" == "true" ]]; then
+                            NEW_MAJOR=$((VERSION_PARTS[0] + 1))
+                            NEW_TAG="v${NEW_MAJOR}.0.0-prod"
+                          else
+                            NEW_TAG="v${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.${VERSION_PARTS[2]}-prod"
+                          fi
+
+                        elif [[ "$BRANCH_NAME" =~ ^hotfix/.* ]]; then
+                          ENV="hotfix"
+                          # 최신 prod 태그 찾기
+                          LATEST_TAG=$(git tag -l "v*-prod" | sort -V | tail -n 1 || echo "v0.0.0-prod")
+                          LATEST_VERSION=${LATEST_TAG%-prod}
+                          
+                          # 버전 파싱 및 패치 버전 증가
+                          VERSION_PARTS=(${LATEST_VERSION//./ })
+                          NEW_PATCH=$((VERSION_PARTS[2] + 1))
+                          NEW_TAG="v${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.${NEW_PATCH}-hotfix"
+
+                        else
+                          echo "현재 브랜치 $BRANCH_NAME는 자동 태깅이 지원되지 않습니다."
+                          exit 0
+                        fi
+
+                        # 태그 및 환경 정보 출력
+                        echo "브랜치: $BRANCH_NAME"
+                        echo "환경: $ENV"
+                        echo "새 태그: $NEW_TAG"
+                        
+                        # 환경 변수로 저장
+                        echo "NEW_TAG=$NEW_TAG" > version.properties
+                        echo "ENV=$ENV" >> version.properties
+                        '''
+                        
+                        // 생성된 버전 정보 불러오기
+                        def props = readProperties file: 'version.properties'
+                        env.NEW_TAG = props.NEW_TAG
+                        env.ENV = props.ENV
+                        
+                        echo "Generated tag: ${env.NEW_TAG}"
+                        echo "Environment: ${env.ENV}"
+                    }
+                }
+            }
+        }
+        
+        stage('Build with Gradle') {
+            steps {
+                container('gradle') {
+                    sh 'gradle clean build -x test'
+                }
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                container('dind') {
+                    script {
+                        sh """
+                        # Docker 이미지 빌드
+                        docker build -t ${REGISTRY_URL}/${IMAGE_NAME}:${env.NEW_TAG} .
+                        
+                        # 환경별 latest 태그 추가
+                        docker tag ${REGISTRY_URL}/${IMAGE_NAME}:${env.NEW_TAG} ${REGISTRY_URL}/${IMAGE_NAME}:latest-${env.ENV}
+                        """
+                    }
+                }
+            }
+        }
+        
+        stage('Push Docker Image') {
+            steps {
+                container('dind') {
+                    withCredentials([usernamePassword(credentialsId: 'docker-registry-credentials', 
+                                                    passwordVariable: 'DOCKER_PASSWORD', 
+                                                    usernameVariable: 'DOCKER_USERNAME')]) {
+                        sh """
+                        echo \$DOCKER_PASSWORD | docker login ${REGISTRY_URL} -u \$DOCKER_USERNAME --password-stdin
+                        docker push ${REGISTRY_URL}/${IMAGE_NAME}:${env.NEW_TAG}
+                        docker push ${REGISTRY_URL}/${IMAGE_NAME}:latest-${env.ENV}
+                        """
+                    }
+                }
+            }
+        }
+        
+        stage('Create Git Tag') {
+            steps {
+                container('dind') {
+                    withCredentials([usernamePassword(credentialsId: "${GIT_CREDENTIALS_ID}", 
+                                                    passwordVariable: 'GIT_PASSWORD', 
+                                                    usernameVariable: 'GIT_USERNAME')]) {
+                        sh """
+                        git config --global user.name "Jenkins"
+                        git config --global user.email "jenkins@example.com"
+                        
+                        # GitHub 인증 설정
+                        git remote set-url origin https://\${GIT_USERNAME}:\${GIT_PASSWORD}@\$(git config --get remote.origin.url | sed 's/https:\\/\\///')
+                        
+                        # 태그 생성 및 푸시
+                        git tag -a ${env.NEW_TAG} -m "CI/CD 자동 태그: ${env.NEW_TAG}"
+                        git push origin ${env.NEW_TAG}
+                        """
+                    }
+                }
+            }
+        }
+        
+        stage('Update Deployment File') {
+            steps {
+                container('dind') {
+                    script {
+                        // 프로덕션이나 스테이징 환경에만 배포 설정 업데이트
+                        if (env.ENV == 'prod' || env.ENV == 'stage' || env.ENV == 'hotfix') {
+                            sh """
+                            # 배포 설정 파일에서 이미지 태그 업데이트
+                            sed -i 's|image: ${REGISTRY_URL}/${IMAGE_NAME}:.*|image: ${REGISTRY_URL}/${IMAGE_NAME}:${env.NEW_TAG}|g' ${K8S_DEPLOYMENT_FILE}
+                            
+                            # 변경사항 커밋 및 푸시
+                            git add ${K8S_DEPLOYMENT_FILE}
+                            git commit -m "배포 설정 업데이트: ${env.NEW_TAG}"
+                            git push origin ${env.BRANCH_NAME}
+                            """
+                        }
+                    }
+                }
+            }
+        }
+        
+        // ArgoCD 등 타 CD 솔루션 사용 시 생략
+        stage('Deploy to Environment') {
+            when {
+                expression { 
+                    return env.ENV == 'dev' || env.ENV == 'stage' || env.ENV == 'prod' || env.ENV == 'hotfix'
+                }
+            }
+            steps {
+                container('dind') {
+                    script {
+                        // 환경에 따른 배포 로직
+                        echo "배포 환경: ${env.ENV}"
+                        
+                        // 프로덕션 환경은 수동 승인 후 배포
+                        if (env.ENV == 'prod') {
+                            input message: "프로덕션 환경에 배포하시겠습니까?", ok: "배포"
+                        }
+                        
+                        // 배포 명령 실행 (kubectl 예시)
+                        sh """
+                        # 배포 명령 (실제 환경에 맞게 조정 필요)
+                        echo "Deploying ${env.NEW_TAG} to ${env.ENV} environment"
+                        # kubectl apply -f ${K8S_DEPLOYMENT_FILE}
+                        """
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo "Pipeline completed successfully: ${env.NEW_TAG}"
+        }
+        failure {
+            echo "Pipeline failed"
+        }
+    }
+}

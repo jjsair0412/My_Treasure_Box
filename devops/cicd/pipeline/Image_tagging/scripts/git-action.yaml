@@ -1,0 +1,152 @@
+name: Docker CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - develop
+      - 'release/**'
+      - master
+      - main
+      - 'hotfix/**'
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  determine-version:
+    # PR이 마지할 경우에만 실행
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    outputs:
+      new_tag: ${{ steps.set-version.outputs.new_tag }}
+      env: ${{ steps.set-version.outputs.env }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # 전체 히스토리 가져오기 (태그 포함)
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Set Version and Environment
+        id: set-version
+        run: |
+          # 현재 브랜치 확인
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          
+          if [[ "$BRANCH_NAME" == "develop" ]]; then
+            ENV="dev"
+            # 최신 dev 태그 조회 및 패치 버전 증가
+            LATEST_TAG=$(git tag -l "v*-dev" | sort -V | tail -n 1 || echo "v0.0.0-dev")
+            LATEST_VERSION=${LATEST_TAG%-dev}
+            IFS='.' read -r -a VERSION_PARTS <<< "${LATEST_VERSION#v}"
+            NEW_PATCH=$((VERSION_PARTS[2] + 1))
+            NEW_TAG="v${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.${NEW_PATCH}-dev"
+          
+          elif [[ "$BRANCH_NAME" =~ ^release/.* ]]; then
+            ENV="stage"
+            # 최신 dev 태그에서 마이너 버전 증가
+            LATEST_TAG=$(git tag -l "v*-dev" | sort -V | tail -n 1 || echo "v0.0.0-dev")
+            LATEST_VERSION=${LATEST_TAG%-dev}
+            IFS='.' read -r -a VERSION_PARTS <<< "${LATEST_VERSION#v}"
+            NEW_MINOR=$((VERSION_PARTS[1] + 1))
+            NEW_TAG="v${VERSION_PARTS[0]}.${NEW_MINOR}.0-stage"
+          
+          elif [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
+            ENV="prod"
+            # 최신 stage 태그 기반으로 태그 설정 
+            LATEST_TAG=$(git tag -l "v*-stage" | sort -V | tail -n 1 || echo "v0.0.0-stage")
+            LATEST_VERSION=${LATEST_TAG%-stage}
+            IFS='.' read -r -a VERSION_PARTS <<< "${LATEST_VERSION#v}"
+            
+            # 메이저 버전 업데이트 여부 확인 (워크플로우 실행 시 입력으로 받을 수 있음)
+            MAJOR_RELEASE=${{ github.event.inputs.major_release || 'false' }}
+            
+            if [[ "$MAJOR_RELEASE" == "true" ]]; then
+              NEW_MAJOR=$((VERSION_PARTS[0] + 1))
+              NEW_TAG="v${NEW_MAJOR}.0.0-prod"
+            else
+              NEW_TAG="v${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.${VERSION_PARTS[2]}-prod"
+            fi
+          
+          elif [[ "$BRANCH_NAME" =~ ^hotfix/.* ]]; then
+            ENV="hotfix"
+            # 최신 prod 태그에서 패치 버전 증가
+            LATEST_TAG=$(git tag -l "v*-prod" | sort -V | tail -n 1 || echo "v0.0.0-prod")
+            LATEST_VERSION=${LATEST_TAG%-prod}
+            IFS='.' read -r -a VERSION_PARTS <<< "${LATEST_VERSION#v}"
+            NEW_PATCH=$((VERSION_PARTS[2] + 1))
+            NEW_TAG="v${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.${NEW_PATCH}-hotfix"
+          
+          else
+            echo "Feature 브랜치는 태깅하지 않습니다."
+            exit 0
+          fi
+          
+          echo "new_tag=${NEW_TAG}" >> $GITHUB_OUTPUT
+          echo "env=${ENV}" >> $GITHUB_OUTPUT
+          echo "새 태그: ${NEW_TAG}, 환경: ${ENV}"
+
+  build-and-push:
+    needs: determine-version
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.determine-version.outputs.new_tag }}
+            ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest-${{ needs.determine-version.outputs.env }}
+      
+      - name: Create Git Tag
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git tag -a ${{ needs.determine-version.outputs.new_tag }} -m "Automated tag by GitHub Actions"
+          git push origin ${{ needs.determine-version.outputs.new_tag }}
+
+  deploy-dev:
+    needs: [determine-version, build-and-push]
+    if: needs.determine-version.outputs.env == 'dev'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Dev environment
+        run: |
+          echo "Deploying ${{ needs.determine-version.outputs.new_tag }} to Development environment"
+          # 여기에 개발 환경 배포 스크립트 추가
+          # 예: 쿠버네티스 배포
+          # kubectl set image deployment/app-dev app=ghcr.io/${{ github.repository }}:${{ needs.determine-version.outputs.new_tag }}
+
+  deploy-stage:
+    needs: [determine-version, build-and-push]
+    if: needs.determine-version.outputs.env == 'stage'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Staging environment
+        run: |
+          echo "Deploying ${{ needs.determine-version.outputs.new_tag }} to Staging environment"
+          # 여기에 스테이징 환경 배포 스크립트 추가
+
+  deploy-prod:
+    needs: [determine-version, build-and-push]
+    if: needs.determine-version.outputs.env == 'prod' || needs.determine-version.outputs.env == 'hotfix'
+    runs-on: ubuntu-latest
+    environment: production  # 승인 필요한 환경
+    steps:
+      - name: Deploy to Production environment
+        run: |
+          echo "Deploying ${{ needs.determine-version.outputs.new_tag }} to Production environment"
+          # 여기에 프로덕션 환경 배포 스크립트 추가
