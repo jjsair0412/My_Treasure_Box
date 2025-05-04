@@ -1,6 +1,21 @@
 # Longhorn
 [longhorn docs](https://longhorn.io/)
 
+## 최소 요구사항
+- 3 nodes
+- 4 vCPUs per node
+- 4 GiB per node
+- SSD/NVMe or similar performance block device on the node for storage (recommended)
+- HDD/Spinning Disk or similar performance block device on the node for storage (verified)
+    - 500/250 max IOPS per volume (1 MiB I/O)
+    - 500/250 max throughput per volume (MiB/s)
+
+### Architecture
+Longhorn supports the following architectures:
+- AMD64
+- ARM64
+- s390x (experimental)
+
 ## Overview
 ***Longhorn은 Kubernetes 환경을 위한 분산 블록스토리지 시스템***
 
