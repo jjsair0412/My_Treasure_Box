@@ -10,6 +10,25 @@
     - 500/250 max IOPS per volume (1 MiB I/O)
     - 500/250 max throughput per volume (MiB/s)
 
+## Longhorn 구성 전 주의사항
+0. 호스트 fileSystem 지원 타입은 아래와 같음
+    - ext4
+    - XFS
+
+1. ```bash```, ```curl```, ```findmnt```, ```grep```, ```awk```, ```blkid```, ```lsblk``` 명령어가 반드시 필요
+
+2. 모든 노드에 Iscsi 설치
+    - [open-iscsi 설치 방안 공식문서](https://longhorn.io/docs/1.8.1/deploy/install/#installing-open-iscsi)
+    - [iscsI with Longhorn 참고](../../iscsI_with_longhorn.md)
+
+3. 디스크 샤딩
+    - Longhorn은 현재 **여러 디스크 간의 샤딩(데이터 분할 저장)을 지원하지 않기에, LVM을 통해 모든 디스크를 단일 파티션으로 통합하는것이 권장**
+    - LVM을 사용하여 모든 디스크가 Longhorn에게 하나의 디스크로 보이도록 해야 함.
+
+4. RWX를 위한 NFS 구성
+    - Longhorn의 생성할 PVC Type을 RWX로 구성하기 위해선, NFSv4 client를 설치해야 함.
+    - [NFSv4 설치 방안 공식문서](https://longhorn.io/docs/1.8.1/deploy/install/#installing-nfsv4-client)
+
 ### Architecture
 Longhorn supports the following architectures:
 - AMD64
