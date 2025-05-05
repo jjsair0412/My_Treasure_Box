@@ -52,7 +52,7 @@ Engine에 문제가 발생하더라도, 모든 복제본이나 볼륨 접근에�
 
 Longhorn Engine은 항상 Longhorn Volume을 사용하는 Pod와 같은 노드에 실행되며, 여러 노드에 분산 저장된 복제본에 볼륨을 동기적으로 복제함.
 
-![Longhorn_arch](./images/Longhorn_arch.svg)
+![Longhorn_arch](./images/longhorn_arch.svg)
 
 - Longhorn 볼륨이 있는 3개의 인스턴스가 있습니다.
 - 각 볼륨에는 Longhorn Engine이라 불리는 전용 컨트롤러가 있습니다. V1 볼륨의 경우 엔진은 Linux 프로세스로 실행되며, V2 볼륨의 경우 SPDK RAID 블록 디바이스(bdev)로 작동합니다.
