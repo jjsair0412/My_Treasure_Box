@@ -3,6 +3,21 @@ Description: EKS cluster using a VPC with two public subnets
 
 Parameters:
 
+  LocalIPCidr:
+    Type: String
+    Description: Local IP Cidr Block
+    Default: "1.1.1.1/32"
+
+  AwsAccessKey:
+    Type: String
+    Description: AWS Access Key for the API server
+    NoEcho: true
+    
+  AwsSecretKey:
+    Type: String
+    Description: AWS Secret Key for the API server
+    NoEcho: true
+
   NumWorkerNodes:
     Type: Number
     Description: Number of worker nodes to create
@@ -13,17 +28,47 @@ Parameters:
     Description: EC2 instance type for the worker nodes
     Default: t2.small
 
+  WorkerNodeDiskSize:
+    Type: Number
+    Description: Disk Size of worker Nodes
+    Default: 50
+
   KeyPairName:
     Type: String
     Description: Name of an existing EC2 key pair (for SSH-access to the worker node instances)
+    
+  KubernetesVersion:
+    Type: String
+    Description: Kubernetes version to use for the EKS cluster
+    Default: "1.29"
+    AllowedValues:
+      - "1.27"
+      - "1.28"
+      - "1.29"
+      - "1.30"
+
+  ApiServerInstanceType:
+    Type: String
+    Description: EC2 instance type for the API call server
+    Default: t3.micro
+    AllowedValues:
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
+
+  ApiServerAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Description: AMI ID for the API call server (Amazon Linux 2)
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
 
 Mappings:
 
   VpcIpRanges:
     Option1:
-      VPC: 10.0.0.0/16       # 00001010.00000000.xxxxxxxx.xxxxxxxx
-      Subnet1: 10.0.0.0/18   # 00001010.00000000.00xxxxxx.xxxxxxxx
-      Subnet2: 10.0.64.0/18  # 00001010.00000000.01xxxxxx.xxxxxxxx
+      VPC: 10.0.0.0/16       
+      Subnet1: 10.0.0.0/18   
+      Subnet2: 10.0.64.0/18  
 
   # IDs of the "EKS-optimised AMIs" for the worker nodes:
   # https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
@@ -61,9 +106,14 @@ Resources:
       AvailabilityZone: !Select
         - 0
         - !GetAZs ""
+      MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-Subnet1"
+        - Key: !Sub "kubernetes.io/cluster/${AWS::StackName}"
+          Value: "shared"
+        - Key: "kubernetes.io/role/elb"
+          Value: "1"
 
   Subnet2:
     Type: AWS::EC2::Subnet
@@ -73,9 +123,14 @@ Resources:
       AvailabilityZone: !Select
         - 1
         - !GetAZs ""
+      MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-Subnet2"
+        - Key: !Sub "kubernetes.io/cluster/${AWS::StackName}"
+          Value: "shared"
+        - Key: "kubernetes.io/role/elb"
+          Value: "1"
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -128,14 +183,18 @@ Resources:
     Type: AWS::EKS::Cluster
     Properties:
       Name: !Ref AWS::StackName
-      Version: "1.10"
+      Version: !Ref KubernetesVersion
       RoleArn: !GetAtt ControlPlaneRole.Arn
+      AccessConfig:
+        AuthenticationMode: "API_AND_CONFIG_MAP"
+        BootstrapClusterCreatorAdminPermissions: true
       ResourcesVpcConfig:
         SecurityGroupIds:
           - !Ref ControlPlaneSecurityGroup
         SubnetIds:
-          - !Ref Subnet1
           - !Ref Subnet2
+        EndpointPrivateAccess: true
+        EndpointPublicAccess: false
 
   ControlPlaneRole:
     Type: AWS::IAM::Role
@@ -196,6 +255,16 @@ Resources:
       FromPort: 443
       ToPort: 443
 
+  ControlPlaneIngressFromKubeAPiCallServerHttps:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allow incoming HTTPS traffic (TCP/443) from Kube API Call Server
+      GroupId: !Ref ControlPlaneSecurityGroup
+      SourceSecurityGroupId: !Ref ApiServerSecurityGroup
+      IpProtocol: tcp
+      ToPort: 443
+      FromPort: 443
+
   #============================================================================#
   # Worker nodes security group
   # Note: default egress rule (allow all traffic to all destinations) applies
@@ -209,7 +278,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-WorkerNodesSecurityGroup"
-        - Key: !Sub "kubernetes.io/cluster/${ControlPlane}"
+        - Key: !Sub "kubernetes.io/cluster/${AWS::StackName}"
           Value: "owned"
 
   WorkerNodesIngressFromWorkerNodes:
@@ -239,37 +308,205 @@ Resources:
       IpProtocol: tcp
       FromPort: 443
       ToPort: 443
-
-  #============================================================================#
-  # Control Plane 
-  #============================================================================#
-
-  CreateControlPlane:
-    Type: AWS::EKS::Cluster
+  
+  WorkerNodesIngressFromAPICallServerSSH:
+    Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      AccessConfig: 
-        AuthenticationMode: "API_AND_CONFIG_MAP"
-        BootstrapClusterCreatorAdminPermissions: true
-      BootstrapSelfManagedAddons: true
-      KubernetesNetworkConfig: 
-        ElasticLoadBalancing: 
-          ElasticLoadBalancing
-        IpFamily: String
-        ServiceIpv4Cidr: String
-        ServiceIpv6Cidr: String
-      Name: !Sub "${AWS::StackName}-myeks-cluster"
-      ResourcesVpcConfig: 
-        ResourcesVpcConfig
-      RoleArn: String
-      StorageConfig: 
-        StorageConfig
-      UpgradePolicy: 
-        UpgradePolicy
-      Version: String
-      ZonalShiftConfig: 
-        ZonalShiftConfig
-
+      Description: Allow incoming SSH traffic from API Call Server
+      GroupId: !Ref WorkerNodesSecurityGroup
+      SourceSecurityGroupId: !Ref ApiServerSecurityGroup
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+  
 
   #============================================================================#
-  # Worker Node Configration
+  # Worker Node IAM Role
   #============================================================================#
+
+  WorkerNodesRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+
+  #============================================================================#
+  # Worker Node Group
+  #============================================================================#
+
+  WorkerNodeGroup:
+    Type: AWS::EKS::Nodegroup
+    DependsOn: ControlPlane
+    Properties:
+      ClusterName: !Ref AWS::StackName
+      NodegroupName: !Sub "${AWS::StackName}-NodeGroup"
+      NodeRole: !GetAtt WorkerNodesRole.Arn
+      Subnets:
+        - !Ref Subnet2
+      DiskSize: !Ref WorkerNodeDiskSize
+      InstanceTypes:
+        - !Ref WorkerNodesInstanceType
+      ScalingConfig:
+        DesiredSize: !Ref NumWorkerNodes
+        MinSize: 1
+        MaxSize: !Ref NumWorkerNodes
+      RemoteAccess:
+        Ec2SshKey: !Ref KeyPairName
+        SourceSecurityGroups:
+          - !Ref WorkerNodesSecurityGroup
+      Version: !Ref KubernetesVersion
+      Tags:
+        Name: !Sub "${AWS::StackName}-WorkerNode"
+
+  #============================================================================#
+  # Kube-API Call Server
+  #============================================================================#
+
+  ApiServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for the API call server
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref LocalIPCidr
+          Description: Allow SSH from anywhere (restrict this in production)
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-ApiServerSecurityGroup"
+
+  ApiServerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Policies:
+        - PolicyName: EksApiAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - eks:DescribeCluster
+                  - eks:ListClusters
+                Resource: '*'
+
+  ApiServerInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref ApiServerRole
+
+  ApiServerInstance:
+    Type: AWS::EC2::Instance
+    DependsOn: ControlPlane
+    Properties:
+      InstanceType: !Ref ApiServerInstanceType
+      ImageId: !Ref ApiServerAmiId
+      KeyName: !Ref KeyPairName
+      SecurityGroupIds:
+        - !Ref ApiServerSecurityGroup
+      SubnetId: !Ref Subnet1
+      IamInstanceProfile: !Ref ApiServerInstanceProfile
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 20
+            VolumeType: gp3
+            DeleteOnTermination: true
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          # 시스템 업데이트
+          yum update -y
+          
+          # AWS CLI 설치 (기본 설치되어 있지만 최신 버전으로 업데이트)
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          ./aws/install --update
+          
+          # kubectl 설치
+          curl -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/${!Ref::KubernetesVersion}/2023-08-16/bin/linux/amd64/kubectl
+          chmod +x ./kubectl
+          mv ./kubectl /usr/local/bin
+          
+          # AWS 자격 증명 설정
+          mkdir -p /home/ec2-user/.aws
+          cat > /home/ec2-user/.aws/credentials << EOF
+          [default]
+          aws_access_key_id = ${AwsAccessKey}
+          aws_secret_access_key = ${AwsSecretKey}
+          region = ${AWS::Region}
+          EOF
+          
+          cat > /home/ec2-user/.aws/config << EOF
+          [default]
+          region = ${AWS::Region}
+          output = json
+          EOF
+          
+          # 권한 설정
+          chown -R ec2-user:ec2-user /home/ec2-user/.aws
+          chmod 600 /home/ec2-user/.aws/credentials
+          
+          # 루트 사용자를 위한 AWS 자격 증명 설정
+          mkdir -p /root/.aws
+          cp /home/ec2-user/.aws/credentials /root/.aws/
+          cp /home/ec2-user/.aws/config /root/.aws/
+                            
+          # EKS 클러스터 kubeconfig 설정
+          aws eks update-kubeconfig --region ${AWS::Region} --name ${AWS::StackName}
+          
+          # jq 설치 (JSON 처리용)
+          yum install -y jq
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-ApiCallServer"
+
+Outputs:
+  ClusterName:
+    Description: EKS cluster name
+    Value: !Ref AWS::StackName
+    
+  ClusterEndpoint:
+    Description: EKS cluster endpoint URL
+    Value: !GetAtt ControlPlane.Endpoint
+    
+  CertificateAuthorityData:
+    Description: Certificate authority data for the cluster
+    Value: !GetAtt ControlPlane.CertificateAuthorityData
+    
+  NodeGroupName:
+    Description: Name of the EKS Node Group
+    Value: !Ref WorkerNodeGroup
+    
+  NodeInstanceRole:
+    Description: IAM role used by worker nodes
+    Value: !GetAtt WorkerNodesRole.Arn
+
+  ApiServerPublicIP:
+    Description: Public IP address of the API call server
+    Value: !GetAtt ApiServerInstance.PublicIp
+  
+  ApiServerPublicDnsName:
+    Description: Public DNS name of the API call server
+    Value: !GetAtt ApiServerInstance.PublicDnsName
