@@ -12,11 +12,13 @@ Parameters:
     Type: String
     Description: AWS Access Key for the API server
     NoEcho: true
+    Default: '{{resolve:secretsmanager:MySecret:SecretString:access_key}}'
     
   AwsSecretKey:
     Type: String
     Description: AWS Secret Key for the API server
     NoEcho: true
+    Default: '{{resolve:secretsmanager:MySecret:SecretString:secret_key}}'
 
   NumWorkerNodes:
     Type: Number
