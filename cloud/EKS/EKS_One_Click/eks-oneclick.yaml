@@ -94,6 +94,15 @@ Parameters:
     Description: Enter EC2 Instance Type. Default is t3.large.
     Type: String
     Default: t3.large
+    AllowedValues:
+      - t3.medium
+      - t3.large
+      - t3.xlarge
+      - t3.2xlarge
+      - m5.large
+      - m5.xlarge
+      - c5.large
+      - c5.xlarge
   WorkerNodeCount:
     Description: Worker Node Counts
     Type: String

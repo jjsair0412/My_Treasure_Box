@@ -87,7 +87,7 @@ Mappings:
 Resources:
 
   #============================================================================#
-  # VPC
+  # Network
   #============================================================================#
 
   VPC:
@@ -134,12 +134,33 @@ Resources:
         - Key: "kubernetes.io/role/elb"
           Value: "1"
 
+  NatGWElasticIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags: 
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-NatGW-EIP"
+
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
         - Key: Name
-          Value: !Ref AWS::StackName
+          Value: !Sub "${AWS::StackName}-IGW"
+
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    DependsOn: 
+      - NatGWElasticIP
+      - VPCGatewayAttachment
+    Properties:
+      AllocationId: !GetAtt NatGWElasticIP.AllocationId
+      ConnectivityType: public
+      SubnetId: !Ref Subnet1
+      Tags: 
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-NatGw"
 
   VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -147,7 +168,29 @@ Resources:
       InternetGatewayId: !Ref InternetGateway
       VpcId: !Ref VPC
 
-  RouteTable:
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-PrivateSubnets"
+
+  NatGatewayRoute:
+    Type: AWS::EC2::Route
+    DependsOn: VPCGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+
+  Subnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref Subnet2
+      RouteTableId: !Ref PrivateRouteTable
+
+  PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref VPC
@@ -157,11 +200,9 @@ Resources:
 
   InternetGatewayRoute:
     Type: AWS::EC2::Route
-    # DependsOn is mandatory because route targets InternetGateway
-    # See here: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-attribute-dependson.html#gatewayattachment
     DependsOn: VPCGatewayAttachment
     Properties:
-      RouteTableId: !Ref RouteTable
+      RouteTableId: !Ref PublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
 
@@ -169,13 +210,7 @@ Resources:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref Subnet1
-      RouteTableId: !Ref RouteTable
-
-  Subnet2RouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref Subnet2
-      RouteTableId: !Ref RouteTable
+      RouteTableId: !Ref PublicRouteTable
 
   #============================================================================#
   # Control plane
@@ -354,7 +389,6 @@ Resources:
       NodegroupName: !Sub "${AWS::StackName}-NodeGroup"
       NodeRole: !GetAtt WorkerNodesRole.Arn
       Subnets:
-        - !Ref Subnet1
         - !Ref Subnet2
       DiskSize: !Ref WorkerNodeDiskSize
       InstanceTypes:
