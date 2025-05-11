@@ -126,7 +126,7 @@ spec:
 
 - 해당 과정에서,  컨트롤러는 지정된 소스 VM을 vCenter API를 통해 내보내고 (export), 디스크를 다운로드 받은 뒤 RAW 이미지로 변환
 - 이 변환 과정은 VM 디스크 크기에 비례해 시간이 걸릴 수 있으며, 각 디스크당 Harvester에 ```VirtualMachineImage``` 객체가 생성
-- 변환된 디스크는 **CRD에 등록한 SC인 Harvester의 Longhorn 스토리지에 백업 이미지(backing image)**로 등록된 뒤, 이를 기반으로 새로운 VM이 생성·부팅. 
+- 변환된 디스크는 **Harvester의 Longhorn 스토리지에 백업 이미지(backing image)**로 등록된 뒤, 이를 기반으로 새로운 VM이 생성/부팅됨
 - 최종적으로 다음과 같은 결과를 확인할 수 있음.
 
     backing Image 용량이 상당히커질 수 있음. 주의
