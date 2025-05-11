@@ -194,6 +194,7 @@ Resources:
         SecurityGroupIds:
           - !Ref ControlPlaneSecurityGroup
         SubnetIds:
+          - !Ref Subnet1
           - !Ref Subnet2
         EndpointPrivateAccess: true
         EndpointPublicAccess: false
@@ -353,6 +354,7 @@ Resources:
       NodegroupName: !Sub "${AWS::StackName}-NodeGroup"
       NodeRole: !GetAtt WorkerNodesRole.Arn
       Subnets:
+        - !Ref Subnet1
         - !Ref Subnet2
       DiskSize: !Ref WorkerNodeDiskSize
       InstanceTypes:
