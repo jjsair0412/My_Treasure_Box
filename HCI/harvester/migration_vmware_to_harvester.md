@@ -13,11 +13,12 @@ vmware에서 harvester로 migration을 위한 확인사항, 절차 정리
 - [기능대조표](./harvester_vs_vmware_기능대조표.md)
 
 ## 방안
+### 0. 참고 문서
 - [공식 문서 VM Import](https://docs.harvesterhci.io/v1.5/advanced/addons/vmimport)
 - [vm-import-controller Code](https://github.com/harvester/vm-import-controller/blob/main/pkg/source/vmware/client.go)
 - [VirtualMachineImport Code](https://github.com/harvester/vm-import-controller/blob/main/pkg/apis/migration.harvesterhci.io/v1beta1/virtualmachines.go)
 
-### 1. VM Import 사용
+### 1. 방안 1 : VM Import 사용
     해당 방안은 /var/lib/kubelet 에 마운트된 임시 스토리지 사용
 
     대용량 VM 마이그레이션 할 경우, disk Space 부족으로 스케줄링이 실패할 수 있음.
