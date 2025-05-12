@@ -29,6 +29,13 @@ Parameters:
     Type: String
     Description: EC2 instance type for the worker nodes
     Default: t2.small
+    AllowedValues: 
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - t2.xlarge
+      - t2.2xlarge
 
   WorkerNodeDiskSize:
     Type: Number
@@ -105,9 +112,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: !FindInMap [ VpcIpRanges, Option1, Subnet1 ]
-      AvailabilityZone: !Select
-        - 0
-        - !GetAZs ""
+      AvailabilityZone: ap-northeast-2a
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -122,9 +127,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: !FindInMap [ VpcIpRanges, Option1, Subnet2 ]
-      AvailabilityZone: !Select
-        - 1
-        - !GetAZs ""
+      AvailabilityZone: ap-northeast-2c
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
@@ -347,15 +350,13 @@ Resources:
       FromPort: 443
       ToPort: 443
   
-  WorkerNodesIngressFromAPICallServerSSH:
+  WorkerNodesIngressFromAPICallServer:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       Description: Allow incoming SSH traffic from API Call Server
       GroupId: !Ref WorkerNodesSecurityGroup
       SourceSecurityGroupId: !Ref ApiServerSecurityGroup
-      IpProtocol: tcp
-      FromPort: 22
-      ToPort: 22
+      IpProtocol: "-1"
   
 
   #============================================================================#
