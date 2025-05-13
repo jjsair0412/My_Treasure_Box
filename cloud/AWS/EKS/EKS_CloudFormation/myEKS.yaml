@@ -7,6 +7,12 @@ Parameters:
     Type: String
     Description: Local IP Cidr Block
     Default: "1.1.1.1/32"
+  
+  SecretManagerName:
+    Type: String
+    Description: My secret manager key
+    NoEcho: true
+    Default: 'jinseong-key'
 
   AwsAccessKey:
     Type: String
@@ -439,10 +445,15 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
         - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
       Policies:
-        - PolicyName: EksApiAccess
+        - PolicyName: ApiServerCustomPolicy
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                  - secretsmanager:ListSecrets
+                Resource: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${SecretManagerName}*
               - Effect: Allow
                 Action:
                   - eks:DescribeCluster
